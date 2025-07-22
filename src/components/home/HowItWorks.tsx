@@ -1,7 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Upload, Palette, DollarSign, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useInView } from 'framer-motion';
+import { useRef } from 'react';
+import { Upload, Palette, DollarSign, TrendingUp } from 'lucide-react';
 
 const HowItWorks = () => {
   const steps = [

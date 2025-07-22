@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Star, TrendingUp } from "lucide-react";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useInView } from 'framer-motion';
+import { useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { Star, TrendingUp, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const FeaturedArtists = () => {
   const artists = [

@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp, Users } from "lucide-react";
-import heroImage from "@/assets/hero-image.jpg";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Play, ArrowRight, Star, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
   return (
