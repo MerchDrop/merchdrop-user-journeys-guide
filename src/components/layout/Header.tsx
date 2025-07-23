@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useCart } from '@/context/CartContext';
+import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { getTotalItems } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -42,9 +42,11 @@ const Header = () => {
             </Link>
             <Link to="/cart" className="relative p-2 text-black hover:text-gray-600 transition-colors">
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                0
-              </span>
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
             </Link>
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm" className="text-black hover:text-gray-600" asChild>
@@ -99,7 +101,7 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                Cart (0)
+                Cart ({getTotalItems()})
               </Link>
               
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
@@ -118,4 +120,5 @@ const Header = () => {
   );
 };
 
+export { Header };
 export default Header;
