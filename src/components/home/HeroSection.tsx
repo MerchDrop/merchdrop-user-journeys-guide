@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Play, ArrowRight, Star, TrendingUp } from 'lucide-react';
+import { Play, ArrowRight, Star, TrendingUp, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import heroImage from '@/assets/hero-image.jpg';
 
 const HeroSection = () => {
   return (
