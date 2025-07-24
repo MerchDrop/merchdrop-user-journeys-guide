@@ -1,10 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { Star, Users, TrendingUp, ExternalLink, Instagram, Music } from 'lucide-react';
+import { Star, Users, TrendingUp, ExternalLink, Instagram, Music, ShoppingCart, Eye } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCart } from '@/context/CartContext';
 
 // Mock data - in real app, this would come from API
 const artistData = {
@@ -76,6 +78,32 @@ const merchItems = [
 
 export default function ArtistProfile() {
   const { slug } = useParams();
+  const { addItem } = useCart();
+  const [isLoading, setIsLoading] = useState(true);
+  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  
+  // Scroll animation for banner
+  const { scrollY } = useScroll();
+  const bannerHeight = useTransform(scrollY, [0, 300], ['60vh', '25vh']);
+  const bannerOpacity = useTransform(scrollY, [0, 200], [1, 0.8]);
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [slug]);
+
+  const handleAddToCart = (item: any) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      artist: artistData.name,
+      price: parseFloat(item.price.replace('$', '')),
+      image: item.image
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,23 +112,57 @@ export default function ArtistProfile() {
       <main>
         {/* Artist Header */}
         <section className="relative">
-          {/* Banner */}
-          <div className="h-64 md:h-80 bg-cover bg-center relative" style={{ backgroundImage: `url(${artistData.banner})` }}>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
+          {/* Animated Banner */}
+          <motion.div 
+            className="bg-cover bg-center relative overflow-hidden"
+            style={{ 
+              backgroundImage: `url(${artistData.banner})`,
+              height: bannerHeight,
+              opacity: bannerOpacity
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+            
+            {/* Floating Follow Button */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="absolute bottom-8 right-8"
+            >
+              <Button variant="hero" size="lg" className="shadow-glow">
+                Follow Artist
+              </Button>
+            </motion.div>
+          </motion.div>
 
           {/* Artist Info */}
           <div className="container mx-auto px-4">
             <div className="relative -mt-24 md:-mt-32">
-              <div className="flex flex-col md:flex-row items-start gap-6">
-                {/* Avatar */}
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-background shadow-hero bg-cover bg-center"
-                  style={{ backgroundImage: `url(${artistData.avatar})` }}
-                />
+              {isLoading ? (
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <Skeleton className="w-32 h-32 md:w-40 md:h-40 rounded-full" />
+                  <div className="flex-1 bg-card/90 backdrop-blur-sm rounded-2xl p-6 shadow-card">
+                    <Skeleton className="h-10 w-64 mb-4" />
+                    <Skeleton className="h-6 w-32 mb-6" />
+                    <Skeleton className="h-20 w-full mb-6" />
+                    <div className="flex gap-3">
+                      <Skeleton className="h-9 w-32" />
+                      <Skeleton className="h-9 w-32" />
+                      <Skeleton className="h-9 w-32" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  {/* Avatar */}
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-background shadow-hero bg-cover bg-center"
+                    style={{ backgroundImage: `url(${artistData.avatar})` }}
+                  />
 
                 {/* Info */}
                 <motion.div
@@ -160,7 +222,8 @@ export default function ArtistProfile() {
                     </Button>
                   </div>
                 </motion.div>
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -182,38 +245,78 @@ export default function ArtistProfile() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {merchItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-                  className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-hero hover-lift group cursor-pointer"
-                >
-                  <div className="aspect-square bg-cover bg-center relative overflow-hidden"
-                       style={{ backgroundImage: `url(${item.image})` }}>
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                    <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm rounded-full px-3 py-1">
-                      <div className="flex items-center text-sm">
-                        <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
-                        <span className="font-semibold">{item.rating}</span>
+            {isLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="space-y-4">
+                    <Skeleton className="aspect-square rounded-lg" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-6 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {merchItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                    className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-hero group cursor-pointer relative"
+                    onMouseEnter={() => setHoveredItem(item.id)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    style={{ transform: hoveredItem === item.id ? 'translateY(-8px)' : 'translateY(0px)' }}
+                  >
+                    <div className="aspect-square bg-cover bg-center relative overflow-hidden"
+                         style={{ backgroundImage: `url(${item.image})` }}>
+                      
+                      {/* Hover Overlay */}
+                      <motion.div 
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: hoveredItem === item.id ? 1 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={() => handleAddToCart(item)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-1" />
+                            Buy
+                          </Button>
+                        </div>
+                      </motion.div>
+
+                      {/* Rating Badge */}
+                      <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm rounded-full px-2 py-1">
+                        <div className="flex items-center text-xs">
+                          <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
+                          <span className="font-semibold">{item.rating}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
-                      {item.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-primary">{item.price}</span>
-                      <span className="text-sm text-muted-foreground">{item.sales}</span>
+                    
+                    <div className="p-4">
+                      <h3 className="font-bold text-sm mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                        {item.name}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-primary">{item.price}</span>
+                        <span className="text-xs text-muted-foreground">{item.sales}</span>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>
