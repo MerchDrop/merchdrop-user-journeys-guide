@@ -1,40 +1,111 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useParams } from 'react-router-dom';
-import { Star, Heart, Share2, ShoppingCart, Truck, Shield, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Star, Heart, Share2, ShoppingCart, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, Eye, Minus, Plus } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/hooks/use-toast';
 
-const productData = {
-  id: 1,
-  name: "Midnight Vibes Hoodie",
-  artist: "Luna Rivers",
-  price: "$55",
-  originalPrice: "$75",
-  rating: 4.9,
-  reviews: 234,
-  description: "Immerse yourself in the ethereal world of Luna Rivers with this premium hoodie. Featuring her signature Midnight Vibes artwork, this piece combines comfort with artistic expression.",
-  features: [
-    "100% premium cotton blend",
-    "Unisex fit for all body types", 
-    "Eco-friendly water-based inks",
-    "Pre-shrunk for lasting fit",
-    "Kangaroo pocket design"
-  ],
-  images: [
-    "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop&auto=format",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=600&fit=crop&auto=format",
-    "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=600&h=600&fit=crop&auto=format"
-  ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-  colors: [
-    { name: "Midnight Black", value: "#1a1a1a" },
-    { name: "Deep Purple", value: "#6b46c1" },
-    { name: "Ocean Blue", value: "#0ea5e9" }
-  ]
+// Mock product database
+const mockProducts = {
+  1: {
+    id: 1,
+    name: "Midnight Vibes Hoodie",
+    artist: "Luna Rivers",
+    price: 55,
+    originalPrice: 75,
+    rating: 4.9,
+    reviews: 234,
+    description: "Immerse yourself in the ethereal world of Luna Rivers with this premium hoodie. Featuring her signature Midnight Vibes artwork, this piece combines comfort with artistic expression. Made with sustainable materials and ethically sourced cotton.",
+    features: [
+      "100% premium cotton blend",
+      "Unisex fit for all body types", 
+      "Eco-friendly water-based inks",
+      "Pre-shrunk for lasting fit",
+      "Kangaroo pocket design"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=600&h=600&fit=crop&auto=format"
+    ],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    colors: [
+      { name: "Midnight Black", value: "#1a1a1a" },
+      { name: "Deep Purple", value: "#6b46c1" },
+      { name: "Ocean Blue", value: "#0ea5e9" }
+    ],
+    stock: 24,
+    category: "Hoodies"
+  },
+  2: {
+    id: 2,
+    name: "Ethereal Dreams Tee",
+    artist: "Luna Rivers",
+    price: 35,
+    rating: 4.8,
+    reviews: 156,
+    description: "Soft cotton tee with dreamy graphic design. Ultra-comfortable fit perfect for everyday wear.",
+    features: [
+      "100% Cotton",
+      "Pre-shrunk", 
+      "Machine Washable"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=600&h=600&fit=crop&auto=format"
+    ],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: [
+      { name: "White", value: "#ffffff" },
+      { name: "Black", value: "#000000" },
+      { name: "Vintage Gray", value: "#9ca3af" }
+    ],
+    stock: 45,
+    category: "T-Shirts"
+  }
 };
+
+// Related products for "You May Also Like"
+const relatedProducts = [
+  {
+    id: 3,
+    name: "Luna Logo Cap",
+    artist: "Luna Rivers",
+    price: 28,
+    image: "https://images.unsplash.com/photo-1588117260148-b47c0c19383d?w=400&h=400&fit=crop&auto=format",
+    rating: 5.0
+  },
+  {
+    id: 4,
+    name: "Cosmic Journey Poster",
+    artist: "Luna Rivers", 
+    price: 22,
+    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=400&fit=crop&auto=format",
+    rating: 4.7
+  },
+  {
+    id: 5,
+    name: "Rivers Phone Case",
+    artist: "Luna Rivers",
+    price: 32,
+    image: "https://images.unsplash.com/photo-1607212640195-b3c4c0ca5f82?w=400&h=400&fit=crop&auto=format",
+    rating: 4.9
+  },
+  {
+    id: 6,
+    name: "Dreamscape Vinyl Sticker Pack",
+    artist: "Luna Rivers",
+    price: 15,
+    image: "https://images.unsplash.com/photo-1541336032412-2048a678540d?w=400&h=400&fit=crop&auto=format",
+    rating: 4.8
+  }
+];
 
 const reviews = [
   {
@@ -62,10 +133,117 @@ const reviews = [
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { addItem } = useCart();
+  const { toast } = useToast();
+  
+  const [product, setProduct] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isLiked, setIsLiked] = useState(false);
+  const [hoveredRelated, setHoveredRelated] = useState<number | null>(null);
+
+  // Simulate API call with loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const productId = parseInt(id || '1', 10);
+      const foundProduct = mockProducts[productId as keyof typeof mockProducts];
+      if (foundProduct) {
+        setProduct(foundProduct);
+        setSelectedSize(foundProduct.sizes[0]);
+      }
+      setIsLoading(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [id]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    addItem({
+      id: product.id,
+      name: product.name,
+      artist: product.artist,
+      price: product.price,
+      image: product.images[0],
+      size: selectedSize,
+      color: product.colors[selectedColor].name
+    }, quantity);
+
+    toast({
+      title: "Added to cart!",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const nextImage = () => {
+    if (product) {
+      setSelectedImage((prev) => 
+        prev === product.images.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
+  const prevImage = () => {
+    if (product) {
+      setSelectedImage((prev) => 
+        prev === 0 ? product.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="py-8">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="space-y-4">
+                <Skeleton className="aspect-square rounded-3xl" />
+                <div className="flex gap-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="w-20 h-20 rounded-xl" />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-6">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Handle product not found
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="py-8">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+            <p className="text-muted-foreground mb-6">The product you're looking for doesn't exist.</p>
+            <Button onClick={() => navigate('/products')}>
+              Browse Products
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,6 +251,17 @@ export default function ProductDetail() {
       
       <main className="py-8">
         <div className="container mx-auto px-4">
+          {/* Breadcrumb */}
+          <nav className="mb-8">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Link to="/" className="hover:text-foreground">Home</Link>
+              <span>/</span>
+              <Link to="/products" className="hover:text-foreground">Products</Link>
+              <span>/</span>
+              <span className="text-foreground">{product.name}</span>
+            </div>
+          </nav>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Product Images */}
             <motion.div
@@ -81,23 +270,57 @@ export default function ProductDetail() {
               transition={{ duration: 0.6 }}
             >
               {/* Main Image */}
-              <div className="aspect-square rounded-3xl overflow-hidden mb-4 bg-cover bg-center shadow-hero"
-                   style={{ backgroundImage: `url(${productData.images[selectedImage]})` }}>
+              <div className="relative aspect-square rounded-3xl overflow-hidden mb-4 bg-cover bg-center shadow-hero group"
+                   style={{ backgroundImage: `url(${product.images[selectedImage]})` }}>
+                
+                {/* Navigation Arrows */}
+                {product.images.length > 1 && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={prevImage}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={nextImage}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+
+                {/* Wishlist Button */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={`absolute top-4 right-4 bg-background/80 backdrop-blur-sm ${isLiked ? 'text-red-500' : ''}`}
+                  onClick={() => setIsLiked(!isLiked)}
+                >
+                  <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                </Button>
               </div>
               
               {/* Thumbnail Images */}
-              <div className="flex gap-4">
-                {productData.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`w-20 h-20 rounded-xl bg-cover bg-center border-2 transition-all ${
-                      selectedImage === index ? 'border-primary' : 'border-transparent'
-                    }`}
-                    style={{ backgroundImage: `url(${image})` }}
-                  />
-                ))}
-              </div>
+              {product.images.length > 1 && (
+                <div className="flex gap-4">
+                  {product.images.map((image: string, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-20 h-20 rounded-xl bg-cover bg-center border-2 transition-all ${
+                        selectedImage === index ? 'border-primary' : 'border-transparent'
+                      }`}
+                      style={{ backgroundImage: `url(${image})` }}
+                    />
+                  ))}
+                </div>
+              )}
             </motion.div>
 
             {/* Product Info */}
@@ -110,10 +333,17 @@ export default function ProductDetail() {
               {/* Header */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Badge variant="secondary" className="mb-2">By {productData.artist}</Badge>
+                  <Link to={`/artist/${product.artist.toLowerCase().replace(' ', '-')}`}>
+                    <Badge variant="secondary" className="mb-2 hover:bg-secondary/80">By {product.artist}</Badge>
+                  </Link>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Heart className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={isLiked ? 'text-red-500' : ''}
+                    >
+                      <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                     </Button>
                     <Button variant="ghost" size="sm">
                       <Share2 className="h-4 w-4" />
@@ -121,33 +351,50 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">{productData.name}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-4">{product.name}</h1>
                 
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center">
                     <Star className="h-5 w-5 text-yellow-500 fill-current mr-1" />
-                    <span className="font-semibold">{productData.rating}</span>
-                    <span className="text-muted-foreground ml-2">({productData.reviews} reviews)</span>
+                    <span className="font-semibold">{product.rating}</span>
+                    <span className="text-muted-foreground ml-2">({product.reviews} reviews)</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl font-bold text-primary">{productData.price}</span>
-                  <span className="text-xl text-muted-foreground line-through">{productData.originalPrice}</span>
-                  <Badge variant="destructive">27% OFF</Badge>
+                  <span className="text-3xl font-bold text-primary">${product.price}</span>
+                  {product.originalPrice && (
+                    <>
+                      <span className="text-xl text-muted-foreground line-through">${product.originalPrice}</span>
+                      <Badge variant="destructive">
+                        {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                      </Badge>
+                    </>
+                  )}
+                </div>
+
+                {/* Stock Status */}
+                <div className="mt-2">
+                  {product.stock > 0 ? (
+                    <Badge variant="outline" className="text-green-600 border-green-600">
+                      {product.stock} in stock
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">Out of stock</Badge>
+                  )}
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <p className="text-foreground/80 leading-relaxed">{productData.description}</p>
+                <p className="text-foreground/80 leading-relaxed">{product.description}</p>
               </div>
 
               {/* Features */}
               <div>
                 <h3 className="font-semibold mb-3">Features:</h3>
                 <ul className="space-y-2">
-                  {productData.features.map((feature, index) => (
+                  {product.features.map((feature: string, index: number) => (
                     <li key={index} className="flex items-center text-sm text-muted-foreground">
                       <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3" />
                       {feature}
@@ -157,40 +404,44 @@ export default function ProductDetail() {
               </div>
 
               {/* Color Selection */}
-              <div>
-                <h3 className="font-semibold mb-3">Color:</h3>
-                <div className="flex gap-3">
-                  {productData.colors.map((color, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedColor(index)}
-                      className={`w-12 h-12 rounded-full border-2 ${
-                        selectedColor === index ? 'border-primary' : 'border-muted'
-                      }`}
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
-                    />
-                  ))}
+              {product.colors && (
+                <div>
+                  <h3 className="font-semibold mb-3">Color:</h3>
+                  <div className="flex gap-3">
+                    {product.colors.map((color: any, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedColor(index)}
+                        className={`w-12 h-12 rounded-full border-2 ${
+                          selectedColor === index ? 'border-primary' : 'border-muted'
+                        }`}
+                        style={{ backgroundColor: color.value }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">{product.colors[selectedColor].name}</p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">{productData.colors[selectedColor].name}</p>
-              </div>
+              )}
 
               {/* Size Selection */}
-              <div>
-                <h3 className="font-semibold mb-3">Size:</h3>
-                <div className="grid grid-cols-6 gap-3">
-                  {productData.sizes.map((size) => (
-                    <Button
-                      key={size}
-                      variant={selectedSize === size ? "default" : "outline"}
-                      onClick={() => setSelectedSize(size)}
-                      className="aspect-square"
-                    >
-                      {size}
-                    </Button>
-                  ))}
+              {product.sizes && (
+                <div>
+                  <h3 className="font-semibold mb-3">Size:</h3>
+                  <div className="grid grid-cols-6 gap-3">
+                    {product.sizes.map((size: string) => (
+                      <Button
+                        key={size}
+                        variant={selectedSize === size ? "default" : "outline"}
+                        onClick={() => setSelectedSize(size)}
+                        className="aspect-square"
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Quantity */}
               <div>
@@ -200,25 +451,32 @@ export default function ProductDetail() {
                     variant="outline" 
                     size="sm"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
                   >
-                    -
+                    <Minus className="h-4 w-4" />
                   </Button>
                   <span className="w-12 text-center font-semibold">{quantity}</span>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => setQuantity(quantity + 1)}
+                    disabled={quantity >= product.stock}
                   >
-                    +
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
               {/* Add to Cart */}
               <div className="space-y-4">
-                <Button size="lg" className="w-full">
+                <Button 
+                  size="lg" 
+                  className="w-full"
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart - {productData.price}
+                  Add to Cart - ${(product.price * quantity).toFixed(2)}
                 </Button>
                 <Button variant="outline" size="lg" className="w-full">
                   Buy Now
@@ -243,11 +501,73 @@ export default function ProductDetail() {
             </motion.div>
           </div>
 
-          {/* Reviews Section */}
+          {/* You May Also Like Section */}
           <motion.section
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-20 space-y-8"
+          >
+            <h2 className="text-3xl font-bold">You May Also Like</h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {relatedProducts.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                  onMouseEnter={() => setHoveredRelated(item.id)}
+                  onMouseLeave={() => setHoveredRelated(null)}
+                >
+                  <Card className="group cursor-pointer hover:shadow-hero transition-all duration-300 overflow-hidden">
+                    <Link to={`/product/${item.id}`}>
+                      <div className="aspect-square overflow-hidden relative">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        
+                        {/* Hover Overlay */}
+                        <motion.div 
+                          className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: hoveredRelated === item.id ? 1 : 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </motion.div>
+                      </div>
+                      
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-2">{item.artist}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-primary">${item.price}</span>
+                          <div className="flex items-center">
+                            <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
+                            <span className="text-sm">{item.rating}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Link>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Reviews Section */}
+          <motion.section
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
             className="mt-20"
           >
             <h2 className="text-3xl font-bold mb-8">Customer Reviews</h2>
