@@ -9,6 +9,7 @@ import ArtistProfile from '@/pages/ArtistProfile';
 import ProductDetail from '@/pages/ProductDetail';
 import Checkout from '@/pages/Checkout';
 import Dashboard from '@/pages/Dashboard';
+import Admin from '@/pages/Admin';
 import SignUp from '@/pages/SignUp';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
