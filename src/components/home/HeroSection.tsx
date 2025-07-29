@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Play, ArrowRight, Star, TrendingUp, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import SearchBar from './SearchBar';
 const HeroSection = () => {
   return <section className="relative min-h-screen flex items-center justify-center bg-white text-black">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,6 +32,16 @@ const HeroSection = () => {
             </h1>
             
             <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">The ultimate platform for artists to co-create, sell, and monetize custom merchandise. Turn your creativity into a thriving business.</p>
+          </motion.div>
+
+          {/* Enhanced Search Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="mb-8"
+          >
+            <SearchBar />
           </motion.div>
 
           <motion.div initial={{

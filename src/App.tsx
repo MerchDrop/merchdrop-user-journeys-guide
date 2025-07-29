@@ -14,6 +14,9 @@ import Admin from '@/pages/Admin';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
 import Login from '@/pages/Login';
+import ArtistOnboarding from '@/pages/ArtistOnboarding';
+import MerchCreator from '@/pages/MerchCreator';
+import OrderTracking from '@/pages/OrderTracking';
 import NotFound from '@/pages/NotFound';
 
 function App() {
@@ -34,6 +37,9 @@ function App() {
             <Route path="/health" element={<HealthCheck />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<ArtistOnboarding />} />
+            <Route path="/create-merch" element={<MerchCreator />} />
+            <Route path="/order/:orderId" element={<OrderTracking />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
