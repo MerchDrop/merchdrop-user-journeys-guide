@@ -1,22 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Play, ArrowRight, Star, TrendingUp, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
 const HeroSection = () => {
-  return (
-    <section className="relative min-h-screen flex items-center justify-center bg-white text-black">
+  return <section className="relative min-h-screen flex items-center justify-center bg-white text-black">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mb-8"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.8
+        }} className="mb-8">
             <Badge variant="outline" className="mb-4 border-black text-black">
               <Sparkles className="h-4 w-4 mr-2" />
               New Platform Launch
@@ -30,18 +30,19 @@ const HeroSection = () => {
               Your Revenue.
             </h1>
             
-            <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              The ultimate platform for artists to create, sell, and monetize custom merchandise. 
-              Turn your creativity into a thriving business.
-            </p>
+            <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">The ultimate platform for artists to co-create, sell, and monetize custom merchandise. Turn your creativity into a thriving business.</p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.8,
+          delay: 0.2
+        }} className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" className="bg-black text-white hover:bg-gray-800 px-8 py-4 text-lg">
               Start Creating
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -52,12 +53,16 @@ const HeroSection = () => {
             </Button>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.8,
+          delay: 0.4
+        }} className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <Users className="h-5 w-5 text-black mr-2" />
@@ -82,8 +87,6 @@ const HeroSection = () => {
           </motion.div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;
