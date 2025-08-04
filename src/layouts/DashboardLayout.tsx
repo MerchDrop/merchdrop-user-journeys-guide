@@ -18,9 +18,11 @@ import { useState } from 'react';
 
 const sidebarItems = [
   { name: 'Overview', href: '/dashboard', icon: Home },
-  { name: 'Orders', href: '/dashboard/orders', icon: Package },
-  { name: 'Products', href: '/dashboard/products', icon: BarChart3 },
+  { name: 'My Products', href: '/dashboard/products', icon: Package },
+  { name: 'Orders', href: '/dashboard/orders', icon: BarChart3 },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Payouts', href: '/dashboard/payouts', icon: CreditCard },
+  { name: 'Profile', href: '/onboarding', icon: User },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

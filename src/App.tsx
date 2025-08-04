@@ -10,6 +10,9 @@ import ArtistProfile from '@/pages/ArtistProfile';
 import ProductDetail from '@/pages/ProductDetail';
 import Checkout from '@/pages/Checkout';
 import Dashboard from '@/pages/Dashboard';
+import ArtistProducts from '@/pages/artist/Products';
+import ArtistAnalytics from '@/pages/artist/Analytics';
+import ArtistSettings from '@/pages/artist/Settings';
 import Admin from '@/pages/Admin';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
@@ -32,8 +35,11 @@ function App() {
             <Route path="/artist/:slug" element={<ArtistProfile />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin" element={<Admin />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/products" element={<ArtistProducts />} />
+          <Route path="/dashboard/analytics" element={<ArtistAnalytics />} />
+          <Route path="/dashboard/settings" element={<ArtistSettings />} />
+          <Route path="/admin" element={<Admin />} />
             <Route path="/health" element={<HealthCheck />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
