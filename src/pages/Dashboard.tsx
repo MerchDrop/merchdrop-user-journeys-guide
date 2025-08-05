@@ -130,7 +130,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
@@ -157,7 +157,7 @@ export default function Dashboard() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {mockKpiData.map((kpi, index) => (
             <KpiCard
               key={kpi.title}
@@ -185,7 +185,7 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {mockGoals.map((goal, index) => (
                   <div key={goal.title} className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -205,7 +205,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <SalesChart data={mockSalesData} loading={loading} />
           <ProductPerformance data={mockProducts} loading={loading} />
         </div>
@@ -245,7 +245,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Recent Activity & Payouts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
