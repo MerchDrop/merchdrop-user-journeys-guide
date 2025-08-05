@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/context/CartContext';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
 import Cart from '@/pages/Cart';
@@ -13,6 +14,7 @@ import Dashboard from '@/pages/Dashboard';
 import ArtistProducts from '@/pages/artist/Products';
 import ArtistAnalytics from '@/pages/artist/Analytics';
 import ArtistSettings from '@/pages/artist/Settings';
+import ArtistOrders from '@/pages/artist/Orders';
 import Admin from '@/pages/Admin';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
@@ -25,7 +27,8 @@ import NotFound from '@/pages/NotFound';
 function App() {
   return (
     <HelmetProvider>
-      <CartProvider>
+      <CurrencyProvider>
+        <CartProvider>
         <Router>
         <div className="min-h-screen bg-background">
           <Routes>
@@ -39,6 +42,7 @@ function App() {
           <Route path="/dashboard/products" element={<ArtistProducts />} />
           <Route path="/dashboard/analytics" element={<ArtistAnalytics />} />
           <Route path="/dashboard/settings" element={<ArtistSettings />} />
+          <Route path="/dashboard/orders" element={<ArtistOrders />} />
           <Route path="/admin" element={<Admin />} />
             <Route path="/health" element={<HealthCheck />} />
             <Route path="/signup" element={<SignUp />} />
@@ -52,6 +56,7 @@ function App() {
         </div>
       </Router>
     </CartProvider>
+      </CurrencyProvider>
   </HelmetProvider>
   );
 }

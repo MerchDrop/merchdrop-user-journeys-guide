@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useCurrency } from './CurrencyContext';
 
 export interface CartItem {
   id: number;
@@ -20,6 +21,7 @@ interface CartContextType {
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  getFormattedTotalPrice: () => string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -38,6 +40,7 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const { formatPrice } = useCurrency();
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -108,6 +111,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return items.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
+  const getFormattedTotalPrice = () => {
+    return formatPrice(getTotalPrice());
+  };
+
   const value: CartContextType = {
     items,
     addItem,
@@ -115,7 +122,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     updateQuantity,
     clearCart,
     getTotalItems,
-    getTotalPrice
+    getTotalPrice,
+    getFormattedTotalPrice
   };
 
   return (

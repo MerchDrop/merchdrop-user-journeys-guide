@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
+import { useCurrency } from "@/context/CurrencyContext";
 import { Link } from "react-router-dom";
 import KpiCard from "@/components/dashboard/KpiCard";
 import SalesChart from "@/components/dashboard/SalesChart";
@@ -28,7 +29,7 @@ import PayoutsList from "@/components/dashboard/PayoutsList";
 const mockKpiData = [
   {
     title: "Total Revenue",
-    value: "$12,458",
+    value: 12458,
     change: "18.2%",
     trend: "up" as const,
     icon: DollarSign,
@@ -121,6 +122,7 @@ const mockGoals = [
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     // Simulate loading
@@ -162,7 +164,7 @@ export default function Dashboard() {
             <KpiCard
               key={kpi.title}
               title={kpi.title}
-              value={kpi.value}
+              value={kpi.title === "Total Revenue" ? formatPrice(kpi.value as number) : kpi.value.toString()}
               change={kpi.change}
               trend={kpi.trend}
               icon={kpi.icon}
@@ -193,10 +195,10 @@ export default function Dashboard() {
                       <span className="font-medium">{goal.progress}%</span>
                     </div>
                     <Progress value={goal.progress} className="h-2" />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>${goal.current.toLocaleString()}</span>
-                      <span>${goal.target.toLocaleString()}</span>
-                    </div>
+                     <div className="flex justify-between text-xs text-muted-foreground">
+                       <span>{formatPrice(goal.current)}</span>
+                       <span>{formatPrice(goal.target)}</span>
+                     </div>
                   </div>
                 ))}
               </div>
@@ -270,8 +272,8 @@ export default function Dashboard() {
                           <span>{order.date}</span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">${order.total}</p>
+                       <div className="text-right">
+                         <p className="font-medium">{formatPrice(order.total)}</p>
                         <Badge variant={
                           order.status === "delivered" ? "default" :
                           order.status === "shipped" ? "secondary" : 

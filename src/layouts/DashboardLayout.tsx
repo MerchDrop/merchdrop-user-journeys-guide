@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CurrencySelector } from '@/components/ui/currency-selector';
 import { useState } from 'react';
 
 const sidebarItems = [
@@ -177,6 +178,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center space-x-4">
+            <CurrencySelector />
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
+import { CurrencySelector } from '@/components/ui/currency-selector';
 import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
 
 const Header = () => {
@@ -48,6 +49,7 @@ const Header = () => {
                 </span>
               )}
             </Link>
+            <CurrencySelector />
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm" className="text-black hover:text-gray-600" asChild>
                 <Link to="/login">Login</Link>
@@ -103,6 +105,10 @@ const Header = () => {
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Cart ({getTotalItems()})
               </Link>
+              
+              <div className="py-2">
+                <CurrencySelector className="w-full" />
+              </div>
               
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                 <Button variant="ghost" className="text-black hover:text-gray-600" asChild>
