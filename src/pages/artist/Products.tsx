@@ -53,7 +53,7 @@ const mockProducts = [
   },
 ];
 
-export default function Products() {
+export default function ArtistProducts() {
   const [loading, setLoading] = useState(false);
 
   return (
