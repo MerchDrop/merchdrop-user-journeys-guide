@@ -6,6 +6,7 @@ import { CartProvider } from '@/context/CartContext';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
+import Artists from '@/pages/Artists';
 import Cart from '@/pages/Cart';
 import ArtistProfile from '@/pages/ArtistProfile';
 import ProductDetail from '@/pages/ProductDetail';
@@ -35,6 +36,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/artists" element={<Artists />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/artist/:slug" element={<ArtistProfile />} />
             <Route path="/product/:id" element={<ProductDetail />} />
