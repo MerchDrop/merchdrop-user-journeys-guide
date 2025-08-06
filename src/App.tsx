@@ -15,6 +15,7 @@ import ArtistProducts from '@/pages/artist/Products';
 import ArtistAnalytics from '@/pages/artist/Analytics';
 import ArtistSettings from '@/pages/artist/Settings';
 import ArtistOrders from '@/pages/artist/Orders';
+import ArtistPayouts from '@/pages/artist/Payouts';
 import Admin from '@/pages/Admin';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
@@ -43,6 +44,7 @@ function App() {
           <Route path="/dashboard/analytics" element={<ArtistAnalytics />} />
           <Route path="/dashboard/settings" element={<ArtistSettings />} />
           <Route path="/dashboard/orders" element={<ArtistOrders />} />
+          <Route path="/dashboard/payouts" element={<ArtistPayouts />} />
           <Route path="/admin" element={<Admin />} />
             <Route path="/health" element={<HealthCheck />} />
             <Route path="/signup" element={<SignUp />} />
