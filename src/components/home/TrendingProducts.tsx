@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingCart, Flame } from "lucide-react";
+import { useCurrency } from "@/context/CurrencyContext";
 
 const TrendingProducts = () => {
+  const { formatPrice } = useCurrency();
   const products = [
     {
       id: 1,
@@ -151,10 +153,10 @@ const TrendingProducts = () => {
 
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="font-bold text-lg">${product.price}</span>
+                    <span className="font-bold text-lg">{formatPrice(product.price)}</span>
                     {product.originalPrice && (
                       <span className="text-sm text-muted-foreground line-through">
-                        ${product.originalPrice}
+                        {formatPrice(product.originalPrice)}
                       </span>
                     )}
                   </div>

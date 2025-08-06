@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/context/CurrencyContext';
 
 // Mock data
 const mockProducts = [
@@ -72,6 +73,7 @@ const mockProducts = [
 
 const AdminProductTable = () => {
   const { toast } = useToast();
+  const { formatPrice } = useCurrency();
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -144,7 +146,7 @@ const AdminProductTable = () => {
                     </SelectContent>
                   </Select>
                 </TableCell>
-                <TableCell>${product.price}</TableCell>
+                <TableCell>{formatPrice(product.price)}</TableCell>
                 <TableCell>
                   <Badge variant={product.stock > 0 ? "default" : "destructive"}>
                     {product.stock}

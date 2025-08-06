@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditCard, Calendar } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Payout {
   id: string;
@@ -25,6 +26,7 @@ const statusVariants = {
 };
 
 export default function PayoutsList({ payouts, loading }: PayoutsListProps) {
+  const { formatPrice } = useCurrency();
   if (loading) {
     return (
       <Card>
@@ -77,7 +79,7 @@ export default function PayoutsList({ payouts, loading }: PayoutsListProps) {
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <span className="font-medium text-foreground">
-                      ${payout.amount.toFixed(2)}
+                      {formatPrice(payout.amount)}
                     </span>
                     <Badge 
                       variant="outline" 

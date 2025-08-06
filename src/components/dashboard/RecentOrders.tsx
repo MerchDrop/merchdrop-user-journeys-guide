@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Order {
   id: string;
@@ -35,6 +36,7 @@ const statusVariants = {
 };
 
 export default function RecentOrders({ orders, loading }: RecentOrdersProps) {
+  const { formatPrice } = useCurrency();
   if (loading) {
     return (
       <Card>
@@ -95,7 +97,7 @@ export default function RecentOrders({ orders, loading }: RecentOrdersProps) {
                   <TableCell className="font-medium">#{order.id}</TableCell>
                   <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                   <TableCell>{order.itemCount} items</TableCell>
-                  <TableCell>${order.total.toFixed(2)}</TableCell>
+                  <TableCell>{formatPrice(order.total)}</TableCell>
                   <TableCell>
                     <Badge 
                       variant="outline" 

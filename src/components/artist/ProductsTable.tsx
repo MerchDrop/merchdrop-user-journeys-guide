@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Product {
   id: string;
@@ -44,6 +45,7 @@ const statusColors = {
 } as const;
 
 export default function ProductsTable({ products, loading }: ProductsTableProps) {
+  const { formatPrice } = useCurrency();
   if (loading) {
     return (
       <Card>
@@ -122,9 +124,9 @@ export default function ProductsTable({ products, loading }: ProductsTableProps)
                       {product.status.replace('_', ' ')}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-medium">${product.price}</TableCell>
+                  <TableCell className="font-medium">{formatPrice(product.price)}</TableCell>
                   <TableCell>{product.sales}</TableCell>
-                  <TableCell className="font-medium">${product.revenue.toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">{formatPrice(product.revenue)}</TableCell>
                   <TableCell>
                     <span className={product.stock < 10 ? 'text-destructive' : ''}>
                       {product.stock}
