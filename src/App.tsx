@@ -25,6 +25,14 @@ import ArtistOnboarding from '@/pages/ArtistOnboarding';
 import MerchCreator from '@/pages/MerchCreator';
 import OrderTracking from '@/pages/OrderTracking';
 import NotFound from '@/pages/NotFound';
+import HowItWorksPage from '@/pages/HowItWorks';
+import Pricing from '@/pages/Pricing';
+import SuccessStories from '@/pages/SuccessStories';
+import Support from '@/pages/Support';
+import Shipping from '@/pages/Shipping';
+import Privacy from '@/pages/Privacy';
+import Terms from '@/pages/Terms';
+import Contact from '@/pages/Contact';
 
 function App() {
   return (
@@ -54,6 +62,14 @@ function App() {
             <Route path="/onboarding" element={<ArtistOnboarding />} />
             <Route path="/create-merch" element={<MerchCreator />} />
             <Route path="/order/:orderId" element={<OrderTracking />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/success-stories" element={<SuccessStories />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/shipping" element={<Shipping />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
