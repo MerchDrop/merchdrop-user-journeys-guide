@@ -7,6 +7,8 @@ import AdminProductTable from '@/components/admin/AdminProductTable';
 import FulfillmentBoard from '@/components/admin/FulfillmentBoard';
 import PlatformSalesReport from '@/components/admin/PlatformSalesReport';
 import AdminSettings from '@/components/admin/AdminSettings';
+import AdminOverview from '@/components/admin/AdminOverview';
+import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 const Admin = () => {
   // TODO: Add role-based access control here
@@ -17,14 +19,20 @@ const Admin = () => {
 
   return (
     <AdminLayout>
+      <SEOHelmet 
+        title="Admin Dashboard - Platform Management | MerchDrop"
+        description="Comprehensive admin dashboard for managing users, artists, products, and platform operations."
+        keywords="admin dashboard, platform management, user management, analytics"
+      />
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage platform operations and content</p>
+          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage platform operations and monitor performance</p>
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="artists">Artists</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
@@ -32,6 +40,10 @@ const Admin = () => {
             <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <AdminOverview />
+          </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
             <AdminUserTable />

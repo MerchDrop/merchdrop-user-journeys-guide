@@ -21,7 +21,8 @@ interface AdminLayoutProps {
 }
 
 const sidebarItems = [
-  { name: 'Users', href: '/admin', icon: Users },
+  { name: 'Overview', href: '/admin', icon: TrendingUp },
+  { name: 'Users', href: '/admin?tab=users', icon: Users },
   { name: 'Artists', href: '/admin?tab=artists', icon: Palette },
   { name: 'Products', href: '/admin?tab=products', icon: Package },
   { name: 'Orders', href: '/admin?tab=orders', icon: ShoppingCart },
