@@ -30,7 +30,12 @@ import {
   Server,
   HardDrive,
   Activity,
-  Clock
+  Clock,
+  Palette,
+  Languages,
+  Smartphone,
+  Link2,
+  Eye
 } from 'lucide-react';
 
 const AdminSettings = () => {
@@ -51,6 +56,588 @@ const AdminSettings = () => {
       </div>
 
       <div className="grid gap-6">
+        {/* App Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings2 className="h-5 w-5" />
+              App Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="app-name">App Name</Label>
+                <Input
+                  id="app-name"
+                  placeholder="MerchDrop"
+                  defaultValue="MerchDrop"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-version">App Version</Label>
+                <Input
+                  id="app-version"
+                  placeholder="1.0.0"
+                  defaultValue="1.0.0"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="app-tagline">App Tagline</Label>
+                <Input
+                  id="app-tagline"
+                  placeholder="Create, Sell, Succeed"
+                  defaultValue="Create, Sell, Succeed"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-url">Primary App URL</Label>
+                <Input
+                  id="app-url"
+                  placeholder="https://merchdrop.com"
+                  defaultValue="https://merchdrop.com"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="app-description">App Description</Label>
+              <Textarea
+                id="app-description"
+                placeholder="Enter app description..."
+                defaultValue="A marketplace connecting artists with customers for custom merchandise and creative designs."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contact-email">Contact Email</Label>
+                <Input
+                  id="contact-email"
+                  type="email"
+                  placeholder="contact@merchdrop.com"
+                  defaultValue="contact@merchdrop.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="support-email">Support Email</Label>
+                <Input
+                  id="support-email"
+                  type="email"
+                  placeholder="support@merchdrop.com"
+                  defaultValue="support@merchdrop.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="company-name">Company Name</Label>
+                <Input
+                  id="company-name"
+                  placeholder="MerchDrop Inc."
+                  defaultValue="MerchDrop Inc."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="company-address">Company Address</Label>
+                <Input
+                  id="company-address"
+                  placeholder="123 Business St, City, State 12345"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Branding & Theme */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Branding & Theme
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="logo-url">Logo URL</Label>
+                <Input
+                  id="logo-url"
+                  placeholder="https://your-cdn.com/logo.png"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="favicon-url">Favicon URL</Label>
+                <Input
+                  id="favicon-url"
+                  placeholder="https://your-cdn.com/favicon.ico"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="primary-color">Primary Brand Color</Label>
+                <Input
+                  id="primary-color"
+                  type="color"
+                  defaultValue="#3b82f6"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="secondary-color">Secondary Brand Color</Label>
+                <Input
+                  id="secondary-color"
+                  type="color"
+                  defaultValue="#10b981"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="default-theme">Default Theme</Label>
+              <Select defaultValue="light">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System Preference</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Allow Theme Switching</Label>
+                <p className="text-sm text-muted-foreground">
+                  Let users switch between light and dark themes
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="og-image">Social Share Image URL</Label>
+              <Input
+                id="og-image"
+                placeholder="https://your-cdn.com/og-image.jpg"
+                defaultValue=""
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Social Media & Links */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" />
+              Social Media & Links
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="facebook-url">Facebook URL</Label>
+                <Input
+                  id="facebook-url"
+                  placeholder="https://facebook.com/merchdrop"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="twitter-url">Twitter/X URL</Label>
+                <Input
+                  id="twitter-url"
+                  placeholder="https://twitter.com/merchdrop"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="instagram-url">Instagram URL</Label>
+                <Input
+                  id="instagram-url"
+                  placeholder="https://instagram.com/merchdrop"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="linkedin-url">LinkedIn URL</Label>
+                <Input
+                  id="linkedin-url"
+                  placeholder="https://linkedin.com/company/merchdrop"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="youtube-url">YouTube URL</Label>
+                <Input
+                  id="youtube-url"
+                  placeholder="https://youtube.com/@merchdrop"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tiktok-url">TikTok URL</Label>
+                <Input
+                  id="tiktok-url"
+                  placeholder="https://tiktok.com/@merchdrop"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="blog-url">Blog URL</Label>
+              <Input
+                id="blog-url"
+                placeholder="https://blog.merchdrop.com"
+                defaultValue=""
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Feature Toggles */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Feature Toggles
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>User Reviews & Ratings</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow users to review products and artists
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Wishlist Feature</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable product wishlist functionality
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Live Chat Support</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable live chat widget for customer support
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Social Login</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow login via Google, Facebook, etc.
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Multi-language Support</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable multiple language options
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Mobile App Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Send push notifications to mobile app users
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Newsletter Subscription</Label>
+                <p className="text-sm text-muted-foreground">
+                  Show newsletter signup options
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Localization */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              Localization
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="default-language">Default Language</Label>
+                <Select defaultValue="en">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Spanish</SelectItem>
+                    <SelectItem value="fr">French</SelectItem>
+                    <SelectItem value="de">German</SelectItem>
+                    <SelectItem value="it">Italian</SelectItem>
+                    <SelectItem value="pt">Portuguese</SelectItem>
+                    <SelectItem value="ja">Japanese</SelectItem>
+                    <SelectItem value="ko">Korean</SelectItem>
+                    <SelectItem value="zh">Chinese</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date-format">Date Format</Label>
+                <Select defaultValue="mm/dd/yyyy">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mm/dd/yyyy">MM/DD/YYYY</SelectItem>
+                    <SelectItem value="dd/mm/yyyy">DD/MM/YYYY</SelectItem>
+                    <SelectItem value="yyyy-mm-dd">YYYY-MM-DD</SelectItem>
+                    <SelectItem value="dd-mm-yyyy">DD-MM-YYYY</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="number-format">Number Format</Label>
+                <Select defaultValue="1,234.56">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1,234.56">1,234.56 (US)</SelectItem>
+                    <SelectItem value="1.234,56">1.234,56 (EU)</SelectItem>
+                    <SelectItem value="1 234,56">1 234,56 (FR)</SelectItem>
+                    <SelectItem value="1'234.56">1'234.56 (CH)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="first-day-week">First Day of Week</Label>
+                <Select defaultValue="sunday">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sunday">Sunday</SelectItem>
+                    <SelectItem value="monday">Monday</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supported-languages">Supported Languages</Label>
+              <Textarea
+                id="supported-languages"
+                placeholder="en, es, fr, de"
+                defaultValue="en, es, fr"
+                rows={2}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mobile App Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Smartphone className="h-5 w-5" />
+              Mobile App Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ios-app-url">iOS App Store URL</Label>
+                <Input
+                  id="ios-app-url"
+                  placeholder="https://apps.apple.com/app/merchdrop"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="android-app-url">Google Play Store URL</Label>
+                <Input
+                  id="android-app-url"
+                  placeholder="https://play.google.com/store/apps/details?id=com.merchdrop"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="app-version-ios">iOS App Version</Label>
+                <Input
+                  id="app-version-ios"
+                  placeholder="1.0.0"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-version-android">Android App Version</Label>
+                <Input
+                  id="app-version-android"
+                  placeholder="1.0.0"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Force App Update</Label>
+                <p className="text-sm text-muted-foreground">
+                  Force users to update to the latest app version
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Show App Download Banner</Label>
+                <p className="text-sm text-muted-foreground">
+                  Show mobile app download banner on web
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="app-banner-text">App Banner Text</Label>
+              <Input
+                id="app-banner-text"
+                placeholder="Get our mobile app for the best experience!"
+                defaultValue="Get our mobile app for the best experience!"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Legal & Compliance */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Legal & Compliance
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="privacy-policy-url">Privacy Policy URL</Label>
+                <Input
+                  id="privacy-policy-url"
+                  placeholder="/privacy"
+                  defaultValue="/privacy"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="terms-of-service-url">Terms of Service URL</Label>
+                <Input
+                  id="terms-of-service-url"
+                  placeholder="/terms"
+                  defaultValue="/terms"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cookie-policy-url">Cookie Policy URL</Label>
+                <Input
+                  id="cookie-policy-url"
+                  placeholder="/cookies"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gdpr-contact">GDPR Contact Email</Label>
+                <Input
+                  id="gdpr-contact"
+                  type="email"
+                  placeholder="privacy@merchdrop.com"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Cookie Consent Banner</Label>
+                <p className="text-sm text-muted-foreground">
+                  Show cookie consent banner for GDPR compliance
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Age Verification</Label>
+                <p className="text-sm text-muted-foreground">
+                  Require age verification for new accounts
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="copyright-notice">Copyright Notice</Label>
+              <Input
+                id="copyright-notice"
+                placeholder="© 2024 MerchDrop Inc. All rights reserved."
+                defaultValue="© 2024 MerchDrop Inc. All rights reserved."
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Payment Gateway Settings */}
         <Card>
           <CardHeader>
