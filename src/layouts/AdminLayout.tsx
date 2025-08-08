@@ -33,6 +33,11 @@ const sidebarItems = [
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  
+  const getActiveTab = () => {
+    const searchParams = new URLSearchParams(location.search);
+    return searchParams.get('tab') || 'overview';
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -66,7 +71,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
-                  location.pathname === item.href && "bg-accent text-accent-foreground"
+                  (item.href === '/admin' && getActiveTab() === 'overview') ||
+                  (item.href.includes('tab=') && item.href.includes(getActiveTab())) 
+                    ? "bg-accent text-accent-foreground" 
+                    : ""
                 )}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
