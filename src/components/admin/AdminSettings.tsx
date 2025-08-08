@@ -14,7 +14,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Truck, Gift, Shield } from 'lucide-react';
+import { 
+  CreditCard, 
+  Truck, 
+  Gift, 
+  Shield, 
+  Mail, 
+  Globe, 
+  Database, 
+  Bell,
+  Settings2,
+  BarChart3,
+  Image,
+  FileText
+} from 'lucide-react';
 
 const AdminSettings = () => {
   const { toast } = useToast();
@@ -234,6 +247,390 @@ International shipping: 10-14 business days"
                   <SelectItem value="480">8 hours</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Email & Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Email & Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="smtp-host">SMTP Host</Label>
+                <Input
+                  id="smtp-host"
+                  placeholder="smtp.gmail.com"
+                  defaultValue="smtp.gmail.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="smtp-port">SMTP Port</Label>
+                <Input
+                  id="smtp-port"
+                  type="number"
+                  placeholder="587"
+                  defaultValue="587"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="smtp-user">SMTP Username</Label>
+                <Input
+                  id="smtp-user"
+                  placeholder="noreply@yourplatform.com"
+                  defaultValue="noreply@yourplatform.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="smtp-pass">SMTP Password</Label>
+                <Input
+                  id="smtp-pass"
+                  type="password"
+                  placeholder="App password..."
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Order Confirmation Emails</Label>
+                <p className="text-sm text-muted-foreground">
+                  Send automatic order confirmations
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Artist Application Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Notify admins of new artist applications
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Weekly Reports</Label>
+                <p className="text-sm text-muted-foreground">
+                  Send weekly performance reports
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Platform Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Platform Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="platform-name">Platform Name</Label>
+                <Input
+                  id="platform-name"
+                  placeholder="MerchDrop"
+                  defaultValue="MerchDrop"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="platform-url">Platform URL</Label>
+                <Input
+                  id="platform-url"
+                  placeholder="https://merchdrop.com"
+                  defaultValue="https://merchdrop.com"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="platform-description">Platform Description</Label>
+              <Textarea
+                id="platform-description"
+                placeholder="Enter platform description..."
+                defaultValue="A marketplace connecting artists with customers for custom merchandise"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="default-currency">Default Currency</Label>
+                <Select defaultValue="USD">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD - US Dollar</SelectItem>
+                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                    <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                    <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                    <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timezone">Default Timezone</Label>
+                <Select defaultValue="UTC">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UTC">UTC</SelectItem>
+                    <SelectItem value="EST">EST - Eastern Time</SelectItem>
+                    <SelectItem value="PST">PST - Pacific Time</SelectItem>
+                    <SelectItem value="GMT">GMT - Greenwich Mean Time</SelectItem>
+                    <SelectItem value="CET">CET - Central European Time</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Maintenance Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                  Put platform in maintenance mode
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Artist Registration</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow new artist registrations
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Content Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Content Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="max-file-size">Max Upload Size (MB)</Label>
+                <Input
+                  id="max-file-size"
+                  type="number"
+                  placeholder="10"
+                  defaultValue="10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="allowed-formats">Allowed File Formats</Label>
+                <Input
+                  id="allowed-formats"
+                  placeholder="jpg, png, svg, pdf"
+                  defaultValue="jpg, png, svg, pdf"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto Image Compression</Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically compress uploaded images
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Content Moderation</Label>
+                <p className="text-sm text-muted-foreground">
+                  Require admin approval for new content
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="content-guidelines">Content Guidelines</Label>
+              <Textarea
+                id="content-guidelines"
+                placeholder="Enter content guidelines..."
+                defaultValue="- No offensive or inappropriate content
+- Original artwork only
+- High-quality images required
+- Proper attribution for collaborative work"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* API & Integrations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              API & Integrations
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="api-rate-limit">API Rate Limit (per minute)</Label>
+                <Input
+                  id="api-rate-limit"
+                  type="number"
+                  placeholder="100"
+                  defaultValue="100"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="webhook-timeout">Webhook Timeout (seconds)</Label>
+                <Input
+                  id="webhook-timeout"
+                  type="number"
+                  placeholder="30"
+                  defaultValue="30"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cors-origins">CORS Allowed Origins</Label>
+              <Textarea
+                id="cors-origins"
+                placeholder="https://yourapp.com, https://app.yourplatform.com"
+                defaultValue="https://yourapp.com, https://app.yourplatform.com"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>API Documentation Public</Label>
+                <p className="text-sm text-muted-foreground">
+                  Make API documentation publicly accessible
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="analytics-key">Google Analytics ID</Label>
+                <Input
+                  id="analytics-key"
+                  placeholder="GA-XXXXXXXXX-X"
+                  defaultValue=""
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="facebook-pixel">Facebook Pixel ID</Label>
+                <Input
+                  id="facebook-pixel"
+                  placeholder="123456789012345"
+                  defaultValue=""
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Advanced Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings2 className="h-5 w-5" />
+              Advanced Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cache-duration">Cache Duration (hours)</Label>
+                <Input
+                  id="cache-duration"
+                  type="number"
+                  placeholder="24"
+                  defaultValue="24"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="backup-frequency">Backup Frequency</Label>
+                <Select defaultValue="daily">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">Hourly</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Debug Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable detailed logging and error reporting
+                </p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Performance Monitoring</Label>
+                <p className="text-sm text-muted-foreground">
+                  Track platform performance metrics
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="custom-css">Custom CSS</Label>
+              <Textarea
+                id="custom-css"
+                placeholder="/* Add custom CSS here */"
+                className="font-mono text-sm"
+                rows={4}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="custom-js">Custom JavaScript</Label>
+              <Textarea
+                id="custom-js"
+                placeholder="// Add custom JavaScript here"
+                className="font-mono text-sm"
+                rows={4}
+              />
             </div>
           </CardContent>
         </Card>
