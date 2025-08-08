@@ -26,7 +26,11 @@ import {
   Settings2,
   BarChart3,
   Image,
-  FileText
+  FileText,
+  Server,
+  HardDrive,
+  Activity,
+  Clock
 } from 'lucide-react';
 
 const AdminSettings = () => {
@@ -631,6 +635,438 @@ International shipping: 10-14 business days"
                 className="font-mono text-sm"
                 rows={4}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Database Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Database Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="max-connections">Max Connections</Label>
+                <Input
+                  id="max-connections"
+                  type="number"
+                  placeholder="100"
+                  defaultValue="100"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="connection-timeout">Connection Timeout (seconds)</Label>
+                <Input
+                  id="connection-timeout"
+                  type="number"
+                  placeholder="30"
+                  defaultValue="30"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="query-timeout">Query Timeout (seconds)</Label>
+                <Input
+                  id="query-timeout"
+                  type="number"
+                  placeholder="60"
+                  defaultValue="60"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="statement-timeout">Statement Timeout (seconds)</Label>
+                <Input
+                  id="statement-timeout"
+                  type="number"
+                  placeholder="30"
+                  defaultValue="30"
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Row Level Security (RLS)</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable RLS for all new tables by default
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Audit Logging</Label>
+                <p className="text-sm text-muted-foreground">
+                  Log all database operations for compliance
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Query Performance Insights</Label>
+                <p className="text-sm text-muted-foreground">
+                  Monitor and analyze slow queries
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Backup & Recovery */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HardDrive className="h-5 w-5" />
+              Backup & Recovery
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="backup-schedule">Backup Schedule</Label>
+                <Select defaultValue="daily">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="realtime">Real-time</SelectItem>
+                    <SelectItem value="hourly">Every Hour</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="backup-retention">Retention Period (days)</Label>
+                <Input
+                  id="backup-retention"
+                  type="number"
+                  placeholder="30"
+                  defaultValue="30"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="backup-location">Backup Storage Location</Label>
+                <Select defaultValue="s3">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="local">Local Storage</SelectItem>
+                    <SelectItem value="s3">Amazon S3</SelectItem>
+                    <SelectItem value="gcs">Google Cloud Storage</SelectItem>
+                    <SelectItem value="azure">Azure Blob Storage</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="backup-compression">Compression Level</Label>
+                <Select defaultValue="medium">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Point-in-Time Recovery</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable continuous backup for recovery
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Backup Encryption</Label>
+                <p className="text-sm text-muted-foreground">
+                  Encrypt backup files at rest
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Performance Monitoring */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Performance Monitoring
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="slow-query-threshold">Slow Query Threshold (ms)</Label>
+                <Input
+                  id="slow-query-threshold"
+                  type="number"
+                  placeholder="1000"
+                  defaultValue="1000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="metrics-retention">Metrics Retention (days)</Label>
+                <Input
+                  id="metrics-retention"
+                  type="number"
+                  placeholder="90"
+                  defaultValue="90"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cpu-alert-threshold">CPU Alert Threshold (%)</Label>
+                <Input
+                  id="cpu-alert-threshold"
+                  type="number"
+                  placeholder="80"
+                  defaultValue="80"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="memory-alert-threshold">Memory Alert Threshold (%)</Label>
+                <Input
+                  id="memory-alert-threshold"
+                  type="number"
+                  placeholder="85"
+                  defaultValue="85"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Real-time Monitoring</Label>
+                <p className="text-sm text-muted-foreground">
+                  Monitor database performance in real-time
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Index Usage Analytics</Label>
+                <p className="text-sm text-muted-foreground">
+                  Track index usage and optimization suggestions
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Query Plan Caching</Label>
+                <p className="text-sm text-muted-foreground">
+                  Cache execution plans for faster queries
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Storage Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Server className="h-5 w-5" />
+              Storage Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="storage-limit">Storage Limit (GB)</Label>
+                <Input
+                  id="storage-limit"
+                  type="number"
+                  placeholder="500"
+                  defaultValue="500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="storage-alert-threshold">Storage Alert Threshold (%)</Label>
+                <Input
+                  id="storage-alert-threshold"
+                  type="number"
+                  placeholder="90"
+                  defaultValue="90"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="auto-vacuum-scale">Auto Vacuum Scale Factor</Label>
+                <Input
+                  id="auto-vacuum-scale"
+                  type="number"
+                  step="0.1"
+                  placeholder="0.2"
+                  defaultValue="0.2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="vacuum-cost-delay">Vacuum Cost Delay (ms)</Label>
+                <Input
+                  id="vacuum-cost-delay"
+                  type="number"
+                  placeholder="20"
+                  defaultValue="20"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto Vacuum</Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically clean up dead tuples
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Table Statistics Auto-update</Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically update table statistics for better query plans
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maintenance-window">Maintenance Window</Label>
+              <Select defaultValue="sunday-2am">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sunday-2am">Sunday 2:00 AM</SelectItem>
+                  <SelectItem value="saturday-3am">Saturday 3:00 AM</SelectItem>
+                  <SelectItem value="daily-3am">Daily 3:00 AM</SelectItem>
+                  <SelectItem value="custom">Custom Schedule</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Connection Pooling */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Connection Pooling
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pool-size">Pool Size</Label>
+                <Input
+                  id="pool-size"
+                  type="number"
+                  placeholder="20"
+                  defaultValue="20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="max-overflow">Max Overflow</Label>
+                <Input
+                  id="max-overflow"
+                  type="number"
+                  placeholder="30"
+                  defaultValue="30"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pool-timeout">Pool Timeout (seconds)</Label>
+                <Input
+                  id="pool-timeout"
+                  type="number"
+                  placeholder="30"
+                  defaultValue="30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pool-recycle">Pool Recycle (seconds)</Label>
+                <Input
+                  id="pool-recycle"
+                  type="number"
+                  placeholder="3600"
+                  defaultValue="3600"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pooling-mode">Pooling Mode</Label>
+              <Select defaultValue="transaction">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="session">Session</SelectItem>
+                  <SelectItem value="transaction">Transaction</SelectItem>
+                  <SelectItem value="statement">Statement</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Connection Pool Monitoring</Label>
+                <p className="text-sm text-muted-foreground">
+                  Monitor connection pool usage and performance
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Pool Pre-ping</Label>
+                <p className="text-sm text-muted-foreground">
+                  Test connections before use
+                </p>
+              </div>
+              <Switch defaultChecked />
             </div>
           </CardContent>
         </Card>
