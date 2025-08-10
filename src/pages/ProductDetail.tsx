@@ -11,65 +11,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
-// Mock product database
-const mockProducts = {
-  1: {
-    id: 1,
-    name: "Midnight Vibes Hoodie",
-    artist: "Luna Rivers",
-    price: 55,
-    originalPrice: 75,
-    rating: 4.9,
-    reviews: 234,
-    description: "Immerse yourself in the ethereal world of Luna Rivers with this premium hoodie. Featuring her signature Midnight Vibes artwork, this piece combines comfort with artistic expression. Made with sustainable materials and ethically sourced cotton.",
-    features: [
-      "100% premium cotton blend",
-      "Unisex fit for all body types", 
-      "Eco-friendly water-based inks",
-      "Pre-shrunk for lasting fit",
-      "Kangaroo pocket design"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=600&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=600&h=600&fit=crop&auto=format"
-    ],
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-    colors: [
-      { name: "Midnight Black", value: "#1a1a1a" },
-      { name: "Deep Purple", value: "#6b46c1" },
-      { name: "Ocean Blue", value: "#0ea5e9" }
-    ],
-    stock: 24,
-    category: "Hoodies"
-  },
-  2: {
-    id: 2,
-    name: "Ethereal Dreams Tee",
-    artist: "Luna Rivers",
-    price: 35,
-    rating: 4.8,
-    reviews: 156,
-    description: "Soft cotton tee with dreamy graphic design. Ultra-comfortable fit perfect for everyday wear.",
-    features: [
-      "100% Cotton",
-      "Pre-shrunk", 
-      "Machine Washable"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=600&h=600&fit=crop&auto=format"
-    ],
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: [
-      { name: "White", value: "#ffffff" },
-      { name: "Black", value: "#000000" },
-      { name: "Vintage Gray", value: "#9ca3af" }
-    ],
-    stock: 45,
-    category: "T-Shirts"
-  }
+import { supabase } from '@/integrations/supabase/client';
+
+type UiProduct = {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  rating?: number;
+  reviews?: number;
+  description?: string;
+  features?: string[];
+  images: string[];
+  sizes?: string[];
+  colors?: { name: string; value: string }[];
+  stock: number;
+  category?: string;
 };
+
 
 // Related products for "You May Also Like"
 const relatedProducts = [
@@ -146,19 +105,46 @@ export default function ProductDetail() {
   const [isLiked, setIsLiked] = useState(false);
   const [hoveredRelated, setHoveredRelated] = useState<number | null>(null);
 
-  // Simulate API call with loading
+  // Load from Supabase
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const productId = parseInt(id || '1', 10);
-      const foundProduct = mockProducts[productId as keyof typeof mockProducts];
-      if (foundProduct) {
-        setProduct(foundProduct);
-        setSelectedSize(foundProduct.sizes[0]);
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      const productId = id as string;
+      if (!productId) { if (isMounted) setIsLoading(false); return; }
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, title, description, price_cents, currency, stock, main_image_url, product_images(url, sort_order)')
+        .eq('id', productId)
+        .maybeSingle();
+      if (!error && data && isMounted) {
+        const imageList = [
+          ...(data.main_image_url ? [data.main_image_url] : []),
+          ...(((data as any).product_images as any[] | undefined)?.sort((a,b)=> (a.sort_order ?? 0)-(b.sort_order ?? 0)).map((i)=> i.url) || [])
+        ];
+        const mapped: any = {
+          id: data.id,
+          name: (data as any).title,
+          price: ((data as any).price_cents ?? 0) / 100,
+          description: (data as any).description ?? '',
+          features: [],
+          images: imageList.length ? imageList : ['/placeholder.svg'],
+          stock: (data as any).stock ?? 0,
+          rating: 0,
+          reviews: 0,
+        };
+        setProduct(mapped);
+        if (mapped.sizes && mapped.sizes.length > 0) {
+          setSelectedSize(mapped.sizes[0]);
+        }
+      } else {
+        console.error('Error loading product', error);
+        if (isMounted) setProduct(null);
       }
-      setIsLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
+      if (isMounted) setIsLoading(false);
+    };
+    load();
+    return () => { isMounted = false; };
   }, [id]);
 
   const handleAddToCart = () => {
@@ -170,8 +156,8 @@ export default function ProductDetail() {
       artist: product.artist,
       price: product.price,
       image: product.images[0],
-      size: selectedSize,
-      color: product.colors[selectedColor].name
+      size: selectedSize || undefined,
+      color: product.colors ? product.colors[selectedColor]?.name : undefined
     }, quantity);
 
     toast({
@@ -333,9 +319,12 @@ export default function ProductDetail() {
               {/* Header */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Link to={`/artist/${product.artist.toLowerCase().replace(' ', '-')}`}>
-                    <Badge variant="secondary" className="mb-2 hover:bg-secondary/80">By {product.artist}</Badge>
-                  </Link>
+                  {product.artist ? (
+                    <Link to={`/artist/${product.artist.toLowerCase().replace(' ', '-')}`}>
+                      <Badge variant="secondary" className="mb-2 hover:bg-secondary/80">By {product.artist}</Badge>
+                    </Link>
+                  ) : null}
+
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"

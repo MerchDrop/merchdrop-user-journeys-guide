@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -8,102 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Search, Filter, ShoppingCart, Star, Flame, Tag } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const products = [
-  {
-    id: 1,
-    name: "Midnight Dreams Canvas",
-    artist: "Luna Artist",
-    price: 89.99,
-    originalPrice: 129.99,
-    image: "/placeholder.svg",
-    rating: 4.8,
-    reviews: 234,
-    likes: 1200,
-    sales: 456,
-    trending: true,
-    onSale: true,
-    category: "Canvas",
-    tags: ["Abstract", "Dark", "Modern"]
-  },
-  {
-    id: 2,
-    name: "Abstract Symphony",
-    artist: "Neo Creator",
-    price: 124.99,
-    image: "/placeholder.svg",
-    rating: 4.9,
-    reviews: 189,
-    likes: 892,
-    sales: 321,
-    trending: true,
-    onSale: false,
-    category: "Print",
-    tags: ["Abstract", "Colorful", "Music"]
-  },
-  {
-    id: 3,
-    name: "Urban Vibes Collection",
-    artist: "Street Vision",
-    price: 67.99,
-    originalPrice: 89.99,
-    image: "/placeholder.svg",
-    rating: 4.7,
-    reviews: 156,
-    likes: 743,
-    sales: 287,
-    trending: false,
-    onSale: true,
-    category: "Digital",
-    tags: ["Urban", "Street", "Bold"]
-  },
-  {
-    id: 4,
-    name: "Serene Landscape",
-    artist: "Nature Soul",
-    price: 156.99,
-    image: "/placeholder.svg",
-    rating: 4.9,
-    reviews: 298,
-    likes: 1456,
-    sales: 567,
-    trending: false,
-    onSale: false,
-    category: "Canvas",
-    tags: ["Nature", "Peaceful", "Landscape"]
-  },
-  {
-    id: 5,
-    name: "Digital Fusion",
-    artist: "Tech Artist",
-    price: 99.99,
-    originalPrice: 139.99,
-    image: "/placeholder.svg",
-    rating: 4.6,
-    reviews: 167,
-    likes: 634,
-    sales: 234,
-    trending: true,
-    onSale: true,
-    category: "Digital",
-    tags: ["Tech", "Futuristic", "Neon"]
-  },
-  {
-    id: 6,
-    name: "Classic Portrait",
-    artist: "Vintage Master",
-    price: 234.99,
-    image: "/placeholder.svg",
-    rating: 4.8,
-    reviews: 345,
-    likes: 987,
-    sales: 123,
-    trending: false,
-    onSale: false,
-    category: "Portrait",
-    tags: ["Classic", "Portrait", "Vintage"]
-  }
-];
+type UiProduct = {
+  id: string;
+  name: string;
+  artist?: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating?: number;
+  reviews?: number;
+  likes?: number;
+  sales?: number;
+  trending?: boolean;
+  onSale?: boolean;
+  category?: string;
+  tags?: string[];
+  publishedAt?: string | null;
+};
 
 const categories = ["All", "Canvas", "Print", "Digital", "Portrait"];
 const sortOptions = [
@@ -115,14 +38,49 @@ const sortOptions = [
 ];
 
 export default function Products() {
+  const [products, setProducts] = useState<UiProduct[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    const load = async () => {
+      setLoadingData(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, slug, title, description, price_cents, currency, stock, main_image_url, published_at, status')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      if (!error && data) {
+        const mapped: UiProduct[] = data.map((p: any) => ({
+          id: p.id,
+          name: p.title,
+          price: (p.price_cents ?? 0) / 100,
+          image: p.main_image_url || '/placeholder.svg',
+          rating: undefined,
+          reviews: 0,
+          likes: 0,
+          sales: 0,
+          trending: false,
+          onSale: false,
+          category: undefined,
+          tags: [],
+          publishedAt: p.published_at ?? null,
+        }));
+        setProducts(mapped);
+      } else {
+        console.error('Error loading products', error);
+        setProducts([]);
+      }
+      setLoadingData(false);
+    };
+    load();
+  }, []);
+
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.artist.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -134,11 +92,11 @@ export default function Products() {
       case 'price-high':
         return b.price - a.price;
       case 'rating':
-        return b.rating - a.rating;
+        return (b.rating ?? 0) - (a.rating ?? 0);
       case 'newest':
-        return b.id - a.id;
+        return new Date(b.publishedAt ?? 0).getTime() - new Date(a.publishedAt ?? 0).getTime();
       default:
-        return b.trending ? 1 : -1;
+        return (b.trending ? 1 : 0) - (a.trending ? 1 : 0);
     }
   });
 
@@ -261,12 +219,14 @@ export default function Products() {
 
                 <CardContent className="p-4">
                   {/* Artist */}
-                  <Link 
-                    to={`/artist/${product.artist.toLowerCase().replace(' ', '-')}`}
-                    className="text-sm text-gray-600 hover:text-black transition-colors"
-                  >
-                    {product.artist}
-                  </Link>
+                  {product.artist ? (
+                    <Link 
+                      to={`/artist/${product.artist.toLowerCase().replace(' ', '-')}`}
+                      className="text-sm text-gray-600 hover:text-black transition-colors"
+                    >
+                      {product.artist}
+                    </Link>
+                  ) : null}
 
                   {/* Product Name */}
                   <Link to={`/product/${product.id}`}>
