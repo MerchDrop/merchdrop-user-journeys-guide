@@ -53,15 +53,6 @@ export default function Checkout() {
     { number: 3, title: "Complete", icon: Check }
   ];
 
-  // Paystack configuration
-  const paystackConfig = {
-    reference: new Date().getTime().toString(),
-    email: formData.email,
-    amount: Math.round(total * 100), // Convert to kobo for NGN or cents for USD
-    currency: currency,
-    publicKey: "pk_test_dcBcopgQ8gJyrVz0JzSCguKF", // Replace with your Paystack public key
-  };
-
   const handlePaystackSuccess = async (reference: any) => {
     setIsProcessing(true);
     try {
@@ -120,6 +111,15 @@ export default function Checkout() {
       description: "Your payment was cancelled. You can try again.",
       variant: "destructive",
     });
+  };
+
+  // Paystack configuration
+  const paystackConfig = {
+    reference: new Date().getTime().toString(),
+    email: formData.email,
+    amount: Math.round(total * 100), // Convert to kobo for NGN or cents for USD
+    currency: currency,
+    publicKey: "pk_test_dcBcopgQ8gJyrVz0JzSCguKF", // Replace with your Paystack public key
   };
 
   const initializePayment = usePaystackPayment(paystackConfig);
@@ -305,7 +305,10 @@ export default function Checkout() {
                       </Button>
                       <Button 
                          onClick={() => {
-                           initializePayment(handlePaystackSuccess, handlePaystackClose);
+                           initializePayment({ 
+                             onSuccess: handlePaystackSuccess, 
+                             onClose: handlePaystackClose 
+                           });
                          }}
                         className="flex-1"
                         size="lg"
