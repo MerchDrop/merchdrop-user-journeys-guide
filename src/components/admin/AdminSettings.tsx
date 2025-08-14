@@ -638,23 +638,53 @@ const AdminSettings = () => {
           </CardContent>
         </Card>
 
-        {/* Payment Gateway Settings */}
+        {/* API Keys & Integrations */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              Payment Gateways
+              API Keys & Payment Configuration
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="stripe-key">Stripe Secret Key</Label>
+                <Label htmlFor="paystack-public-key">Paystack Public Key</Label>
                 <Input
-                  id="stripe-key"
+                  id="paystack-public-key"
+                  placeholder="pk_test_..."
+                  defaultValue=""
+                  type="text"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="paystack-secret-key">Paystack Secret Key</Label>
+                <Input
+                  id="paystack-secret-key"
+                  placeholder="sk_test_..."
+                  defaultValue=""
                   type="password"
-                  placeholder="sk_live_..."
-                  defaultValue="sk_live_************************************"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="stripe-public-key">Stripe Public Key</Label>
+                <Input
+                  id="stripe-public-key"
+                  placeholder="pk_test_..."
+                  defaultValue=""
+                  type="text"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stripe-secret-key">Stripe Secret Key</Label>
+                <Input
+                  id="stripe-secret-key"
+                  placeholder="sk_test_..."
+                  defaultValue=""
+                  type="password"
                 />
               </div>
               <div className="space-y-2">
