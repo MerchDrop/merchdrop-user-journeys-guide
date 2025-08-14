@@ -9,9 +9,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="text-2xl font-bold text-black mb-4">
-              MerchDrop
-            </div>
+            <img 
+              src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+              alt="MerchDrop" 
+              className="h-8 w-auto mb-4"
+            />
             <p className="text-gray-600 mb-6 max-w-md">
               The ultimate platform for artists to create, sell, and monetize custom merchandise. 
               Turn your creativity into a thriving business.
