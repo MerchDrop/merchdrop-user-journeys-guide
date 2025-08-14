@@ -27,14 +27,27 @@ const ArtistAuth = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('ArtistAuth: user:', user, 'loading:', loading, 'isArtist:', isArtist);
     if (user && !loading) {
       if (isArtist) {
+        console.log('Redirecting to dashboard');
         navigate('/dashboard', { replace: true });
       } else {
+        console.log('Redirecting to home');
         navigate('/', { replace: true });
       }
     }
   }, [user, loading, navigate, isArtist]);
+
+  // Show loading while auth is initializing
+  if (loading) {
+    console.log('ArtistAuth: Still loading...');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -112,13 +125,13 @@ const ArtistAuth = () => {
             </Link>
           </Button>
 
-          <Card className="shadow-hero">
+          <Card className="shadow-lg">
             <CardHeader className="text-center">
               <div className="flex items-center justify-center mb-4">
                 <Palette className="w-8 h-8 text-primary" />
               </div>
               <CardTitle className="text-2xl font-bold">
-                {isSignUp ? "Start Your" : "Welcome"} <span className="bg-hero-gradient bg-clip-text text-transparent">Creator Journey</span>
+                {isSignUp ? "Start Your" : "Welcome"} <span className="text-accent">Creator Journey</span>
               </CardTitle>
               <CardDescription>
                 {isSignUp 
