@@ -1,6 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { AuthProvider } from '@/context/AuthContext';
+import { CurrencyProvider } from '@/context/CurrencyContext';
+import { CartProvider } from '@/context/CartContext';
+import { Toaster } from '@/components/ui/toaster';
 import Auth from '@/pages/Auth';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
@@ -35,40 +39,47 @@ import Contact from '@/pages/Contact';
 function App() {
   return (
     <HelmetProvider>
-      <div className="min-h-screen bg-background">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/artists" element={<Artists />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/artist/:slug" element={<ArtistProfile />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/products" element={<ArtistProducts />} />
-          <Route path="/dashboard/analytics" element={<ArtistAnalytics />} />
-          <Route path="/dashboard/settings" element={<ArtistSettings />} />
-          <Route path="/dashboard/orders" element={<ArtistOrders />} />
-          <Route path="/dashboard/payouts" element={<ArtistPayouts />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/health" element={<HealthCheck />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding" element={<ArtistOnboarding />} />
-          <Route path="/create-merch" element={<MerchCreator />} />
-          <Route path="/order/:orderId" element={<OrderTracking />} />
-          <Route path="/how-it-works" element={<HowItWorksPage />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/success-stories" element={<SuccessStories />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/shipping" element={<Shipping />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <CurrencyProvider>
+          <CartProvider>
+            <div className="min-h-screen bg-background">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/artists" element={<Artists />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/artist/:slug" element={<ArtistProfile />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/products" element={<ArtistProducts />} />
+                <Route path="/dashboard/analytics" element={<ArtistAnalytics />} />
+                <Route path="/dashboard/settings" element={<ArtistSettings />} />
+                <Route path="/dashboard/orders" element={<ArtistOrders />} />
+                <Route path="/dashboard/payouts" element={<ArtistPayouts />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/health" element={<HealthCheck />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/onboarding" element={<ArtistOnboarding />} />
+                <Route path="/create-merch" element={<MerchCreator />} />
+                <Route path="/order/:orderId" element={<OrderTracking />} />
+                <Route path="/how-it-works" element={<HowItWorksPage />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/success-stories" element={<SuccessStories />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/shipping" element={<Shipping />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <Toaster />
+          </CartProvider>
+        </CurrencyProvider>
+      </AuthProvider>
     </HelmetProvider>
   );
 }
