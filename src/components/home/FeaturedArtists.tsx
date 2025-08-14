@@ -53,23 +53,26 @@ const FeaturedArtists = () => {
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
   return (
-    <section className="py-20 bg-gray-50 text-black" ref={ref}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 lg:py-32 bg-secondary/30" ref={ref}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-16 lg:mb-20"
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-black">
+          <h2 className="text-h2 lg:text-h2-lg font-bold mb-6 text-foreground">
             Featured Artists
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-body lg:text-body-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Discover talented artists who are building their brands and generating revenue through MerchDrop.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Artists Grid - 3 per row for clean layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {artists.map((artist, index) => (
             <motion.div
               key={artist.id}
@@ -77,90 +80,95 @@ const FeaturedArtists = () => {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: index * 0.1 }}
             >
-              <Card className="overflow-hidden border border-gray-200 bg-white hover:shadow-lg transition-shadow">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <img 
-                      src={artist.banner} 
-                      alt={`${artist.name} banner`}
-                      className="w-full h-32 object-cover"
-                    />
-                    <div className="absolute top-3 right-3 flex gap-2">
-                      {artist.trending && (
-                        <Badge variant="default" className="bg-black text-white">
-                          Trending
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className="border-black text-black bg-white">
-                        {artist.genre}
+              <div className="feature-card bg-white rounded-lg shadow-design-card border border-border hover:shadow-design-hover transition-design-smooth overflow-hidden">
+                {/* Artist Banner */}
+                <div className="relative">
+                  <img 
+                    src={artist.banner} 
+                    alt={`${artist.name} banner`}
+                    className="w-full h-32 object-cover"
+                  />
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    {artist.trending && (
+                      <Badge variant="default" className="bg-primary text-primary-foreground text-meta">
+                        Trending
                       </Badge>
-                    </div>
-                    <div className="absolute -bottom-6 left-6">
-                      <img 
-                        src={artist.avatar} 
-                        alt={artist.name}
-                        className="w-12 h-12 rounded-full border-2 border-white"
-                      />
+                    )}
+                    <Badge variant="outline" className="border-border text-foreground bg-white text-meta">
+                      {artist.genre}
+                    </Badge>
+                  </div>
+                  <div className="absolute -bottom-6 left-6">
+                    <img 
+                      src={artist.avatar} 
+                      alt={artist.name}
+                      className="w-12 h-12 rounded-full border-2 border-white shadow-design-card"
+                    />
+                  </div>
+                </div>
+                
+                {/* Artist Info */}
+                <div className="pt-8 pb-6 px-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-dashboard-title lg:text-dashboard-title-lg font-bold text-foreground">
+                      {artist.name}
+                    </h3>
+                    <div className="flex items-center text-foreground">
+                      <Star className="h-4 w-4 mr-1" />
+                      <span className="text-dashboard-text">{artist.rating}</span>
                     </div>
                   </div>
                   
-                  <div className="pt-8 pb-6 px-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-semibold text-black">{artist.name}</h3>
-                      <div className="flex items-center text-black">
-                        <Star className="h-4 w-4 mr-1" />
-                        <span className="text-sm">{artist.rating}</span>
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-1">
+                        <Users className="h-4 w-4 text-muted-foreground mr-1" />
+                        <span className="text-dashboard-text font-semibold text-foreground">{artist.followers}</span>
                       </div>
+                      <p className="text-meta text-muted-foreground">Followers</p>
                     </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <Users className="h-4 w-4 text-black mr-1" />
-                          <span className="text-sm font-semibold text-black">{artist.followers}</span>
-                        </div>
-                        <p className="text-xs text-gray-600">Followers</p>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-1">
+                        <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
+                        <span className="text-dashboard-text font-semibold text-foreground">{artist.revenue}</span>
                       </div>
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <TrendingUp className="h-4 w-4 text-black mr-1" />
-                          <span className="text-sm font-semibold text-black">{artist.revenue}</span>
-                        </div>
-                        <p className="text-xs text-gray-600">Revenue</p>
-                      </div>
-                      <div className="text-center">
-                        <span className="text-sm font-semibold text-black">{artist.products}</span>
-                        <p className="text-xs text-gray-600">Products</p>
-                      </div>
+                      <p className="text-meta text-muted-foreground">Revenue</p>
                     </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-black text-black hover:bg-black hover:text-white"
-                      asChild
-                    >
-                      <Link to={`/artist/${artist.id}`}>
-                        View Profile
-                        <ExternalLink className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <div className="text-center">
+                      <span className="text-dashboard-text font-semibold text-foreground">{artist.products}</span>
+                      <p className="text-meta text-muted-foreground">Products</p>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  {/* CTA Button */}
+                  <Button 
+                    variant="outline" 
+                    className="w-full btn-secondary"
+                    asChild
+                  >
+                    <Link to={`/artist/${artist.id}`}>
+                      View Profile
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
 
+        {/* Browse All CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-center mt-16"
+          className="text-center mt-16 lg:mt-20"
         >
           <Button 
             variant="outline" 
             size="lg" 
-            className="border-black text-black hover:bg-black hover:text-white px-8 py-4 text-lg"
+            className="btn-secondary px-8 py-4 text-base"
             asChild
           >
             <Link to="/artists">

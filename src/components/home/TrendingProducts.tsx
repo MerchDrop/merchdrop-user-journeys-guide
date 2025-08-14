@@ -85,23 +85,25 @@ const TrendingProducts = () => {
   ];
 
   return (
-    <section className="py-20 bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Trending <span className="bg-hero-gradient bg-clip-text text-transparent">Products</span>
+    <section className="py-20 lg:py-32 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Header */}
+        <div className="text-center mb-16 lg:mb-20">
+          <h2 className="text-h2 lg:text-h2-lg font-bold mb-6 text-foreground">
+            Shop artist drops
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-body lg:text-body-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Discover the hottest merchandise from our creative community. From streetwear to accessories, find your perfect style.
           </p>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {/* Products Grid - gallery layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-16 lg:mb-20">
           {products.map((product, index) => (
-            <Card key={product.id} className={`group hover-lift cursor-pointer animate-fade-in-up delay-${index + 1}00`}>
+            <Card key={product.id} className="group hover-card-lift cursor-pointer transition-design-smooth border border-border bg-white shadow-design-card">
               <CardContent className="p-0">
+                
                 {/* Product Image */}
                 <div className="relative overflow-hidden rounded-t-lg">
                   <img
@@ -113,13 +115,13 @@ const TrendingProducts = () => {
                   {/* Badges */}
                   <div className="absolute top-3 left-3 flex gap-2">
                     {product.trending && (
-                      <Badge className="bg-accent text-accent-foreground">
+                      <Badge className="bg-accent text-accent-foreground text-meta">
                         <Flame className="w-3 h-3 mr-1" />
                         Trending
                       </Badge>
                     )}
                     {product.onSale && (
-                      <Badge className="bg-destructive text-destructive-foreground">
+                      <Badge className="bg-destructive text-destructive-foreground text-meta">
                         Sale
                       </Badge>
                     )}
@@ -127,42 +129,42 @@ const TrendingProducts = () => {
 
                   {/* Quick Actions */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="bg-background/80 backdrop-blur-sm p-2 rounded-full hover:bg-background transition-colors">
+                    <button className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors shadow-design-card">
                       <Heart className="w-4 h-4" />
                     </button>
-                    <button className="bg-primary text-primary-foreground p-2 rounded-full hover:bg-primary/90 transition-colors">
+                    <button className="bg-primary text-primary-foreground p-2 rounded-full hover:bg-primary-hover transition-colors shadow-design-card">
                       <ShoppingCart className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
                 {/* Product Info */}
-                <div className="p-4">
+                <div className="p-6">
                   {/* Artist */}
                   <Link 
                     to={`/artist/${product.artistHandle.slice(1)}`}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-meta lg:text-meta-lg text-muted-foreground hover:text-accent transition-colors hover-accent-underline"
                   >
                     by {product.artist}
                   </Link>
 
                   {/* Product Name */}
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                  <h3 className="text-dashboard-title lg:text-dashboard-title-lg font-bold mb-3 text-foreground group-hover:text-accent transition-colors">
                     {product.name}
                   </h3>
 
                   {/* Price */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="font-bold text-lg">{formatPrice(product.price)}</span>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-body lg:text-body-lg font-bold text-foreground">{formatPrice(product.price)}</span>
                     {product.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through">
+                      <span className="text-dashboard-text text-muted-foreground line-through">
                         {formatPrice(product.originalPrice)}
                       </span>
                     )}
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between text-dashboard-text text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
                       {product.likes}
@@ -177,9 +179,9 @@ const TrendingProducts = () => {
           ))}
         </div>
 
-        {/* View All Button */}
+        {/* View All CTA */}
         <div className="text-center">
-          <Button variant="hero" size="lg" asChild>
+          <Button size="lg" className="btn-primary px-8 py-4 text-base" asChild>
             <Link to="/products">
               View All Products
             </Link>

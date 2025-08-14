@@ -5,18 +5,30 @@ import HeroSection from '@/components/home/HeroSection';
 import HowItWorks from '@/components/home/HowItWorks';
 import FeaturedArtists from '@/components/home/FeaturedArtists';
 import TrendingProducts from '@/components/home/TrendingProducts';
+import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      <Header />
-      <main>
-        <HeroSection />
-        <HowItWorks />
-        <FeaturedArtists />
-        <TrendingProducts />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <SEOHelmet 
+        title="MerchDrop - Launch Your Merch Line in Minutes"
+        description="The ultimate platform for artists to create, sell, and monetize custom merchandise. Turn your creativity into a thriving business with MerchDrop."
+        keywords="custom merchandise, artist platform, print on demand, merch store, creative business"
+      />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="w-full">
+          <HeroSection />
+          
+          {/* Main Content Container - matches reference layout */}
+          <div className="max-w-7xl mx-auto">
+            <HowItWorks />
+            <FeaturedArtists />
+            <TrendingProducts />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }

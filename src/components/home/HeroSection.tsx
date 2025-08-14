@@ -7,99 +7,103 @@ import { Badge } from '@/components/ui/badge';
 import SearchBar from './SearchBar';
 import HeroBackground from './HeroBackground';
 const HeroSection = () => {
-  return <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background text-foreground">
+  return (
+    <section className="relative overflow-hidden bg-background text-foreground py-20 lg:py-32">
       <HeroBackground />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      
+      {/* Main Content Container - centered and constrained width */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.8
-        }} className="mb-8">
-            <Badge variant="outline" className="mb-4">
+          
+          {/* Badge and Headline */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.8 }} 
+            className="mb-12"
+          >
+            <Badge variant="outline" className="mb-6 px-4 py-2">
               <Sparkles className="h-4 w-4 mr-2" />
-              New Platform Launch
+              Launch your merch line in minutes
             </Badge>
             
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
-              Your Music.
+            <h1 className="text-h1 lg:text-h1-lg font-bold mb-6 tracking-tight leading-tight">
+              MerchDrop launches design, you create, sell, and manage. 
               <br />
-              <span className="text-foreground">Your Merch.</span>
-              <br />
-              Your Revenue.
+              <span className="text-accent">No upfront. No software.</span>
             </h1>
             
-            <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">The ultimate platform for artists to co-create, sell, and monetize custom merchandise. Turn your creativity into a thriving business.</p>
+            <p className="text-body lg:text-body-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+              Create your online store that sells custom swag, from t-shirts to mugs. 
+              Quality on-demand products, global shipping, and instant payouts.
+            </p>
           </motion.div>
 
-          {/* Enhanced Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-8"
+          {/* CTA Buttons */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.8, delay: 0.2 }} 
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
-            <SearchBar />
-          </motion.div>
-
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.8,
-          delay: 0.2
-        }} className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button variant="hero" size="lg" className="px-8 py-4 text-lg">
-              Start Creating
+            <Button size="lg" className="btn-primary text-base px-8 py-4">
+              Start a store
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
+            <Button variant="outline" size="lg" className="text-base px-8 py-4">
               <Play className="mr-2 h-5 w-5" />
-              Watch Demo
+              See how it works
             </Button>
           </motion.div>
 
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.8,
-          delay: 0.4
-        }} className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Users className="h-5 w-5 text-foreground mr-2" />
-                <span className="text-2xl font-bold text-foreground">10k+</span>
-              </div>
-              <p className="text-muted-foreground">Active Artists</p>
+          {/* Trust Indicators - small avatar cluster */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.8, delay: 0.4 }} 
+            className="flex flex-col sm:flex-row items-center justify-center gap-8 text-meta lg:text-meta-lg text-muted-foreground"
+          >
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span>10k+ creators already selling</span>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <TrendingUp className="h-5 w-5 text-foreground mr-2" />
-                <span className="text-2xl font-bold text-foreground">$2M+</span>
-              </div>
-              <p className="text-muted-foreground">Revenue Generated</p>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span>$2M+ revenue generated</span>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Sparkles className="h-5 w-5 text-foreground mr-2" />
-                <span className="text-2xl font-bold text-foreground">50k+</span>
-              </div>
-              <p className="text-muted-foreground">Products Sold</p>
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              <span>4.9/5 creator satisfaction</span>
             </div>
           </motion.div>
         </div>
+
+        {/* Large Central Media Frame Placeholder */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 1, delay: 0.6 }} 
+          className="mt-20 max-w-5xl mx-auto"
+        >
+          <div className="relative bg-white rounded-lg shadow-design-card p-8 border border-border">
+            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-dashboard-title font-semibold text-foreground mb-2">
+                  📊 Live Dashboard
+                </div>
+                <div className="text-dashboard-text text-muted-foreground mb-4">
+                  Track your sales in real-time
+                </div>
+                <div className="inline-flex items-center text-h2 font-bold text-foreground">
+                  <TrendingUp className="h-6 w-6 mr-2 text-accent" />
+                  1,342 orders
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </section>;
+    </section>
+  );
 };
 export default HeroSection;
