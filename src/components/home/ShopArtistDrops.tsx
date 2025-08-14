@@ -134,14 +134,14 @@ const ShopArtistDrops = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
-              <div className="inline-flex items-center gap-2 text-meta text-muted-foreground">
+              <div className="inline-flex items-center gap-2 text-[13px] text-muted-foreground">
                 <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
                 Shop
               </div>
-              <h2 className="text-h2 md:text-h2-lg tracking-tight mt-1 font-medium text-foreground">
+              <h2 className="text-2xl md:text-3xl tracking-tight mt-1 font-medium text-foreground">
                 Shop artist drops
               </h2>
-              <p className="text-meta mt-1 text-muted-foreground">
+              <p className="text-[13px] mt-1 text-muted-foreground">
                 Popular right now — limited runs and fresh releases.
               </p>
             </div>
@@ -204,20 +204,20 @@ const ShopArtistDrops = () => {
           className="flex items-center justify-between gap-4 mb-6"
         >
           <div>
-            <div className="inline-flex items-center gap-2 text-meta text-muted-foreground">
+            <div className="inline-flex items-center gap-2 text-[13px] text-muted-foreground">
               <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
               Shop
             </div>
-            <h2 className="text-h2 md:text-h2-lg tracking-tight mt-1 font-medium text-foreground">
+            <h2 className="text-2xl md:text-3xl tracking-tight mt-1 font-medium text-foreground">
               Shop artist drops
             </h2>
-            <p className="text-meta mt-1 text-muted-foreground">
+            <p className="text-[13px] mt-1 text-muted-foreground">
               Popular right now — limited runs and fresh releases.
             </p>
           </div>
           <Link 
             to="/products" 
-            className="hidden md:inline-flex items-center gap-1.5 text-meta text-muted-foreground hover:text-foreground transition-colors"
+            className="hidden md:inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
           >
             View all drops
             <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
@@ -262,7 +262,7 @@ const ShopArtistDrops = () => {
                     
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 flex items-end p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="inline-flex items-center gap-2 h-9 px-3 rounded-md border text-meta font-medium shadow-sm bg-background text-foreground border-border">
+                      <span className="inline-flex items-center gap-2 h-9 px-3 rounded-md border text-[13px] font-medium shadow-sm bg-background text-foreground border-border">
                         <Eye className="w-4 h-4" strokeWidth={1.5} />
                         View product
                       </span>
@@ -280,14 +280,14 @@ const ShopArtistDrops = () => {
                         alt={`${product.artist_profiles?.artist_name || 'Unknown Artist'} avatar`}
                         className="h-6 w-6 rounded-full border border-border"
                       />
-                      <span className="text-meta text-muted-foreground">
+                      <span className="text-[13px] text-muted-foreground">
                         {product.artist_profiles?.artist_name || 'Unknown Artist'}
                       </span>
-                      <span className="ml-auto text-meta font-medium text-foreground">
+                      <span className="ml-auto text-[13px] font-medium text-foreground">
                         ${formatPrice(product.price_cents)}
                       </span>
                     </div>
-                    <div className="mt-1 text-dashboard-text font-medium text-foreground">
+                    <div className="mt-1 text-[14px] font-medium text-foreground">
                       {product.title}
                     </div>
                     <div className="mt-0.5 text-[12px] text-muted-foreground">
@@ -309,7 +309,7 @@ const ShopArtistDrops = () => {
         >
           <Link 
             to="/products"
-            className="inline-flex items-center gap-1.5 text-meta text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
           >
             View all drops
             <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
