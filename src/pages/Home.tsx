@@ -4,6 +4,7 @@ import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import HowItWorks from '@/components/home/HowItWorks';
 import Showcase from '@/components/home/Showcase';
+import ShopArtistDrops from '@/components/home/ShopArtistDrops';
 import FeaturedArtists from '@/components/home/FeaturedArtists';
 import TrendingProducts from '@/components/home/TrendingProducts';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
@@ -25,6 +26,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">
             <HowItWorks />
             <Showcase />
+            <ShopArtistDrops />
             <FeaturedArtists />
             <TrendingProducts />
           </div>
