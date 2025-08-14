@@ -74,8 +74,8 @@ export default {
 				}
 			},
 			fontFamily: {
-				sans: ['Inter', 'system-ui', 'sans-serif'],
-				heading: ['Inter', 'system-ui', 'sans-serif']
+				sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+				heading: ['Plus Jakarta Sans', 'system-ui', 'sans-serif']
 			},
 			fontSize: {
 				'h1': ['2.25rem', { lineHeight: '2.5rem', fontWeight: '700' }],        // 36px
