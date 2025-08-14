@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
+import KeyValueProps from '@/components/home/KeyValueProps';
 import HowItWorks from '@/components/home/HowItWorks';
 import Showcase from '@/components/home/Showcase';
 import ShopArtistDrops from '@/components/home/ShopArtistDrops';
@@ -23,6 +24,7 @@ export default function Home() {
           
           {/* Main Content Container - matches reference layout */}
           <div className="max-w-7xl mx-auto">
+            <KeyValueProps />
             <HowItWorks />
             <Showcase />
             <FeaturedArtists />
