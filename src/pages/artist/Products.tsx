@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '@/layouts/DashboardLayout';
+
 import { ProductForm } from '@/components/forms/ProductForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,21 +109,18 @@ export default function ArtistProducts() {
 
   if (!isArtist) {
     return (
-      <DashboardLayout>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">
-              You need to be an approved artist to manage products.
-            </p>
-          </CardContent>
-        </Card>
-      </DashboardLayout>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">
+            You need to be an approved artist to manage products.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
@@ -270,6 +267,6 @@ export default function ArtistProducts() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -1,11 +1,10 @@
 import React from 'react';
 import { AdminUserTable } from '@/components/admin/AdminUserTable';
-import AdminLayout from '@/layouts/AdminLayout';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function AdminUsers() {
   return (
-    <AdminLayout>
+    <>
       <SEOHelmet 
         title="User Management - Admin Dashboard"
         description="Manage user accounts, roles and permissions from the admin dashboard."
@@ -20,6 +19,6 @@ export default function AdminUsers() {
         
         <AdminUserTable />
       </div>
-    </AdminLayout>
+    </>
   );
 }

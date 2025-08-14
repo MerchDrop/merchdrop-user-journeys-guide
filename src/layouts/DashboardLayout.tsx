@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, useLocation, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   BarChart3,
@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CurrencySelector } from '@/components/ui/currency-selector';
+import { useAuth } from '@/context/AuthContext';
 
 const sidebarItems = [
   { name: 'Overview', href: '/dashboard', icon: Home },
@@ -26,13 +27,37 @@ const sidebarItems = [
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isArtist, loading, profile } = useAuth();
+
+  // Redirect non-authenticated users or non-artists
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        navigate('/artist-auth', { replace: true });
+      } else if (!isArtist) {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [user, isArtist, loading, navigate]);
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if user is not authenticated or not an artist
+  if (!user || !isArtist) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,7 +115,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  John Doe
+                  {profile?.display_name || profile?.first_name || 'Artist'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   Artist
@@ -159,7 +184,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  John Doe
+                  {profile?.display_name || profile?.first_name || 'Artist'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   Artist
@@ -202,7 +227,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Page content */}
         <main className="p-6">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

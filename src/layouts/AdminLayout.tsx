@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -14,10 +14,6 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
 
 const adminNavItems = [
   {
@@ -57,7 +53,7 @@ const adminNavItems = [
   },
 ];
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout() {
   const { user, isAdmin, loading } = useAuth();
   const location = useLocation();
 
@@ -107,7 +103,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Main Content */}
         <div className="flex-1">
           <main className="p-6">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>

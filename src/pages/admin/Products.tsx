@@ -1,11 +1,10 @@
 import React from 'react';
 import { AdminProductTable } from '@/components/admin/AdminProductTable';
-import AdminLayout from '@/layouts/AdminLayout';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function AdminProducts() {
   return (
-    <AdminLayout>
+    <>
       <SEOHelmet 
         title="Product Management - Admin Dashboard"
         description="Manage products, status, inventory and pricing from the admin dashboard."
@@ -20,6 +19,6 @@ export default function AdminProducts() {
         
         <AdminProductTable />
       </div>
-    </AdminLayout>
+    </>
   );
 }

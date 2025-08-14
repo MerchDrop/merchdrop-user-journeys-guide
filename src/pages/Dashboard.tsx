@@ -11,7 +11,7 @@ import {
   Calendar,
   Target
 } from "lucide-react";
-import DashboardLayout from "@/layouts/DashboardLayout";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -131,8 +131,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <DashboardLayout>
-      <div className="space-y-4">
+    <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
@@ -332,7 +331,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </motion.div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

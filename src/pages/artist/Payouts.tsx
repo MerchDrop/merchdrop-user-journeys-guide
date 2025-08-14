@@ -16,7 +16,7 @@ import {
   DollarSign,
   BarChart3
 } from 'lucide-react';
-import DashboardLayout from '@/layouts/DashboardLayout';
+
 import { useCurrency } from '@/context/CurrencyContext';
 
 interface Payout {
@@ -118,8 +118,7 @@ export default function Payouts() {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
@@ -343,7 +342,6 @@ export default function Payouts() {
             </CardContent>
           </Card>
         </motion.div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

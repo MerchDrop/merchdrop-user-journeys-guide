@@ -26,6 +26,8 @@ import AdminArtists from '@/pages/admin/Artists';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
 import Login from '@/pages/Login';
+import UserAuth from '@/pages/UserAuth';
+import ArtistAuth from '@/pages/ArtistAuth';
 import ArtistOnboarding from '@/pages/ArtistOnboarding';
 import MerchCreator from '@/pages/MerchCreator';
 import OrderTracking from '@/pages/OrderTracking';
@@ -38,6 +40,8 @@ import Shipping from '@/pages/Shipping';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Contact from '@/pages/Contact';
+import DashboardLayout from '@/layouts/DashboardLayout';
+import AdminLayout from '@/layouts/AdminLayout';
 
 function App() {
   return (
@@ -49,22 +53,33 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/user-auth" element={<UserAuth />} />
+                <Route path="/artist-auth" element={<ArtistAuth />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/artists" element={<Artists />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/artist/:slug" element={<ArtistProfile />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/checkout" element={<Checkout />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dashboard/products" element={<ArtistProducts />} />
-                <Route path="/dashboard/analytics" element={<ArtistAnalytics />} />
-                <Route path="/dashboard/settings" element={<ArtistSettings />} />
-                <Route path="/dashboard/orders" element={<ArtistOrders />} />
-                <Route path="/dashboard/payouts" element={<ArtistPayouts />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/artists" element={<AdminArtists />} />
+                
+                {/* Dashboard Routes - Protected for Artists */}
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="products" element={<ArtistProducts />} />
+                  <Route path="analytics" element={<ArtistAnalytics />} />
+                  <Route path="settings" element={<ArtistSettings />} />
+                  <Route path="orders" element={<ArtistOrders />} />
+                  <Route path="payouts" element={<ArtistPayouts />} />
+                </Route>
+                
+                {/* Admin Routes - Protected for Admins */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<Admin />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="artists" element={<AdminArtists />} />
+                </Route>
+                
                 <Route path="/health" element={<HealthCheck />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/login" element={<Login />} />

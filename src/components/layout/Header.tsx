@@ -117,10 +117,10 @@ const Header = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm" className="text-[14px] text-black hover:text-gray-600" asChild>
-                  <Link to="/auth">Login</Link>
+                  <Link to="/user-auth">Shop</Link>
                 </Button>
                 <Button variant="default" size="sm" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
-                  <Link to="/auth">Start Creating</Link>
+                  <Link to="/artist-auth">Start Creating</Link>
                 </Button>
               </div>
             )}
@@ -192,10 +192,10 @@ const Header = () => {
               ) : (
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                   <Button variant="ghost" className="text-[14px] text-black hover:text-gray-600" asChild>
-                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                    <Link to="/user-auth" onClick={() => setIsMenuOpen(false)}>Shop</Link>
                   </Button>
                   <Button variant="default" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
-                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
+                    <Link to="/artist-auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
                   </Button>
                 </div>
               )}

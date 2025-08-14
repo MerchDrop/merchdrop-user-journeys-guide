@@ -1,11 +1,10 @@
 import React from 'react';
 import { ArtistApprovalCard } from '@/components/admin/ArtistApprovalCard';
-import AdminLayout from '@/layouts/AdminLayout';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function AdminArtists() {
   return (
-    <AdminLayout>
+    <>
       <SEOHelmet 
         title="Artist Management - Admin Dashboard"
         description="Review and approve artist applications from the admin dashboard."
@@ -20,6 +19,6 @@ export default function AdminArtists() {
         
         <ArtistApprovalCard />
       </div>
-    </AdminLayout>
+    </>
   );
 }
