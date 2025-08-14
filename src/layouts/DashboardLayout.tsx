@@ -1,5 +1,5 @@
-import React from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet, NavLink, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   BarChart3,
@@ -15,7 +15,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CurrencySelector } from '@/components/ui/currency-selector';
-import { useState } from 'react';
 
 const sidebarItems = [
   { name: 'Overview', href: '/dashboard', icon: Home },
@@ -50,7 +49,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-            <h1 className="text-xl font-bold text-primary">Artist Hub</h1>
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+                alt="MerchDrop" 
+                className="h-6 w-auto"
+              />
+            </Link>
           </div>
 
           {/* Navigation */}
@@ -105,7 +110,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-            <h1 className="text-xl font-bold text-primary">Artist Hub</h1>
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+                alt="MerchDrop" 
+                className="h-6 w-auto"
+              />
+            </Link>
             <Button
               variant="ghost"
               size="icon"

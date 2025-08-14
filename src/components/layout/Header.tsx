@@ -31,9 +31,11 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-black">
-              MerchDrop
-            </div>
+            <img 
+              src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+              alt="MerchDrop" 
+              className="h-8 w-auto"
+            />
           </Link>
 
           {/* Search Bar - Desktop */}
