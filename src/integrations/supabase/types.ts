@@ -7,13 +7,66 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
+      artist_profiles: {
+        Row: {
+          approval_date: string | null
+          artist_name: string
+          artist_slug: string
+          brand_colors: Json | null
+          commission_rate: number | null
+          created_at: string
+          id: string
+          status: string | null
+          total_earnings: number | null
+          total_sales: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_date?: string | null
+          artist_name: string
+          artist_slug: string
+          brand_colors?: Json | null
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          status?: string | null
+          total_earnings?: number | null
+          total_sales?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_date?: string | null
+          artist_name?: string
+          artist_slug?: string
+          brand_colors?: Json | null
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          status?: string | null
+          total_earnings?: number | null
+          total_sales?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -37,6 +90,191 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      order_items: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string
+          product_variant: Json | null
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id: string
+          product_variant?: Json | null
+          quantity?: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          product_variant?: Json | null
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artist_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          billing_address: Json | null
+          created_at: string
+          currency: string | null
+          delivered_at: string | null
+          id: string
+          order_number: string
+          payment_provider: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          shipped_at: string | null
+          shipping_address: Json
+          shipping_cost: number | null
+          status: string | null
+          subtotal: number
+          tax_amount: number | null
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          created_at?: string
+          currency?: string | null
+          delivered_at?: string | null
+          id?: string
+          order_number: string
+          payment_provider?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          shipped_at?: string | null
+          shipping_address: Json
+          shipping_cost?: number | null
+          status?: string | null
+          subtotal: number
+          tax_amount?: number | null
+          total_amount: number
+          tracking_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_address?: Json | null
+          created_at?: string
+          currency?: string | null
+          delivered_at?: string | null
+          id?: string
+          order_number?: string
+          payment_provider?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          shipped_at?: string | null
+          shipping_address?: Json
+          shipping_cost?: number | null
+          status?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          artist_id: string
+          created_at: string
+          currency: string | null
+          id: string
+          net_amount: number
+          payment_method: string | null
+          payment_reference: string | null
+          processed_at: string | null
+          processing_fee: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          artist_id: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          net_amount: number
+          payment_method?: string | null
+          payment_reference?: string | null
+          processed_at?: string | null
+          processing_fee?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          artist_id?: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          net_amount?: number
+          payment_method?: string | null
+          payment_reference?: string | null
+          processed_at?: string | null
+          processing_fee?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artist_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_images: {
         Row: {
@@ -72,10 +310,12 @@ export type Database = {
       }
       products: {
         Row: {
+          artist_id: string | null
           category_id: string | null
           created_at: string
           currency: string
           description: string | null
+          featured: boolean | null
           id: string
           main_image_url: string | null
           price_cents: number
@@ -84,14 +324,18 @@ export type Database = {
           slug: string
           status: string
           stock: number
+          tags: string[] | null
           title: string
           updated_at: string
+          variants: Json | null
         }
         Insert: {
+          artist_id?: string | null
           category_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          featured?: boolean | null
           id?: string
           main_image_url?: string | null
           price_cents: number
@@ -100,14 +344,18 @@ export type Database = {
           slug: string
           status?: string
           stock?: number
+          tags?: string[] | null
           title: string
           updated_at?: string
+          variants?: Json | null
         }
         Update: {
+          artist_id?: string | null
           category_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          featured?: boolean | null
           id?: string
           main_image_url?: string | null
           price_cents?: number
@@ -116,10 +364,19 @@ export type Database = {
           slug?: string
           status?: string
           stock?: number
+          tags?: string[] | null
           title?: string
           updated_at?: string
+          variants?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artist_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
@@ -128,6 +385,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          is_admin: boolean | null
+          is_artist: boolean | null
+          last_name: string | null
+          phone: string | null
+          social_links: Json | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          first_name?: string | null
+          id: string
+          is_admin?: boolean | null
+          is_artist?: boolean | null
+          last_name?: string | null
+          phone?: string | null
+          social_links?: Json | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_artist?: boolean | null
+          last_name?: string | null
+          phone?: string | null
+          social_links?: Json | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
