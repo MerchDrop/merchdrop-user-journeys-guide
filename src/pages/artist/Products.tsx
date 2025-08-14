@@ -1,60 +1,125 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import ProductsTable from '@/components/artist/ProductsTable';
+import { ProductForm } from '@/components/forms/ProductForm';
 import { Button } from '@/components/ui/button';
-import { Plus, Filter } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-// Mock product data
-const mockProducts = [
-  {
-    id: 'PRD-001',
-    name: 'Artist Signature T-Shirt',
-    image: '/placeholder.svg',
-    price: 25.99,
-    status: 'active' as const,
-    sales: 124,
-    revenue: 3224,
-    stock: 67,
-    createdAt: '2024-01-15T00:00:00Z',
-  },
-  {
-    id: 'PRD-002',
-    name: 'Limited Edition Hoodie',
-    image: '/placeholder.svg',
-    price: 49.99,
-    status: 'active' as const,
-    sales: 89,
-    revenue: 4449,
-    stock: 23,
-    createdAt: '2024-01-10T00:00:00Z',
-  },
-  {
-    id: 'PRD-003',
-    name: 'Concert Poster Print',
-    image: '/placeholder.svg',
-    price: 15.99,
-    status: 'draft' as const,
-    sales: 0,
-    revenue: 0,
-    stock: 0,
-    createdAt: '2024-01-20T00:00:00Z',
-  },
-  {
-    id: 'PRD-004',
-    name: 'Logo Sticker Pack',
-    image: '/placeholder.svg',
-    price: 8.99,
-    status: 'pending_approval' as const,
-    sales: 0,
-    revenue: 0,
-    stock: 100,
-    createdAt: '2024-01-18T00:00:00Z',
-  },
-];
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
+import { Plus, Filter, Edit, Eye, Archive, MoreHorizontal } from 'lucide-react';
+import { useProducts } from '@/hooks/useProducts';
+import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function ArtistProducts() {
-  const [loading, setLoading] = useState(false);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const { products, loading, fetchArtistProducts, publishProduct, unpublishProduct, deleteProduct } = useProducts();
+  const { isArtist } = useAuth();
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isArtist) {
+      fetchArtistProducts();
+    }
+  }, [isArtist]);
+
+  const handleCreateProduct = () => {
+    setEditingProduct(null);
+    setShowProductForm(true);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setShowProductForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    setShowProductForm(false);
+    setEditingProduct(null);
+    fetchArtistProducts();
+  };
+
+  const handlePublishToggle = async (product: any) => {
+    const result = product.status === 'published' 
+      ? await unpublishProduct(product.id)
+      : await publishProduct(product.id);
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: `Product ${product.status === 'published' ? 'unpublished' : 'published'} successfully!`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update product status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+      const result = await deleteProduct(productId);
+      
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Product deleted successfully!",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to delete product",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'published': return 'default';
+      case 'draft': return 'secondary';
+      case 'pending': return 'outline';
+      default: return 'secondary';
+    }
+  };
+
+  if (!isArtist) {
+    return (
+      <DashboardLayout>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-center text-muted-foreground">
+              You need to be an approved artist to manage products.
+            </p>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -72,17 +137,138 @@ export default function ArtistProducts() {
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
-            <Button asChild>
-              <Link to="/create-merch">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Product
-              </Link>
+            <Button onClick={handleCreateProduct}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Product
             </Button>
           </div>
         </div>
 
         {/* Products Table */}
-        <ProductsTable products={mockProducts} loading={loading} />
+        <Card>
+          <CardHeader>
+            <CardTitle>Products ({products.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <div className="h-12 w-12 bg-muted rounded animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted rounded animate-pulse" />
+                      <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : products.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          {product.main_image_url ? (
+                            <img
+                              src={product.main_image_url}
+                              alt={product.title}
+                              className="h-10 w-10 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                              <span className="text-xs text-muted-foreground">No Image</span>
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium">{product.title}</p>
+                            <p className="text-sm text-muted-foreground">#{product.slug}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(product.status)}>
+                          {product.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {formatPrice(product.price_cents / 100)}
+                      </TableCell>
+                      <TableCell>
+                        <span className={product.stock < 10 ? 'text-destructive' : ''}>
+                          {product.stock}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(product.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Product
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePublishToggle(product)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              {product.status === 'published' ? 'Unpublish' : 'Publish'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="text-destructive"
+                            >
+                              <Archive className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">No products yet</p>
+                <Button onClick={handleCreateProduct}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Product
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Product Form Dialog */}
+        <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingProduct ? 'Edit Product' : 'Create New Product'}
+              </DialogTitle>
+            </DialogHeader>
+            <ProductForm
+              editProduct={editingProduct}
+              onSuccess={handleFormSuccess}
+              onCancel={() => setShowProductForm(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
