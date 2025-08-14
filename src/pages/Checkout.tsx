@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, Truck, Shield, Check } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { usePaystackPayment } from 'react-paystack';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -9,24 +10,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-const cartItems = [
-  {
-    id: 1,
-    name: "Midnight Vibes Hoodie",
-    artist: "Luna Rivers", 
-    price: 55,
-    quantity: 1,
-    size: "L",
-    color: "Midnight Black",
-    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop&auto=format"
-  }
-];
+import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Checkout() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { items, getTotalPrice, clearCart } = useCart();
+  const { formatPrice, convertPrice, currency } = useCurrency();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [formData, setFormData] = useState({
-    email: '',
+    email: user?.email || '',
     firstName: '',
     lastName: '',
     address: '',
@@ -36,8 +36,14 @@ export default function Checkout() {
     country: 'United States'
   });
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 50 ? 0 : 8.99;
+  // If cart is empty, redirect to cart page
+  if (items.length === 0) {
+    navigate('/cart');
+    return null;
+  }
+
+  const subtotal = convertPrice(getTotalPrice());
+  const shipping = subtotal > 50 ? 0 : convertPrice(8.99);
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
@@ -46,6 +52,77 @@ export default function Checkout() {
     { number: 2, title: "Payment", icon: CreditCard },
     { number: 3, title: "Complete", icon: Check }
   ];
+
+  // Paystack configuration
+  const paystackConfig = {
+    reference: new Date().getTime().toString(),
+    email: formData.email,
+    amount: Math.round(total * 100), // Convert to kobo for NGN or cents for USD
+    currency: currency,
+    publicKey: "pk_test_dcBcopgQ8gJyrVz0JzSCguKF", // Replace with your Paystack public key
+  };
+
+  const handlePaystackSuccess = async (reference: any) => {
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('process-payment', {
+        body: {
+          amount: Math.round(total * 100),
+          currency: currency,
+          email: formData.email,
+          reference: reference.reference,
+          items: items.map(item => ({
+            productId: item.id,
+            artistId: null, // We don't have artist ID in cart context, will need to be looked up
+            quantity: item.quantity,
+            price: item.price,
+            size: item.size || null,
+            color: item.color || null
+          })),
+          shippingAddress: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            country: formData.country
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      setCompletedOrder(data);
+      clearCart();
+      setCurrentStep(3);
+      
+      toast({
+        title: "Payment Successful!",
+        description: `Order ${data.orderNumber} has been confirmed.`,
+      });
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      toast({
+        title: "Payment Processing Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaystackClose = () => {
+    toast({
+      title: "Payment Cancelled",
+      description: "Your payment was cancelled. You can try again.",
+      variant: "destructive",
+    });
+  };
+
+  const initializePayment = usePaystackPayment(paystackConfig);
 
   return (
     <div className="min-h-screen bg-background">
@@ -165,7 +242,17 @@ export default function Checkout() {
                     </div>
 
                     <Button 
-                      onClick={() => setCurrentStep(2)}
+                      onClick={() => {
+                        if (!formData.email || !formData.firstName || !formData.lastName || !formData.address) {
+                          toast({
+                            title: "Missing Information",
+                            description: "Please fill in all required fields.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setCurrentStep(2);
+                      }}
                       className="w-full"
                       size="lg"
                     >
@@ -180,42 +267,31 @@ export default function Checkout() {
                   <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
                   
                   <div className="space-y-6">
-                    <div>
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input 
-                        id="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input 
-                          id="expiry"
-                          placeholder="MM/YY"
-                        />
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <h3 className="font-semibold mb-2">Order Summary</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          <span>{formatPrice(subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Shipping</span>
+                          <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tax</span>
+                          <span>{formatPrice(tax)}</span>
+                        </div>
+                        <div className="border-t pt-2 flex justify-between font-bold">
+                          <span>Total</span>
+                          <span>{formatPrice(total)}</span>
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input 
-                          id="cvv"
-                          placeholder="123"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="cardName">Name on Card</Label>
-                      <Input 
-                        id="cardName"
-                        placeholder="John Doe"
-                      />
                     </div>
 
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                       <Shield className="h-4 w-4" />
-                      <span>Your payment information is encrypted and secure</span>
+                      <span>Secure payment powered by Paystack</span>
                     </div>
 
                     <div className="flex gap-4">
@@ -223,22 +299,26 @@ export default function Checkout() {
                         variant="outline"
                         onClick={() => setCurrentStep(1)}
                         className="flex-1"
+                        disabled={isProcessing}
                       >
                         Back
                       </Button>
                       <Button 
-                        onClick={() => setCurrentStep(3)}
+                         onClick={() => {
+                           initializePayment(handlePaystackSuccess, handlePaystackClose);
+                         }}
                         className="flex-1"
                         size="lg"
+                        disabled={isProcessing}
                       >
-                        Complete Order
+                        {isProcessing ? 'Processing...' : `Pay ${formatPrice(total)}`}
                       </Button>
                     </div>
                   </div>
                 </Card>
               )}
 
-              {currentStep === 3 && (
+              {currentStep === 3 && completedOrder && (
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -255,15 +335,15 @@ export default function Checkout() {
                     </p>
                     
                     <div className="bg-muted/50 rounded-lg p-4 mb-6">
-                      <p className="font-semibold">Order #MD-2024-001</p>
+                      <p className="font-semibold">Order #{completedOrder.orderNumber}</p>
                       <p className="text-sm text-muted-foreground">
                         Confirmation email sent to {formData.email}
                       </p>
                     </div>
 
                     <div className="flex gap-4">
-                      <Button variant="outline" className="flex-1">
-                        Track Order
+                      <Button variant="outline" className="flex-1" asChild>
+                        <Link to="/order-tracking">Track Order</Link>
                       </Button>
                       <Link to="/" className="flex-1">
                         <Button className="w-full">
@@ -287,20 +367,20 @@ export default function Checkout() {
                 
                 {/* Cart Items */}
                 <div className="space-y-4 mb-6">
-                  {cartItems.map((item) => (
+                  {items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-cover bg-center rounded-lg" 
-                           style={{ backgroundImage: `url(${item.image})` }} />
+                           style={{ backgroundImage: `url(${item.image || '/placeholder.svg'})` }} />
                       <div className="flex-1">
                         <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-muted-foreground">by {item.artist}</p>
+                        <p className="text-sm text-muted-foreground">by {item.artist || 'Unknown Artist'}</p>
                         <div className="flex gap-2 text-xs text-muted-foreground">
-                          <Badge variant="outline">{item.size}</Badge>
-                          <Badge variant="outline">{item.color}</Badge>
+                          {item.size && <Badge variant="outline">{item.size}</Badge>}
+                          {item.color && <Badge variant="outline">{item.color}</Badge>}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${item.price}</p>
+                        <p className="font-semibold">{formatPrice(item.price)}</p>
                         <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                       </div>
                     </div>
@@ -311,19 +391,19 @@ export default function Checkout() {
                 <div className="border-t pt-6 space-y-3">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatPrice(tax)}</span>
                   </div>
                   <div className="border-t pt-3 flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
 
