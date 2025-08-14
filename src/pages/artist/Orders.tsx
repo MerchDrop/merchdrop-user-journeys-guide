@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,75 +31,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/context/CurrencyContext';
-
-// Mock orders data
-const mockOrders = [
-  {
-    id: 'ORD-12345',
-    date: '2024-01-15',
-    customer: 'John Doe',
-    email: 'john@example.com',
-    product: 'Artist T-Shirt - Black',
-    quantity: 2,
-    price: 29.99,
-    total: 59.98,
-    status: 'delivered',
-    address: '123 Main St, New York, NY 10001',
-    trackingNumber: 'TRK123456789'
-  },
-  {
-    id: 'ORD-12346',
-    date: '2024-01-14',
-    customer: 'Sarah Miller',
-    email: 'sarah@example.com',
-    product: 'Vinyl Record Print',
-    quantity: 1,
-    price: 39.99,
-    total: 39.99,
-    status: 'shipped',
-    address: '456 Oak Ave, Los Angeles, CA 90210',
-    trackingNumber: 'TRK987654321'
-  },
-  {
-    id: 'ORD-12347',
-    date: '2024-01-14',
-    customer: 'Mike Rodriguez',
-    email: 'mike@example.com',
-    product: 'Tour Hoodie - White',
-    quantity: 1,
-    price: 49.99,
-    total: 49.99,
-    status: 'processing',
-    address: '789 Pine St, Chicago, IL 60601',
-    trackingNumber: null
-  },
-  {
-    id: 'ORD-12348',
-    date: '2024-01-13',
-    customer: 'Lisa Chen',
-    email: 'lisa@example.com',
-    product: 'Phone Case - Galaxy',
-    quantity: 3,
-    price: 19.99,
-    total: 59.97,
-    status: 'pending',
-    address: '321 Elm St, Miami, FL 33101',
-    trackingNumber: null
-  },
-  {
-    id: 'ORD-12349',
-    date: '2024-01-12',
-    customer: 'David Wilson',
-    email: 'david@example.com',
-    product: 'Artist Poster Set',
-    quantity: 1,
-    price: 24.99,
-    total: 24.99,
-    status: 'delivered',
-    address: '654 Maple Dr, Seattle, WA 98101',
-    trackingNumber: 'TRK555444333'
-  }
-];
+import { useOrders } from '@/hooks/useOrders';
+import { useAuth } from '@/context/AuthContext';
 
 const statusConfig = {
   pending: {
@@ -132,21 +65,32 @@ export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const { formatPrice } = useCurrency();
+  const { orders, loading, fetchOrders } = useOrders();
+  const { profile } = useAuth();
 
-  const filteredOrders = mockOrders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.product.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    if (profile?.id) {
+      // Fetch orders for this artist
+      fetchOrders({ artistId: profile.id });
+    }
+  }, [profile?.id]);
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.profiles?.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.order_items?.some(item => 
+                           item.products?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+                         );
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
-  const totalRevenue = mockOrders.reduce((sum, order) => sum + order.total, 0);
-  const totalOrders = mockOrders.length;
-  const pendingOrders = mockOrders.filter(order => order.status === 'pending').length;
-  const deliveredOrders = mockOrders.filter(order => order.status === 'delivered').length;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(order => order.status === 'pending').length;
+  const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
 
   return (
     <DashboardLayout>
@@ -296,49 +240,80 @@ export default function Orders() {
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {filteredOrders.map((order, index) => {
-                    const StatusIcon = statusConfig[order.status as keyof typeof statusConfig].icon;
-                    return (
-                      <motion.tr
-                        key={order.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="hover:bg-muted/50"
-                      >
-                        <TableCell className="font-medium">#{order.id}</TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{order.customer}</div>
-                            <div className="text-sm text-muted-foreground">{order.email}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-w-[200px]">
-                            <div className="font-medium truncate">{order.product}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
-                        <TableCell>{order.quantity}</TableCell>
-                        <TableCell className="font-medium">{formatPrice(order.total)}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={statusConfig[order.status as keyof typeof statusConfig].variant}
-                            className="gap-1"
-                          >
-                            <StatusIcon className="h-3 w-3" />
-                            {statusConfig[order.status as keyof typeof statusConfig].label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </motion.tr>
-                    );
-                  })}
+                 <TableBody>
+                  {loading ? (
+                    [...Array(5)].map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                        <TableCell><div className="h-4 bg-muted rounded animate-pulse"></div></TableCell>
+                      </TableRow>
+                    ))
+                  ) : filteredOrders.length > 0 ? (
+                    filteredOrders.map((order, index) => {
+                      const StatusIcon = statusConfig[order.status as keyof typeof statusConfig].icon;
+                      const firstItem = order.order_items?.[0];
+                      const totalItems = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+                      
+                      return (
+                        <motion.tr
+                          key={order.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="hover:bg-muted/50"
+                        >
+                          <TableCell className="font-medium">#{order.order_number}</TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{order.profiles?.display_name || 'Unknown'}</div>
+                              <div className="text-sm text-muted-foreground">{order.profiles?.email || 'N/A'}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="max-w-[200px]">
+                              <div className="font-medium truncate">
+                                {firstItem?.products?.title || 'Unknown Product'}
+                              </div>
+                              {order.order_items && order.order_items.length > 1 && (
+                                <div className="text-xs text-muted-foreground">
+                                  +{order.order_items.length - 1} more item{order.order_items.length > 2 ? 's' : ''}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>{totalItems}</TableCell>
+                          <TableCell className="font-medium">{formatPrice(order.total_amount)}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={statusConfig[order.status as keyof typeof statusConfig].variant}
+                              className="gap-1"
+                            >
+                              <StatusIcon className="h-3 w-3" />
+                              {statusConfig[order.status as keyof typeof statusConfig].label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </motion.tr>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        No orders found
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>

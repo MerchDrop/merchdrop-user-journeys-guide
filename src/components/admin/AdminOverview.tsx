@@ -1,355 +1,326 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
-import {
-  Users,
-  ShoppingBag,
-  DollarSign,
+import { Badge } from '@/components/ui/badge';
+import { 
+  DollarSign, 
+  Package, 
+  Users, 
   TrendingUp,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Eye,
-  ArrowUpRight,
-  ArrowDownRight,
+  ShoppingCart,
+  Star,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useOrders } from '@/hooks/useOrders';
+import { useProducts } from '@/hooks/useProducts';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock data
-const keyMetrics = [
-  {
-    title: 'Total Users',
-    value: '12,483',
-    change: '+12.5%',
-    changeType: 'positive',
-    icon: Users,
-  },
-  {
-    title: 'Active Artists',
-    value: '2,156',
-    change: '+8.3%',
-    changeType: 'positive',
-    icon: Users,
-  },
-  {
-    title: 'Total Products',
-    value: '8,947',
-    change: '+23.1%',
-    changeType: 'positive',
-    icon: ShoppingBag,
-  },
-  {
-    title: 'Monthly Revenue',
-    value: '$45,231',
-    change: '+15.7%',
-    changeType: 'positive',
-    icon: DollarSign,
-  },
-];
+interface AdminStats {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalArtists: number;
+  pendingArtists: number;
+  recentOrders: any[];
+  topProducts: any[];
+}
 
-const recentActivity = [
-  {
-    type: 'user_signup',
-    message: 'New user registered: john.doe@email.com',
-    time: '2 minutes ago',
-    icon: Users,
-  },
-  {
-    type: 'product_created',
-    message: 'New product created by Maya Rodriguez',
-    time: '15 minutes ago',
-    icon: ShoppingBag,
-  },
-  {
-    type: 'order_placed',
-    message: 'Order #12345 placed - $89.99',
-    time: '1 hour ago',
-    icon: DollarSign,
-  },
-  {
-    type: 'artist_approved',
-    message: 'Artist application approved: Alex Chen',
-    time: '2 hours ago',
-    icon: CheckCircle,
-  },
-];
+export default function AdminOverview() {
+  const [stats, setStats] = useState<AdminStats>({
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalArtists: 0,
+    pendingArtists: 0,
+    recentOrders: [],
+    topProducts: []
+  });
+  const [loading, setLoading] = useState(true);
+  const { formatPrice } = useCurrency();
 
-const dailyActiveUsers = [
-  { date: '1', users: 1200 },
-  { date: '2', users: 1350 },
-  { date: '3', users: 1180 },
-  { date: '4', users: 1420 },
-  { date: '5', users: 1650 },
-  { date: '6', users: 1480 },
-  { date: '7', users: 1720 },
-];
+  const fetchAdminStats = async () => {
+    try {
+      setLoading(true);
 
-const userTypes = [
-  { name: 'Regular Users', value: 8500, color: 'hsl(var(--primary))' },
-  { name: 'Artists', value: 2200, color: 'hsl(var(--secondary))' },
-  { name: 'Admins', value: 50, color: 'hsl(var(--accent))' },
-];
+      // Fetch total revenue and orders
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount, status, created_at, order_number, profiles(display_name)')
+        .order('created_at', { ascending: false });
 
-const pendingActions = [
-  {
-    title: 'Artist Applications',
-    count: 12,
-    priority: 'high',
-    action: 'Review',
-  },
-  {
-    title: 'Product Reviews',
-    count: 8,
-    priority: 'medium',
-    action: 'Moderate',
-  },
-  {
-    title: 'Support Tickets',
-    count: 23,
-    priority: 'high',
-    action: 'Respond',
-  },
-  {
-    title: 'Payout Requests',
-    count: 15,
-    priority: 'medium',
-    action: 'Process',
-  },
-];
+      // Fetch total products
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, title, status');
 
-const AdminOverview = () => {
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'text-red-500 bg-red-50 border-red-200';
-      case 'medium':
-        return 'text-orange-500 bg-orange-50 border-orange-200';
-      default:
-        return 'text-blue-500 bg-blue-50 border-blue-200';
+      // Fetch artists
+      const { data: artists } = await supabase
+        .from('artist_profiles')
+        .select('id, status, artist_name, total_sales');
+
+      // Fetch top selling products
+      const { data: topProducts } = await supabase
+        .from('order_items')
+        .select(`
+          product_id,
+          quantity,
+          products(title, main_image_url)
+        `);
+
+      // Calculate stats
+      const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+      const totalOrders = orders?.length || 0;
+      const totalProducts = products?.length || 0;
+      const totalArtists = artists?.filter(a => a.status === 'approved').length || 0;
+      const pendingArtists = artists?.filter(a => a.status === 'pending').length || 0;
+      const recentOrders = orders?.slice(0, 5) || [];
+
+      // Calculate top products
+      const productSales: { [key: string]: { quantity: number; product: any } } = {};
+      topProducts?.forEach(item => {
+        if (item.product_id && item.products) {
+          if (!productSales[item.product_id]) {
+            productSales[item.product_id] = { quantity: 0, product: item.products };
+          }
+          productSales[item.product_id].quantity += item.quantity;
+        }
+      });
+
+      const topProductsList = Object.values(productSales)
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 5);
+
+      setStats({
+        totalRevenue,
+        totalOrders,
+        totalProducts,
+        totalArtists,
+        pendingArtists,
+        recentOrders,
+        topProducts: topProductsList
+      });
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {keyMetrics.map((metric, index) => {
-          const Icon = metric.icon;
-          const isPositive = metric.changeType === 'positive';
-          
-          return (
-            <Card key={index} className="hover-scale">
+  useEffect(() => {
+    fetchAdminStats();
+  }, []);
+
+  const kpiCards = [
+    {
+      title: 'Total Revenue',
+      value: formatPrice(stats.totalRevenue),
+      icon: DollarSign,
+      color: 'text-green-600',
+      bgColor: 'bg-green-500/10'
+    },
+    {
+      title: 'Total Orders',
+      value: stats.totalOrders.toString(),
+      icon: ShoppingCart,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-500/10'
+    },
+    {
+      title: 'Active Products',
+      value: stats.totalProducts.toString(),
+      icon: Package,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-500/10'
+    },
+    {
+      title: 'Artists',
+      value: stats.totalArtists.toString(),
+      icon: Users,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-500/10'
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {metric.title}
-                    </p>
-                    <p className="text-3xl font-bold">{metric.value}</p>
-                  </div>
-                  <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Icon className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center">
-                  {isPositive ? (
-                    <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
-                  )}
-                  <span className={`text-sm font-medium ${
-                    isPositive ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    {metric.change}
-                  </span>
-                  <span className="text-sm text-muted-foreground ml-1">
-                    from last month
-                  </span>
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-3/4"></div>
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Platform overview and management
+          </p>
+        </div>
+        <Button onClick={fetchAdminStats} variant="outline">
+          Refresh Data
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Daily Active Users Chart */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Daily Active Users
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyActiveUsers}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="users"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--primary))' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpiCards.map((card, index) => (
+          <motion.div
+            key={card.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
+                    <p className="text-2xl font-bold">{card.value}</p>
+                  </div>
+                  <div className={`h-12 w-12 ${card.bgColor} rounded-full flex items-center justify-center`}>
+                    <card.icon className={`h-6 w-6 ${card.color}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Alert for pending artists */}
+      {stats.pendingArtists > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="border-yellow-500/50 bg-yellow-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-yellow-800">Pending Artist Approvals</h3>
+                  <p className="text-sm text-yellow-700">
+                    {stats.pendingArtists} artist{stats.pendingArtists !== 1 ? 's' : ''} waiting for approval
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Review Artists
+                </Button>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
+      )}
 
-        {/* User Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              User Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={userTypes}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {userTypes.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pending Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Pending Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pendingActions.map((action, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{action.title}</span>
-                      <Badge 
-                        variant="outline"
-                        className={getPriorityColor(action.priority)}
-                      >
-                        {action.priority}
-                      </Badge>
+        {/* Recent Orders */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                Recent Orders
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.recentOrders.length > 0 ? (
+                  stats.recentOrders.map((order, index) => (
+                    <div key={order.order_number} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">#{order.order_number}</span>
+                          <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
+                            {order.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {order.profiles?.display_name || 'Unknown Customer'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{formatPrice(order.total_amount)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {action.count} items pending
-                    </p>
-                  </div>
-                  <Button size="sm" variant="outline">
-                    {action.action}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">No recent orders</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Recent Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => {
-                const Icon = activity.icon;
-                return (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-4 w-4 text-primary" />
+        {/* Top Products */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                Top Selling Products
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.topProducts.length > 0 ? (
+                  stats.topProducts.map((item, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
+                      <div className="h-10 w-10 bg-muted rounded-lg flex items-center justify-center">
+                        {item.product.main_image_url ? (
+                          <img 
+                            src={item.product.main_image_url} 
+                            alt={item.product.title}
+                            className="h-10 w-10 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <Package className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium truncate">{item.product.title}</p>
+                        <p className="text-sm text-muted-foreground">{item.quantity} sold</p>
+                      </div>
+                      <Badge variant="outline">#{index + 1}</Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{activity.message}</p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">No sales data</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-
-      {/* System Health */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            System Health
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Server Performance</span>
-                <span className="text-sm text-green-500">Excellent</span>
-              </div>
-              <Progress value={95} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Database Health</span>
-                <span className="text-sm text-green-500">Good</span>
-              </div>
-              <Progress value={87} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Storage Usage</span>
-                <span className="text-sm text-orange-500">Moderate</span>
-              </div>
-              <Progress value={73} className="h-2" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
-};
-
-export default AdminOverview;
+}
