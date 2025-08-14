@@ -109,7 +109,7 @@ const TrendingProducts = () => {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-64 object-cover transition-transform duration-300"
                   />
                   
                   {/* Badges */}
@@ -129,7 +129,7 @@ const TrendingProducts = () => {
 
                   {/* Quick Actions */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors shadow-design-card">
+                    <button className="bg-white p-2 rounded-full hover:bg-white transition-colors shadow-design-card">
                       <Heart className="w-4 h-4" />
                     </button>
                     <button className="bg-primary text-primary-foreground p-2 rounded-full hover:bg-primary-hover transition-colors shadow-design-card">

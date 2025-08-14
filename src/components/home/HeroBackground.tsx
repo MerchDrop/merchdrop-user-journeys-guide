@@ -54,9 +54,9 @@ const HeroBackground: React.FC = () => (
     </svg>
 
     {/* Floating organic blobs - more visible */}
-    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-foreground/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-foreground/6 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
-    <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-foreground/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-foreground/8 rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
+    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-foreground/6 rounded-full animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+    <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-foreground/5 rounded-full animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
 
     {/* Subtle dot grid overlay */}
     <svg className="absolute inset-0 h-full w-full opacity-5 text-foreground">
