@@ -6,7 +6,6 @@ import HowItWorks from '@/components/home/HowItWorks';
 import Showcase from '@/components/home/Showcase';
 import ShopArtistDrops from '@/components/home/ShopArtistDrops';
 import FeaturedArtists from '@/components/home/FeaturedArtists';
-import TrendingProducts from '@/components/home/TrendingProducts';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function Home() {
@@ -28,7 +27,6 @@ export default function Home() {
             <Showcase />
             <ShopArtistDrops />
             <FeaturedArtists />
-            <TrendingProducts />
           </div>
         </main>
         <Footer />
