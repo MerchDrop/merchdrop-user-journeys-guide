@@ -129,6 +129,9 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
   }
 
   body {
@@ -137,6 +140,10 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-display: swap;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    image-rendering: -webkit-optimize-contrast;
   }
 }
 

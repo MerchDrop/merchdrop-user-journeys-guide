@@ -16,12 +16,7 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center">
           
           {/* Badge and Headline */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8 }} 
-            className="mb-12"
-          >
+          <div className="mb-12">
             <Badge variant="outline" className="mb-6 px-4 py-2">
               <Sparkles className="h-4 w-4 mr-2" />
               Launch your merch line in minutes
@@ -37,15 +32,9 @@ const HeroSection = () => {
               Create your online store that sells custom swag, from t-shirts to mugs. 
               Quality on-demand products, global shipping, and instant payouts.
             </p>
-          </motion.div>
+          </div>
 
-          {/* CTA Buttons */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8, delay: 0.2 }} 
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button size="lg" className="btn-primary text-base px-8 py-4">
               Start a store
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -54,15 +43,9 @@ const HeroSection = () => {
               <Play className="mr-2 h-5 w-5" />
               See how it works
             </Button>
-          </motion.div>
+          </div>
 
-          {/* Trust Indicators - small avatar cluster */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8, delay: 0.4 }} 
-            className="flex flex-col sm:flex-row items-center justify-center gap-8 text-meta lg:text-meta-lg text-muted-foreground"
-          >
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-meta lg:text-meta-lg text-muted-foreground">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span>10k+ creators already selling</span>
@@ -75,16 +58,10 @@ const HeroSection = () => {
               <Star className="h-4 w-4" />
               <span>4.9/5 creator satisfaction</span>
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Large Central Media Frame Placeholder */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 1, delay: 0.6 }} 
-          className="mt-20 max-w-5xl mx-auto"
-        >
+        <div className="mt-20 max-w-5xl mx-auto">
           <div className="relative bg-white rounded-lg shadow-design-card p-8 border border-border">
             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
               <div className="text-center">
@@ -101,7 +78,7 @@ const HeroSection = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
