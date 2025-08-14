@@ -12,7 +12,7 @@ import { Search, Menu, X, ShoppingCart, User, Settings, LogOut } from 'lucide-re
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { getTotalItems } = useCart();
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut, loading, isAdmin, isArtist } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -89,11 +89,19 @@ const Header = () => {
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
-                  {profile?.is_artist && (
+                  {isArtist && (
                     <DropdownMenuItem asChild>
                       <Link to="/dashboard/products" className="flex items-center">
                         <Settings className="mr-2 h-4 w-4" />
                         Manage Products
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Panel
                       </Link>
                     </DropdownMenuItem>
                   )}

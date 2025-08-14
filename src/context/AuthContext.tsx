@@ -14,21 +14,31 @@ interface Profile {
   bio: string | null;
   website_url: string | null;
   social_links: any;
-  is_artist: boolean;
-  is_admin: boolean;
   created_at: string;
   updated_at: string;
+}
+
+interface UserRole {
+  id: string;
+  user_id: string;
+  role: 'admin' | 'moderator' | 'artist' | 'user';
+  created_at: string;
 }
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  userRoles: UserRole[];
   loading: boolean;
+  hasRole: (role: 'admin' | 'moderator' | 'artist' | 'user') => boolean;
+  isAdmin: boolean;
+  isArtist: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
+  assignRole: (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user') => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -71,6 +82,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const fetchUserRoles = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching user roles:', error);
+        return;
+      }
+
+      setUserRoles(data || []);
+    } catch (error) {
+      console.error('Error fetching user roles:', error);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -82,9 +111,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Use setTimeout to prevent infinite recursion
           setTimeout(() => {
             fetchProfile(session.user.id);
+            fetchUserRoles(session.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setUserRoles([]);
         }
         
         setLoading(false);
@@ -98,6 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (session?.user) {
         fetchProfile(session.user.id);
+        fetchUserRoles(session.user.id);
       }
       
       setLoading(false);
@@ -229,15 +261,67 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const assignRole = async (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user') => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: userId, 
+          role: role 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
+
+      if (error) {
+        toast({
+          title: "Role Assignment Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Role Assigned",
+          description: `${role} role has been assigned successfully.`,
+        });
+        // Refresh roles if it's the current user
+        if (userId === user?.id) {
+          await fetchUserRoles(userId);
+        }
+      }
+
+      return { error };
+    } catch (error: any) {
+      toast({
+        title: "Role Assignment Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  // Helper functions for role checking
+  const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user') => {
+    return userRoles.some(userRole => userRole.role === role);
+  };
+
+  const isAdmin = hasRole('admin');
+  const isArtist = hasRole('artist');
+
   const value: AuthContextType = {
     user,
     session,
     profile,
+    userRoles,
     loading,
+    hasRole,
+    isAdmin,
+    isArtist,
     signUp,
     signIn,
     signOut,
     updateProfile,
+    assignRole,
   };
 
   return (
