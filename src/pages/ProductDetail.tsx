@@ -351,10 +351,10 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl font-bold text-primary">${product.price}</span>
+                  <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
                   {product.originalPrice && (
                     <>
-                      <span className="text-xl text-muted-foreground line-through">${product.originalPrice}</span>
+                      <span className="text-xl text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</span>
                       <Badge variant="destructive">
                         {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                       </Badge>

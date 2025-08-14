@@ -7,62 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Tag } from 'lucide-react';
-
-interface CartItem {
-  id: number;
-  name: string;
-  artist: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  quantity: number;
-  size?: string;
-  color?: string;
-}
-
-const initialCartItems: CartItem[] = [
-  {
-    id: 1,
-    name: "Midnight Dreams Canvas",
-    artist: "Luna Artist",
-    price: 89.99,
-    originalPrice: 129.99,
-    image: "/placeholder.svg",
-    quantity: 1,
-    size: "Medium",
-    color: "Black Frame"
-  },
-  {
-    id: 2,
-    name: "Abstract Symphony",
-    artist: "Neo Creator",
-    price: 124.99,
-    image: "/placeholder.svg",
-    quantity: 2,
-    size: "Large"
-  }
-];
+import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
+  const { formatPrice } = useCurrency();
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
-
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeItem(id);
-      return;
-    }
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
 
   const applyPromoCode = () => {
     if (promoCode.toLowerCase() === 'save10') {
@@ -71,13 +23,13 @@ export default function Cart() {
     }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = getTotalPrice();
   const promoDiscount = appliedPromo ? subtotal * 0.1 : 0;
   const shipping = subtotal > 100 ? 0 : 9.99;
   const tax = (subtotal - promoDiscount) * 0.08;
   const total = subtotal - promoDiscount + shipping + tax;
 
-  if (cartItems.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -119,13 +71,13 @@ export default function Cart() {
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-black mb-2">Shopping Cart</h1>
-            <p className="text-gray-600">{cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in your cart</p>
+            <p className="text-gray-600">{items.length} item{items.length !== 1 ? 's' : ''} in your cart</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
-              {cartItems.map((item) => (
+              {items.map((item) => (
                 <Card key={item.id} className="border border-gray-200">
                   <CardContent className="p-6">
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -171,12 +123,7 @@ export default function Cart() {
                         <div className="flex items-center justify-between">
                           {/* Price */}
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-black">${item.price}</span>
-                            {item.originalPrice && (
-                              <span className="text-sm text-gray-500 line-through">
-                                ${item.originalPrice}
-                              </span>
-                            )}
+                            <span className="font-bold text-black">{formatPrice(item.price)}</span>
                           </div>
 
                           {/* Quantity Controls */}
@@ -241,33 +188,33 @@ export default function Cart() {
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">${subtotal.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(subtotal)}</span>
                     </div>
                     
                     {appliedPromo && (
                       <div className="flex justify-between text-green-600">
                         <span>Discount ({appliedPromo})</span>
-                        <span>-${promoDiscount.toFixed(2)}</span>
+                        <span>-{formatPrice(promoDiscount)}</span>
                       </div>
                     )}
                     
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span className="font-medium">
-                        {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+                        {shipping === 0 ? 'Free' : formatPrice(shipping)}
                       </span>
                     </div>
                     
                     <div className="flex justify-between">
                       <span className="text-gray-600">Tax</span>
-                      <span className="font-medium">${tax.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(tax)}</span>
                     </div>
 
                     <Separator />
 
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
                   </div>
 
@@ -275,7 +222,7 @@ export default function Cart() {
                   {subtotal < 100 && (
                     <div className="bg-gray-50 p-3 rounded-lg mb-6 text-sm">
                       <p className="text-gray-600">
-                        Add <span className="font-semibold">${(100 - subtotal).toFixed(2)}</span> more for free shipping!
+                        Add <span className="font-semibold">{formatPrice(100 - subtotal)}</span> more for free shipping!
                       </p>
                     </div>
                   )}

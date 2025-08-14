@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Search, Filter, ShoppingCart, Star, Flame, Tag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/hooks/use-toast';
 
 type UiProduct = {
   id: string;
@@ -44,6 +47,10 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
+  
+  const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -244,10 +251,10 @@ export default function Products() {
 
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg font-bold text-black">${product.price}</span>
+                    <span className="text-lg font-bold text-black">{formatPrice(product.price)}</span>
                     {product.originalPrice && (
                       <span className="text-sm text-gray-500 line-through">
-                        ${product.originalPrice}
+                        {formatPrice(product.originalPrice)}
                       </span>
                     )}
                   </div>
@@ -274,7 +281,24 @@ export default function Products() {
                       </div>
                     </div>
                     
-                    <Button size="sm" className="bg-black text-white hover:bg-gray-800">
+                    <Button 
+                      size="sm" 
+                      className="bg-black text-white hover:bg-gray-800"
+                      onClick={() => {
+                        addItem({
+                          id: product.id,
+                          name: product.name,
+                          artist: product.artist,
+                          price: product.price,
+                          image: product.image
+                        }, 1);
+                        
+                        toast({
+                          title: "Added to cart!",
+                          description: `${product.name} has been added to your cart.`,
+                        });
+                      }}
+                    >
                       Add to Cart
                     </Button>
                   </div>

@@ -13,7 +13,7 @@ const TestComponent = () => {
       <div data-testid="cart-total">${getTotalPrice().toFixed(2)}</div>
       <button 
         onClick={() => addItem({
-          id: 1,
+          id: '1',
           name: 'Test Product',
           price: 29.99,
           image: '/test.jpg',
@@ -22,7 +22,7 @@ const TestComponent = () => {
       >
         Add Item
       </button>
-      <button onClick={() => removeItem(1)}>
+      <button onClick={() => removeItem('1')}>
         Remove Item
       </button>
       <button onClick={clearCart}>
