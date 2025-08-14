@@ -1,14 +1,29 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { CurrencySelector } from '@/components/ui/currency-selector';
-import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
+import { Search, Menu, X, ShoppingCart, User, Settings, LogOut } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { getTotalItems } = useCart();
+  const { user, profile, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -50,14 +65,55 @@ const Header = () => {
               )}
             </Link>
             <CurrencySelector />
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" className="text-black hover:text-gray-600" asChild>
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800" asChild>
-                <Link to="/signup">Start Creating</Link>
-              </Button>
-            </div>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="relative">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url || ''} />
+                      <AvatarFallback>
+                        {getInitials(profile?.display_name || profile?.first_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  {profile?.is_artist && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/products" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Manage Products
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="text-black hover:text-gray-600" asChild>
+                  <Link to="/auth">Login</Link>
+                </Button>
+                <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800" asChild>
+                  <Link to="/auth">Start Creating</Link>
+                </Button>
+              </div>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -110,14 +166,29 @@ const Header = () => {
                 <CurrencySelector className="w-full" />
               </div>
               
-              <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                <Button variant="ghost" className="text-black hover:text-gray-600" asChild>
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
-                </Button>
-                <Button variant="default" className="bg-black text-white hover:bg-gray-800" asChild>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
-                </Button>
-              </div>
+{user ? (
+                <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={profile?.avatar_url || ''} />
+                    <AvatarFallback>
+                      {getInitials(profile?.display_name || profile?.first_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                  <Button variant="ghost" className="text-black hover:text-gray-600" asChild>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                  </Button>
+                  <Button variant="default" className="bg-black text-white hover:bg-gray-800" asChild>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
