@@ -66,7 +66,7 @@ export default function AdminLayout() {
   }
 
   if (!user || !isAdmin) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/admin-auth" replace />;
   }
 
   return (

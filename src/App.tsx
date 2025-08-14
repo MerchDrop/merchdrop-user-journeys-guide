@@ -6,6 +6,7 @@ import { CurrencyProvider } from '@/context/CurrencyContext';
 import { CartProvider } from '@/context/CartContext';
 import { Toaster } from '@/components/ui/toaster';
 import Auth from '@/pages/Auth';
+import AdminAuth from '@/pages/AdminAuth';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
 import Artists from '@/pages/Artists';
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/user-auth" element={<UserAuth />} />
                 <Route path="/artist-auth" element={<ArtistAuth />} />
+                <Route path="/admin-auth" element={<AdminAuth />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/artists" element={<Artists />} />
                 <Route path="/cart" element={<Cart />} />

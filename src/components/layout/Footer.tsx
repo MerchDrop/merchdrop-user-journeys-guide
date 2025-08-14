@@ -124,6 +124,7 @@ const Footer = () => {
           <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
             <a href="#" className="hover:text-foreground transition-colors">Status</a>
             <a href="#" className="hover:text-foreground transition-colors">Security</a>
+            <Link to="/admin-auth" className="hover:text-foreground transition-colors">Admin</Link>
             <a href="#" className="hover:text-foreground transition-colors">Sitemap</a>
             <div className="hidden md:inline-block h-4 w-px bg-border"></div>
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
