@@ -32,7 +32,7 @@ const mockArtistApplications = [
   },
 ];
 
-const ArtistApprovalCard = () => {
+export const ArtistApprovalCard = () => {
   const { toast } = useToast();
 
   const handleApprove = (artistId: string, artistName: string) => {

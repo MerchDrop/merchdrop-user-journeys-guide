@@ -20,6 +20,9 @@ import ArtistSettings from '@/pages/artist/Settings';
 import ArtistOrders from '@/pages/artist/Orders';
 import ArtistPayouts from '@/pages/artist/Payouts';
 import Admin from '@/pages/Admin';
+import AdminProducts from '@/pages/admin/Products';
+import AdminUsers from '@/pages/admin/Users';
+import AdminArtists from '@/pages/admin/Artists';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
 import Login from '@/pages/Login';
@@ -58,7 +61,10 @@ function App() {
                 <Route path="/dashboard/settings" element={<ArtistSettings />} />
                 <Route path="/dashboard/orders" element={<ArtistOrders />} />
                 <Route path="/dashboard/payouts" element={<ArtistPayouts />} />
-                <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/artists" element={<AdminArtists />} />
                 <Route path="/health" element={<HealthCheck />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/login" element={<Login />} />

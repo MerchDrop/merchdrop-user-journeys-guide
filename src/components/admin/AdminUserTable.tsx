@@ -59,7 +59,7 @@ const mockUsers = [
   },
 ];
 
-const AdminUserTable = () => {
+export const AdminUserTable = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin':

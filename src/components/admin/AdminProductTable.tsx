@@ -71,7 +71,7 @@ const mockProducts = [
   },
 ];
 
-const AdminProductTable = () => {
+export const AdminProductTable = () => {
   const { toast } = useToast();
   const { formatPrice } = useCurrency();
 
