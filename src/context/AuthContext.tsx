@@ -35,6 +35,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isArtist: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
+  signUpArtist: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
@@ -147,7 +148,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: metadata
+          data: { ...metadata, user_type: 'user' }
         }
       });
 
@@ -168,6 +169,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       toast({
         title: "Sign Up Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const signUpArtist = async (email: string, password: string, metadata = {}) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: { ...metadata, user_type: 'artist' }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Artist Sign Up Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link to complete your artist registration.",
+        });
+      }
+
+      return { error };
+    } catch (error: any) {
+      toast({
+        title: "Artist Sign Up Error",
         description: error.message,
         variant: "destructive",
       });
@@ -318,6 +356,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAdmin,
     isArtist,
     signUp,
+    signUpArtist,
     signIn,
     signOut,
     updateProfile,
