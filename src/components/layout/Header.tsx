@@ -1,25 +1,18 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, ShoppingCart, Bell, Zap, Sparkles, ArrowRight, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { CurrencySelector } from '@/components/ui/currency-selector';
+import { Search, Menu, X, ShoppingCart, User, Settings, LogOut } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const { user, signOut } = useAuth();
-  const { items } = useCart();
+  const { getTotalItems } = useCart();
+  const { user, profile, signOut, loading, isAdmin, isArtist } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -27,257 +20,182 @@ const Header = () => {
     navigate('/');
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-white/80 border-b border-black/5 supports-[backdrop-filter]:bg-white/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
-          
-          {/* Logo Section - Modern with Badge */}
-          <Link to="/" className="group flex items-center space-x-3 transition-all duration-300 hover:scale-105">
-            <div className="relative">
-              <img 
-                src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
-                alt="MerchDrop" 
-                className="h-10 w-auto transition-all duration-300 group-hover:brightness-110"
-              />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-accent to-accent-light rounded-full animate-pulse opacity-80"></div>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                MerchDrop
-              </span>
-              <Badge variant="secondary" className="ml-2 text-xs px-2 py-0.5 bg-accent/10 text-accent font-medium">
-                Beta
-              </Badge>
-            </div>
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+              alt="MerchDrop" 
+              className="h-8 w-auto"
+            />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            <Link 
-              to="/artists" 
-              className="group relative text-sm font-medium text-foreground/80 hover:text-foreground transition-all duration-300"
-            >
-              Explore Artists
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-accent to-accent-light transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-            <Link 
-              to="/products" 
-              className="group relative text-sm font-medium text-foreground/80 hover:text-foreground transition-all duration-300"
-            >
-              Browse Products
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-accent to-accent-light transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-            <Link 
-              to="/how-it-works" 
-              className="group relative text-sm font-medium text-foreground/80 hover:text-foreground transition-all duration-300"
-            >
-              How It Works
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-accent to-accent-light transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          </nav>
-
-          {/* Enhanced Search Bar */}
+          {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className={`relative w-full transition-all duration-300 ${isSearchFocused ? 'transform scale-105' : ''}`}>
-              <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-colors duration-300 ${isSearchFocused ? 'text-accent' : 'text-muted-foreground'}`} />
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search products, artists..."
-                className="w-full pl-12 pr-4 py-3 bg-muted/50 border border-border/50 rounded-xl text-sm placeholder-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all duration-300 hover:bg-muted/70"
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
+                placeholder="Search artists, products..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black"
               />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <kbd className="px-2 py-1 text-xs bg-background border border-border rounded text-muted-foreground">
-                  ⌘K
-                </kbd>
-              </div>
             </div>
           </div>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-3">
-            
-            {/* Currency Selector */}
-            <div className="hidden sm:block">
-              <CurrencySelector />
-            </div>
-
-            {/* Cart */}
-            <Link to="/cart" className="group relative p-2.5 rounded-xl bg-muted/30 hover:bg-muted/60 transition-all duration-300 hover:scale-105">
-              <ShoppingCart className="h-5 w-5 text-foreground/70 group-hover:text-foreground transition-colors duration-300" />
-              {items.length > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-accent text-accent-foreground animate-bounce">
-                  {items.length}
-                </Badge>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/artists" className="text-black hover:text-gray-600 transition-colors">
+              Browse Artists
+            </Link>
+            <Link to="/products" className="text-black hover:text-gray-600 transition-colors">
+              Products
+            </Link>
+            <Link to="/cart" className="relative p-2 text-black hover:text-gray-600 transition-colors">
+              <ShoppingCart className="h-5 w-5" />
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
               )}
             </Link>
-
+            <CurrencySelector />
             {user ? (
-              <>
-                {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative p-2.5 rounded-xl bg-muted/30 hover:bg-muted/60 transition-all duration-300 hover:scale-105">
-                  <Bell className="h-5 w-5 text-foreground/70 hover:text-foreground transition-colors duration-300" />
-                  <div className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                </Button>
-
-                {/* User Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full ring-2 ring-accent/20 hover:ring-accent/40 transition-all duration-300">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.user_metadata?.avatar_url} />
-                        <AvatarFallback className="bg-gradient-to-r from-accent to-accent-light text-white text-sm font-semibold">
-                          {getInitials(user.user_metadata?.full_name || user.email || 'U')}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
-                    <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-accent/5 to-accent-light/5 rounded-lg mb-2">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.user_metadata?.avatar_url} />
-                        <AvatarFallback className="bg-gradient-to-r from-accent to-accent-light text-white">
-                          {getInitials(user.user_metadata?.full_name || user.email || 'U')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {user.user_metadata?.full_name || 'User'}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {user.email}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <DropdownMenuItem asChild className="group cursor-pointer">
-                      <Link to="/dashboard" className="flex items-center">
-                        <Zap className="mr-3 h-4 w-4 text-accent group-hover:text-accent-light transition-colors" />
-                        <span>Dashboard</span>
-                        <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="relative">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url || ''} />
+                      <AvatarFallback>
+                        {getInitials(profile?.display_name || profile?.first_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  {isArtist && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/products" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Manage Products
                       </Link>
                     </DropdownMenuItem>
-                    
-                    {user.user_metadata?.role === 'artist' && (
-                      <DropdownMenuItem asChild className="group cursor-pointer">
-                        <Link to="/merch-creator" className="flex items-center">
-                          <Sparkles className="mr-3 h-4 w-4 text-accent group-hover:text-accent-light transition-colors" />
-                          <span>Manage Products</span>
-                          <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    
-                    {user.user_metadata?.role === 'admin' && (
-                      <DropdownMenuItem asChild className="group cursor-pointer">
-                        <Link to="/admin" className="flex items-center">
-                          <User className="mr-3 h-4 w-4 text-accent group-hover:text-accent-light transition-colors" />
-                          <span>Admin Panel</span>
-                          <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                      Sign out
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Panel
+                      </Link>
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <div className="flex items-center space-x-3">
-                <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
-                  <Link to="/login">Sign In</Link>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="text-black hover:text-gray-600" asChild>
+                  <Link to="/auth">Login</Link>
                 </Button>
-                <Button size="sm" asChild className="bg-gradient-to-r from-accent to-accent-light hover:from-accent-light hover:to-accent text-white font-medium px-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <Link to="/signup" className="flex items-center">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Start Creating
-                  </Link>
+                <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800" asChild>
+                  <Link to="/auth">Start Creating</Link>
                 </Button>
               </div>
             )}
+          </nav>
 
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden p-2.5 rounded-xl bg-muted/30 hover:bg-muted/60 transition-all duration-300"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden p-2"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-black/5 shadow-xl">
-            <div className="p-6 space-y-6">
-              
+          <div className="md:hidden py-4 border-t border-gray-200 animate-fade-in-up">
+            <div className="flex flex-col space-y-4">
               {/* Mobile Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
-                  placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border/50 rounded-xl text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all duration-300"
+                  placeholder="Search artists, products..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
-
-              {/* Mobile Navigation */}
-              <nav className="space-y-4">
-                <Link 
-                  to="/artists" 
-                  className="block text-foreground hover:text-accent transition-colors font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Explore Artists
-                </Link>
-                <Link 
-                  to="/products" 
-                  className="block text-foreground hover:text-accent transition-colors font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Browse Products
-                </Link>
-                <Link 
-                  to="/how-it-works" 
-                  className="block text-foreground hover:text-accent transition-colors font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  How It Works
-                </Link>
-              </nav>
-
-              {/* Mobile Currency & Cart */}
-              <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                <CurrencySelector />
-                <Link 
-                  to="/cart" 
-                  className="flex items-center space-x-2 text-foreground hover:text-accent transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>Cart ({items.length})</span>
-                </Link>
+              
+              <Link 
+                to="/artists" 
+                className="text-black hover:text-gray-600 transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Browse Artists
+              </Link>
+              <Link 
+                to="/products" 
+                className="text-black hover:text-gray-600 transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Products
+              </Link>
+              <Link 
+                to="/cart" 
+                className="flex items-center text-black hover:text-gray-600 transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Cart ({getTotalItems()})
+              </Link>
+              
+              <div className="py-2">
+                <CurrencySelector className="w-full" />
               </div>
-
-              {/* Mobile Auth */}
-              {!user && (
-                <div className="flex space-x-3 pt-4 border-t border-border/50">
-                  <Button variant="outline" size="sm" asChild className="flex-1">
-                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+              
+{user ? (
+                <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={profile?.avatar_url || ''} />
+                    <AvatarFallback>
+                      {getInitials(profile?.display_name || profile?.first_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                  <Button variant="ghost" className="text-black hover:text-gray-600" asChild>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Login</Link>
                   </Button>
-                  <Button size="sm" asChild className="flex-1 bg-gradient-to-r from-accent to-accent-light text-white">
-                    <Link to="/signup" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
+                  <Button variant="default" className="bg-black text-white hover:bg-gray-800" asChild>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
                   </Button>
                 </div>
               )}
