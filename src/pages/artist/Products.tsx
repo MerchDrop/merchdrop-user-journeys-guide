@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { ProductForm } from '@/components/forms/ProductForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,15 +7,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { Plus, Filter, Edit, Eye, Archive, MoreHorizontal } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/context/AuthContext';
-import { useCurrency } from '@/context/CurrencyContext';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,13 +19,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 export default function ArtistProducts() {
   const [showProductForm, setShowProductForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const { products, loading, fetchArtistProducts, publishProduct, unpublishProduct, deleteProduct } = useProducts();
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const { products, loading, error, fetchArtistProducts, publishProduct, unpublishProduct, deleteProduct } = useProducts();
   const { isArtist } = useAuth();
-  const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -44,65 +45,78 @@ export default function ArtistProducts() {
     }
   }, [isArtist]);
 
-  const handleCreateProduct = () => {
-    setEditingProduct(null);
-    setShowProductForm(true);
-  };
-
-  const handleEditProduct = (product: any) => {
-    setEditingProduct(product);
-    setShowProductForm(true);
-  };
-
-  const handleFormSuccess = () => {
-    setShowProductForm(false);
-    setEditingProduct(null);
-    fetchArtistProducts();
-  };
-
-  const handlePublishToggle = async (product: any) => {
-    const result = product.status === 'published' 
-      ? await unpublishProduct(product.id)
-      : await publishProduct(product.id);
-
-    if (result.success) {
+  const handlePublish = async (productId: string) => {
+    try {
+      await publishProduct(productId);
       toast({
-        title: "Success",
-        description: `Product ${product.status === 'published' ? 'unpublished' : 'published'} successfully!`,
+        title: "Product Published",
+        description: "Your product is now live and available for purchase.",
       });
-    } else {
+    } catch (error) {
       toast({
         title: "Error",
-        description: result.error || "Failed to update product status",
+        description: "Failed to publish product. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      const result = await deleteProduct(productId);
-      
-      if (result.success) {
+  const handleUnpublish = async (productId: string) => {
+    try {
+      await unpublishProduct(productId);
+      toast({
+        title: "Product Unpublished",
+        description: "Your product has been removed from the marketplace.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to unpublish product. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      try {
+        await deleteProduct(productId);
         toast({
-          title: "Success",
-          description: "Product deleted successfully!",
+          title: "Product Deleted",
+          description: "Your product has been permanently deleted.",
         });
-      } else {
+      } catch (error) {
         toast({
           title: "Error",
-          description: result.error || "Failed to delete product",
+          description: "Failed to delete product. Please try again.",
           variant: "destructive",
         });
       }
     }
   };
 
+  const handleFormSuccess = () => {
+    setShowProductForm(false);
+    setEditingProduct(null);
+    fetchArtistProducts();
+    toast({
+      title: "Success",
+      description: editingProduct ? "Product updated successfully." : "Product created successfully.",
+    });
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'published': return 'default';
       case 'draft': return 'secondary';
-      case 'pending': return 'outline';
+      case 'archived': return 'outline';
       default: return 'secondary';
     }
   };
@@ -121,152 +135,157 @@ export default function ArtistProducts() {
 
   return (
     <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">My Products</h1>
-            <p className="text-muted-foreground">
-              Manage your merch catalog and track performance
-            </p>
-          </div>
-          <div className="flex gap-3 mt-4 md:mt-0">
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-            <Button onClick={handleCreateProduct}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Product
-            </Button>
-          </div>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">My Products</h1>
+          <p className="text-muted-foreground">
+            Manage your merch catalog and track performance
+          </p>
         </div>
+        <Button onClick={() => setShowProductForm(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Product
+        </Button>
+      </div>
 
-        {/* Products Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Products ({products.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <div className="h-12 w-12 bg-muted rounded animate-pulse" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-muted rounded animate-pulse" />
-                      <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <CardTitle>Product Catalog</CardTitle>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full md:w-[300px]"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-destructive">Error loading products: {error}</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No products found. Create your first product to get started!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <div className="aspect-square bg-muted relative">
+                    {product.main_image_url ? (
+                      <img
+                        src={product.main_image_url}
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-muted-foreground">No image</p>
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="secondary" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => {
+                            setEditingProduct(product);
+                            setShowProductForm(true);
+                          }}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
+                          </DropdownMenuItem>
+                          {product.status === 'published' ? (
+                            <DropdownMenuItem onClick={() => handleUnpublish(product.id)}>
+                              <Archive className="mr-2 h-4 w-4" />
+                              Unpublish
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handlePublish(product.id)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Publish
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(product.id)}
+                            className="text-destructive"
+                          >
+                            <Archive className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : products.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          {product.main_image_url ? (
-                            <img
-                              src={product.main_image_url}
-                              alt={product.title}
-                              className="h-10 w-10 rounded object-cover"
-                            />
-                          ) : (
-                            <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                              <span className="text-xs text-muted-foreground">No Image</span>
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium">{product.title}</p>
-                            <p className="text-sm text-muted-foreground">#{product.slug}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(product.status)}>
-                          {product.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {formatPrice(product.price_cents / 100)}
-                      </TableCell>
-                      <TableCell>
-                        <span className={product.stock < 10 ? 'text-destructive' : ''}>
-                          {product.stock}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(product.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditProduct(product)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Product
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handlePublishToggle(product)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              {product.status === 'published' ? 'Unpublish' : 'Publish'}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteProduct(product.id)}
-                              className="text-destructive"
-                            >
-                              <Archive className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No products yet</p>
-                <Button onClick={handleCreateProduct}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Product
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-sm truncate flex-1">{product.title}</h3>
+                      <Badge variant={getStatusBadgeVariant(product.status)} className="ml-2">
+                        {product.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                      {product.description || 'No description'}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold">${(product.price_cents / 100).toFixed(2)}</span>
+                      <span className="text-sm text-muted-foreground">Stock: {product.stock}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Product Form Dialog */}
-        <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingProduct ? 'Edit Product' : 'Create New Product'}
-              </DialogTitle>
-            </DialogHeader>
-            <ProductForm
-              editProduct={editingProduct}
-              onSuccess={handleFormSuccess}
-              onCancel={() => setShowProductForm(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Product Form Dialog */}
+      <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? 'Edit Product' : 'Create New Product'}
+            </DialogTitle>
+          </DialogHeader>
+          <ProductForm
+            editProduct={editingProduct}
+            onSuccess={handleFormSuccess}
+            onCancel={() => setShowProductForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
