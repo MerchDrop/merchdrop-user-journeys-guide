@@ -176,7 +176,7 @@ export const Wishlist: React.FC<WishlistProps> = ({ isWidget = false, limit }) =
                 <img
                   src={item.products.main_image_url || '/placeholder.svg'}
                   alt={item.products.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  className="w-full h-full object-cover transition-transform"
                 />
                 <Button
                   variant="ghost"
