@@ -78,6 +78,22 @@ export default {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
 				heading: ['Inter', 'system-ui', 'sans-serif']
 			},
+			fontSize: {
+				'h1': ['2.25rem', { lineHeight: '2.5rem', fontWeight: '700' }],        // 36px
+				'h1-lg': ['3rem', { lineHeight: '3.5rem', fontWeight: '700' }],       // 48px
+				'h2': ['1.75rem', { lineHeight: '2rem', fontWeight: '700' }],         // 28px
+				'h2-lg': ['2rem', { lineHeight: '2.5rem', fontWeight: '700' }],       // 32px
+				'h3': ['1.375rem', { lineHeight: '1.75rem', fontWeight: '700' }],     // 22px
+				'h3-lg': ['1.5rem', { lineHeight: '2rem', fontWeight: '700' }],       // 24px
+				'dashboard-title': ['1.25rem', { lineHeight: '1.75rem', fontWeight: '700' }], // 20px
+				'dashboard-title-lg': ['1.375rem', { lineHeight: '1.75rem', fontWeight: '700' }], // 22px
+				'body': ['1rem', { lineHeight: '1.6', fontWeight: '400' }],           // 16px
+				'body-lg': ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],    // 18px
+				'dashboard-text': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }], // 14px
+				'dashboard-text-lg': ['1rem', { lineHeight: '1.5', fontWeight: '400' }], // 16px
+				'meta': ['0.75rem', { lineHeight: '1.5', fontWeight: '400' }],        // 12px
+				'meta-lg': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],    // 14px
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

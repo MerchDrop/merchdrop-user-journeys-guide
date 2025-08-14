@@ -3,78 +3,81 @@
 @tailwind components;
 @tailwind utilities;
 
-/* MerchDrop Design System - Minimalistic Black & White */
+/* MerchDrop Design System - Clean & Minimal */
 
 @layer base {
   :root {
-    /* Core minimalistic colors */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Primary colors from design system */
+    --background: 0 0% 100%;              /* #FFFFFF */
+    --foreground: 0 0% 7%;                /* #111111 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 100%;                    /* #FFFFFF */
+    --card-foreground: 0 0% 7%;           /* #111111 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;                 /* #FFFFFF */
+    --popover-foreground: 0 0% 7%;        /* #111111 */
 
-    /* Primary - Black */
-    --primary: 0 0% 0%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 0 0% 20%;
-    --primary-dark: 0 0% 0%;
+    /* Primary - Black for buttons */
+    --primary: 0 0% 0%;                   /* #000000 */
+    --primary-foreground: 0 0% 100%;      /* #FFFFFF */
+    --primary-hover: 0 0% 13%;            /* #222222 */
 
-    /* Secondary - Light gray */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
+    /* Secondary - White with borders */
+    --secondary: 0 0% 97%;                /* #F8F8F8 */
+    --secondary-foreground: 0 0% 7%;      /* #111111 */
+    --secondary-hover: 0 0% 94%;          /* #F0F0F0 */
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;
+    /* Text colors */
+    --muted: 0 0% 97%;                    /* #F8F8F8 */
+    --muted-foreground: 0 0% 53%;         /* #888888 */
+    --text-secondary: 0 0% 33%;           /* #555555 */
 
-    /* Accent - Dark gray */
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 0 0% 40%;
+    /* Accent - Blue accent */
+    --accent: 214 100% 52%;               /* #0A84FF */
+    --accent-foreground: 0 0% 100%;       /* #FFFFFF */
 
-    /* Status colors - Minimal */
-    --success: 0 0% 0%;
-    --success-foreground: 0 0% 100%;
+    /* Status colors */
+    --success: 142 76% 36%;               /* #34C759 */
+    --success-foreground: 0 0% 100%;      /* #FFFFFF */
     
-    --warning: 0 0% 0%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 36 100% 50%;               /* #FF9500 */
+    --warning-foreground: 0 0% 100%;      /* #FFFFFF */
     
-    --destructive: 0 0% 0%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 4 90% 58%;             /* #FF3B30 */
+    --destructive-foreground: 0 0% 100%;  /* #FFFFFF */
 
     /* UI elements */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 0%;
+    --border: 0 0% 90%;                   /* #E5E5E5 */
+    --input: 0 0% 90%;                    /* #E5E5E5 */
+    --ring: 214 100% 52%;                 /* #0A84FF */
 
-    /* Minimal gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
-    --gradient-accent: linear-gradient(135deg, hsl(0 0% 20%), hsl(0 0% 40%));
-    --gradient-purple: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
+    /* Dashboard specific */
+    --dashboard-sidebar: 0 0% 96%;        /* #F5F5F5 */
+    --dashboard-sidebar-active: 0 0% 92%; /* #EAEAEA */
+    --dashboard-header: 0 0% 100%;        /* #FFFFFF */
+    --chart-grid: 0 0% 94%;               /* #F0F0F0 */
 
-    /* Minimal shadows */
-    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
-    --shadow-hero: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 10px 10px -5px hsl(0 0% 0% / 0.04);
-    --shadow-glow: 0 0 20px hsl(0 0% 0% / 0.3);
+    /* Shadows - subtle and soft */
+    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px 0 hsl(0 0% 0% / 0.06);
+    --shadow-hover: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
+    --shadow-focus: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -2px hsl(0 0% 0% / 0.05);
 
-    /* Animations */
+    /* Animations - smooth */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
+    /* Border radius - 8px as per design system */
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 95%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 0%;
+    /* Sidebar colors */
+    --sidebar-background: 0 0% 96%;       /* #F5F5F5 */
+    --sidebar-foreground: 0 0% 7%;        /* #111111 */
+    --sidebar-primary: 0 0% 0%;           /* #000000 */
+    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-accent: 0 0% 92%;           /* #EAEAEA */
+    --sidebar-accent-foreground: 0 0% 7%; /* #111111 */
+    --sidebar-border: 0 0% 90%;           /* #E5E5E5 */
+    --sidebar-ring: 214 100% 52%;         /* #0A84FF */
   }
 
   .dark {
@@ -128,52 +131,93 @@
 }
 
 @layer components {
-  /* Minimal gradient backgrounds */
-  .bg-hero-gradient {
-    background: var(--gradient-hero);
+  /* Design System Component Styles */
+  
+  /* Cards - subtle shadow with 8px border radius */
+  .card-design-system {
+    @apply bg-white rounded-lg shadow-card p-5 transition-smooth hover:shadow-hover;
   }
   
-  .bg-card-gradient {
-    background: var(--gradient-card);
+  /* Button styles matching design system */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover rounded-lg px-5 py-3 font-medium transition-smooth;
   }
   
-  .bg-accent-gradient {
-    background: var(--gradient-accent);
+  .btn-secondary {
+    @apply bg-white text-foreground border border-input hover:bg-secondary-hover rounded-lg px-5 py-3 font-medium transition-smooth;
   }
   
-  .bg-purple-gradient {
-    background: var(--gradient-purple);
+  /* Dashboard specific styles */
+  .dashboard-card {
+    @apply bg-white rounded-lg shadow-card p-4 transition-smooth;
   }
-
-  /* Minimal shadows */
-  .shadow-card {
+  
+  .dashboard-sidebar {
+    @apply bg-dashboard-sidebar;
+  }
+  
+  .dashboard-sidebar-item {
+    @apply hover:bg-dashboard-sidebar-active transition-smooth rounded-md;
+  }
+  
+  .dashboard-sidebar-active {
+    @apply bg-dashboard-sidebar-active;
+  }
+  
+  /* Typography classes */
+  .text-secondary {
+    color: hsl(var(--text-secondary));
+  }
+  
+  /* Feature card styling */
+  .feature-card {
+    @apply bg-white rounded-lg shadow-card p-6 transition-smooth hover:shadow-hover hover:scale-[1.02];
+  }
+  
+  /* Step card styling */
+  .step-card {
+    @apply bg-white rounded-lg shadow-card p-6 border border-border;
+  }
+  
+  /* Pricing card styling */
+  .pricing-card {
+    @apply bg-white rounded-lg shadow-card p-6 text-center transition-smooth hover:shadow-hover;
+  }
+  
+  .pricing-card-highlighted {
+    @apply bg-accent text-accent-foreground;
+  }
+  
+  /* Chart and grid styles */
+  .chart-grid {
+    color: hsl(var(--chart-grid));
+  }
+  
+  /* Shadows */
+  .shadow-design-card {
     box-shadow: var(--shadow-card);
   }
   
-  .shadow-hero {
-    box-shadow: var(--shadow-hero);
+  .shadow-design-hover {
+    box-shadow: var(--shadow-hover);
   }
   
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
+  .shadow-design-focus {
+    box-shadow: var(--shadow-focus);
   }
 
   /* Smooth transitions */
-  .transition-smooth {
+  .transition-design-smooth {
     transition: var(--transition-smooth);
   }
   
-  .transition-bounce {
-    transition: var(--transition-bounce);
-  }
-
-  /* Minimal hover effects */
-  .hover-lift {
-    @apply transition-smooth hover:translate-y-[-2px] hover:shadow-card;
+  /* Hover effects matching design system */
+  .hover-card-lift {
+    @apply transition-design-smooth hover:shadow-design-hover hover:scale-[1.02];
   }
   
-  .hover-glow {
-    @apply transition-smooth hover:shadow-glow;
+  .hover-accent-underline {
+    @apply relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full;
   }
 }
 
