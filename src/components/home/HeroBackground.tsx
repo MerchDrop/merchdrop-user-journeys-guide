@@ -7,48 +7,56 @@ const HeroBackground: React.FC = () => (
       <defs>
         <linearGradient id="spline-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="hsl(var(--background))" />
-          <stop offset="50%" stopColor="hsl(var(--foreground) / 0.05)" />
+          <stop offset="50%" stopColor="hsl(var(--foreground) / 0.15)" />
           <stop offset="100%" stopColor="hsl(var(--background))" />
         </linearGradient>
       </defs>
       
-      {/* Main flowing spline shapes */}
+      {/* Main flowing spline shapes - more visible */}
       <path
         d="M0,300 Q200,100 400,200 T800,300 Q900,400 1000,200 L1000,0 L0,0 Z"
-        fill="hsl(var(--foreground) / 0.03)"
+        fill="hsl(var(--foreground) / 0.08)"
         className="animate-pulse"
         style={{ animationDuration: '8s' }}
       />
       <path
         d="M0,600 Q300,400 600,500 T1000,600 L1000,1000 L0,1000 Z"
-        fill="hsl(var(--foreground) / 0.02)"
+        fill="hsl(var(--foreground) / 0.06)"
         className="animate-pulse"
         style={{ animationDuration: '12s', animationDelay: '2s' }}
       />
       
-      {/* Flowing curved lines */}
+      {/* Additional flowing shapes for more complexity */}
+      <path
+        d="M200,0 Q400,300 600,150 T1000,100 L1000,0 Z"
+        fill="hsl(var(--foreground) / 0.04)"
+        className="animate-pulse"
+        style={{ animationDuration: '10s', animationDelay: '1s' }}
+      />
+      
+      {/* Flowing curved lines - more visible */}
       <path
         d="M0,200 Q250,50 500,150 T1000,200"
-        stroke="hsl(var(--foreground) / 0.08)"
-        strokeWidth="2"
+        stroke="hsl(var(--foreground) / 0.15)"
+        strokeWidth="3"
         fill="none"
         className="animate-pulse"
         style={{ animationDuration: '6s' }}
       />
       <path
         d="M0,800 Q300,600 600,700 T1000,800"
-        stroke="hsl(var(--foreground) / 0.06)"
-        strokeWidth="1"
+        stroke="hsl(var(--foreground) / 0.12)"
+        strokeWidth="2"
         fill="none"
         className="animate-pulse"
         style={{ animationDuration: '10s', animationDelay: '1s' }}
       />
     </svg>
 
-    {/* Floating organic blobs */}
-    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-foreground/3 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-foreground/2 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
-    <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-foreground/2 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+    {/* Floating organic blobs - more visible */}
+    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-foreground/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-foreground/6 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+    <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-foreground/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
 
     {/* Subtle dot grid overlay */}
     <svg className="absolute inset-0 h-full w-full opacity-5 text-foreground">
