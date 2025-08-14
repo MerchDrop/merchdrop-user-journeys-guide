@@ -41,14 +41,14 @@ const Showcase = () => {
             >
               <Card className="rounded-xl border overflow-hidden hover:shadow-sm transition-all border-border bg-card h-full">
                 <div className="p-5">
-                  <div className="inline-flex items-center gap-2 text-meta font-medium text-muted-foreground">
+                  <div className="inline-flex items-center gap-2 text-[13px] font-medium text-muted-foreground">
                     <item.icon className="w-4 h-4" strokeWidth={1.5} />
                     {item.label}
                   </div>
-                  <h3 className="mt-2 text-h3 font-semibold tracking-tight text-foreground">
+                  <h3 className="mt-2 text-[18px] font-semibold tracking-tight text-foreground">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-dashboard-text text-muted-foreground">
+                  <p className="mt-1 text-[14px] text-muted-foreground">
                     {item.description}
                   </p>
                 </div>

@@ -90,10 +90,10 @@ const TrendingProducts = () => {
         
         {/* Section Header */}
         <div className="text-center mb-16 lg:mb-20">
-          <h2 className="text-h2 lg:text-h2-lg font-bold mb-6 text-foreground">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-foreground">
             Shop artist drops
           </h2>
-          <p className="text-body lg:text-body-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-[16px] lg:text-[18px] text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Discover the hottest merchandise from our creative community. From streetwear to accessories, find your perfect style.
           </p>
         </div>
@@ -115,13 +115,13 @@ const TrendingProducts = () => {
                   {/* Badges */}
                   <div className="absolute top-3 left-3 flex gap-2">
                     {product.trending && (
-                      <Badge className="bg-accent text-accent-foreground text-meta">
+                      <Badge className="bg-accent text-accent-foreground text-[12px]">
                         <Flame className="w-3 h-3 mr-1" />
                         Trending
                       </Badge>
                     )}
                     {product.onSale && (
-                      <Badge className="bg-destructive text-destructive-foreground text-meta">
+                      <Badge className="bg-destructive text-destructive-foreground text-[12px]">
                         Sale
                       </Badge>
                     )}
@@ -143,28 +143,28 @@ const TrendingProducts = () => {
                   {/* Artist */}
                   <Link 
                     to={`/artist/${product.artistHandle.slice(1)}`}
-                    className="text-meta lg:text-meta-lg text-muted-foreground hover:text-accent transition-colors hover-accent-underline"
+                    className="text-[13px] text-muted-foreground hover:text-accent transition-colors hover-accent-underline"
                   >
                     by {product.artist}
                   </Link>
 
                   {/* Product Name */}
-                  <h3 className="text-dashboard-title lg:text-dashboard-title-lg font-bold mb-3 text-foreground group-hover:text-accent transition-colors">
+                  <h3 className="text-[20px] lg:text-[22px] font-bold mb-3 text-foreground group-hover:text-accent transition-colors">
                     {product.name}
                   </h3>
 
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-body lg:text-body-lg font-bold text-foreground">{formatPrice(product.price)}</span>
+                    <span className="text-[16px] lg:text-[18px] font-bold text-foreground">{formatPrice(product.price)}</span>
                     {product.originalPrice && (
-                      <span className="text-dashboard-text text-muted-foreground line-through">
+                      <span className="text-[14px] text-muted-foreground line-through">
                         {formatPrice(product.originalPrice)}
                       </span>
                     )}
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center justify-between text-dashboard-text text-muted-foreground">
+                  <div className="flex items-center justify-between text-[14px] text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
                       {product.likes}

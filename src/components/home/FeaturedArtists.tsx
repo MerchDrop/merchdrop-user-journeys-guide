@@ -63,10 +63,10 @@ const FeaturedArtists = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16 lg:mb-20"
         >
-          <h2 className="text-h2 lg:text-h2-lg font-bold mb-6 text-foreground">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-foreground">
             Featured Artists
           </h2>
-          <p className="text-body lg:text-body-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-[16px] lg:text-[18px] text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Discover talented artists who are building their brands and generating revenue through MerchDrop.
           </p>
         </motion.div>
@@ -90,11 +90,11 @@ const FeaturedArtists = () => {
                   />
                   <div className="absolute top-3 right-3 flex gap-2">
                     {artist.trending && (
-                      <Badge variant="default" className="bg-primary text-primary-foreground text-meta">
+                      <Badge variant="default" className="bg-primary text-primary-foreground text-[12px]">
                         Trending
                       </Badge>
                     )}
-                    <Badge variant="outline" className="border-border text-foreground bg-white text-meta">
+                    <Badge variant="outline" className="border-border text-foreground bg-white text-[12px]">
                       {artist.genre}
                     </Badge>
                   </div>
@@ -110,12 +110,12 @@ const FeaturedArtists = () => {
                 {/* Artist Info */}
                 <div className="pt-8 pb-6 px-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-dashboard-title lg:text-dashboard-title-lg font-bold text-foreground">
+                    <h3 className="text-[20px] lg:text-[22px] font-bold text-foreground">
                       {artist.name}
                     </h3>
                     <div className="flex items-center text-foreground">
                       <Star className="h-4 w-4 mr-1" />
-                      <span className="text-dashboard-text">{artist.rating}</span>
+                      <span className="text-[14px]">{artist.rating}</span>
                     </div>
                   </div>
                   
@@ -124,20 +124,20 @@ const FeaturedArtists = () => {
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
                         <Users className="h-4 w-4 text-muted-foreground mr-1" />
-                        <span className="text-dashboard-text font-semibold text-foreground">{artist.followers}</span>
+                        <span className="text-[14px] font-semibold text-foreground">{artist.followers}</span>
                       </div>
-                      <p className="text-meta text-muted-foreground">Followers</p>
+                      <p className="text-[12px] text-muted-foreground">Followers</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
                         <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
-                        <span className="text-dashboard-text font-semibold text-foreground">{artist.revenue}</span>
+                        <span className="text-[14px] font-semibold text-foreground">{artist.revenue}</span>
                       </div>
-                      <p className="text-meta text-muted-foreground">Revenue</p>
+                      <p className="text-[12px] text-muted-foreground">Revenue</p>
                     </div>
                     <div className="text-center">
-                      <span className="text-dashboard-text font-semibold text-foreground">{artist.products}</span>
-                      <p className="text-meta text-muted-foreground">Products</p>
+                      <span className="text-[14px] font-semibold text-foreground">{artist.products}</span>
+                      <p className="text-[12px] text-muted-foreground">Products</p>
                     </div>
                   </div>
                   

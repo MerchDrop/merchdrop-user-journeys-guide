@@ -52,16 +52,16 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/artists" className="text-black hover:text-gray-600 transition-colors">
+            <Link to="/artists" className="text-[14px] text-black hover:text-gray-600 transition-colors">
               Browse Artists
             </Link>
-            <Link to="/products" className="text-black hover:text-gray-600 transition-colors">
+            <Link to="/products" className="text-[14px] text-black hover:text-gray-600 transition-colors">
               Products
             </Link>
             <Link to="/cart" className="relative p-2 text-black hover:text-gray-600 transition-colors">
               <ShoppingCart className="h-5 w-5" />
               {getTotalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-black text-white text-[11px] rounded-full h-5 w-5 flex items-center justify-center">
                   {getTotalItems()}
                 </span>
               )}
@@ -81,8 +81,8 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                    <p className="text-[14px] font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
+                    <p className="text-[12px] text-muted-foreground">{profile?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -116,10 +116,10 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className="text-black hover:text-gray-600" asChild>
+                <Button variant="ghost" size="sm" className="text-[14px] text-black hover:text-gray-600" asChild>
                   <Link to="/auth">Login</Link>
                 </Button>
-                <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800" asChild>
+                <Button variant="default" size="sm" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
                   <Link to="/auth">Start Creating</Link>
                 </Button>
               </div>
@@ -151,21 +151,21 @@ const Header = () => {
               
               <Link 
                 to="/artists" 
-                className="text-black hover:text-gray-600 transition-colors py-2"
+                className="text-[14px] text-black hover:text-gray-600 transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Browse Artists
               </Link>
               <Link 
                 to="/products" 
-                className="text-black hover:text-gray-600 transition-colors py-2"
+                className="text-[14px] text-black hover:text-gray-600 transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
               </Link>
               <Link 
                 to="/cart" 
-                className="flex items-center text-black hover:text-gray-600 transition-colors py-2"
+                className="text-[14px] flex items-center text-black hover:text-gray-600 transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
@@ -185,16 +185,16 @@ const Header = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                    <p className="text-[14px] font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
+                    <p className="text-[12px] text-muted-foreground">{profile?.email}</p>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                  <Button variant="ghost" className="text-black hover:text-gray-600" asChild>
+                  <Button variant="ghost" className="text-[14px] text-black hover:text-gray-600" asChild>
                     <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Login</Link>
                   </Button>
-                  <Button variant="default" className="bg-black text-white hover:bg-gray-800" asChild>
+                  <Button variant="default" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
                     <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
                   </Button>
                 </div>
