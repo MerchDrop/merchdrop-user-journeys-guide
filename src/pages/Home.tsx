@@ -25,8 +25,8 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">
             <HowItWorks />
             <Showcase />
-            <ShopArtistDrops />
             <FeaturedArtists />
+            <ShopArtistDrops />
           </div>
         </main>
         <Footer />

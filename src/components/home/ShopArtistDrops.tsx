@@ -63,7 +63,7 @@ const ShopArtistDrops = () => {
           .eq('status', 'published')
           .not('artist_profiles.artist_name', 'is', null)
           .order('published_at', { ascending: false })
-          .limit(3);
+          .limit(9);
 
         if (error) {
           console.error('Error fetching products:', error);
