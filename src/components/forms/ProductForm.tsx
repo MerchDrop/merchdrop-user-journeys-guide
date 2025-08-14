@@ -96,6 +96,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     setArtistProfile(data);
   };
 
+  const generateSlug = async (title: string) => {
+    const { data, error } = await supabase.rpc('generate_product_slug', { title });
+    if (error) {
+      console.error('Error generating slug:', error);
+      return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+    return data;
+  };
+
   const uploadImages = async (productId: string) => {
     const uploadPromises = images.map(async (file, index) => {
       const fileExt = file.name.split('.').pop();
@@ -151,8 +160,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
         currency,
         tags,
         status: 'draft' as const,
-        slug: data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+        slug: await generateSlug(data.title),
         variants: data.variants || {},
+        main_image_url: images.length > 0 ? null : editProduct?.main_image_url || null,
       };
 
       let productId;
@@ -178,6 +188,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
 
       if (images.length > 0) {
         await uploadImages(productId);
+        
+        // Update main_image_url with the first uploaded image
+        if (!editProduct && images.length > 0) {
+          const firstImageUrl = `${supabase.storage.from('product-images').getPublicUrl(`${productId}/${Date.now()}-0.${images[0].name.split('.').pop()}`).data.publicUrl}`;
+          await supabase
+            .from('products')
+            .update({ main_image_url: firstImageUrl })
+            .eq('id', productId);
+        }
       }
 
       toast({

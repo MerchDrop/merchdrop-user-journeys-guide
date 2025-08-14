@@ -1,11 +1,11 @@
 import React from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import AnalyticsOverview from '@/components/artist/AnalyticsOverview';
+import { ArtistDashboard } from '@/components/artist/ArtistDashboard';
 
 export default function ArtistAnalytics() {
   return (
     <DashboardLayout>
-      <AnalyticsOverview />
+      <ArtistDashboard />
     </DashboardLayout>
   );
 }
