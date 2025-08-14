@@ -133,6 +133,9 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
 
@@ -201,7 +204,6 @@
   
   .feature-card:hover {
     box-shadow: var(--shadow-hover);
-    transform: scale(1.02);
   }
   
   /* Step card styling */
@@ -258,7 +260,6 @@
   
   .hover-card-lift:hover {
     box-shadow: var(--shadow-hover);
-    transform: scale(1.02);
   }
   
   .hover-accent-underline {
