@@ -65,9 +65,10 @@ export default function AdminLayout() {
     );
   }
 
-  if (!user || !isAdmin) {
-    return <Navigate to="/admin-auth" replace />;
-  }
+  // Allow public access to admin dashboard for now
+  // if (!user || !isAdmin) {
+  //   return <Navigate to="/admin-auth" replace />;
+  // }
 
   return (
     <div className="min-h-screen bg-background">
