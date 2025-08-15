@@ -159,7 +159,7 @@ export default function Dashboard() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {mockKpiData.map((kpi, index) => (
+          {kpiData.map((kpi, index) => (
             <KpiCard
               key={kpi.title}
               title={kpi.title}
@@ -187,7 +187,10 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {mockGoals.map((goal, index) => (
+                {goals.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">No goals set yet</p>
+                ) : (
+                  goals.map((goal, index) => (
                   <div key={goal.title} className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{goal.title}</span>
@@ -207,8 +210,8 @@ export default function Dashboard() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <SalesChart data={mockSalesData} loading={loading} />
-          <ProductPerformance data={mockProducts} loading={loading} />
+          <SalesChart data={salesData} loading={loading} />
+          <ProductPerformance data={products} loading={loading} />
         </div>
 
         {/* Product Quick Overview */}
@@ -226,7 +229,10 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockProducts.slice(0, 3).map((product, index) => (
+                {products.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">No products yet</p>
+                ) : (
+                  products.slice(0, 3).map((product, index) => (
                   <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
                     <div className="flex-1">
                       <h4 className="font-medium">{product.name}</h4>
@@ -261,7 +267,10 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockRecentOrders.map((order) => (
+                  {recentOrders.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No recent orders</p>
+                  ) : (
+                    recentOrders.map((order) => (
                     <div key={order.id} className="flex items-center justify-between p-4 rounded-lg border">
                       <div className="flex-1">
                         <h4 className="font-medium">{order.product}</h4>
@@ -288,7 +297,7 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          <PayoutsList payouts={mockPayouts} loading={loading} />
+          <PayoutsList payouts={payouts} loading={loading} />
         </div>
 
         {/* Support & Resources */}

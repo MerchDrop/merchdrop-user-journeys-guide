@@ -14,7 +14,7 @@ import Cart from '@/pages/Cart';
 import ArtistProfile from '@/pages/ArtistProfile';
 import ProductDetail from '@/pages/ProductDetail';
 import Checkout from '@/pages/Checkout';
-import Dashboard from '@/pages/Dashboard';
+import CleanDashboard from '@/pages/CleanDashboard';
 import ArtistProducts from '@/pages/artist/Products';
 import ArtistAnalytics from '@/pages/artist/Analytics';
 import ArtistSettings from '@/pages/artist/Settings';
@@ -66,7 +66,7 @@ function App() {
                 
                 {/* Dashboard Routes - Protected for Artists */}
                 <Route path="/dashboard" element={<DashboardLayout />}>
-                  <Route index element={<Dashboard />} />
+                  <Route index element={<CleanDashboard />} />
                   <Route path="products" element={<ArtistProducts />} />
                   <Route path="analytics" element={<ArtistAnalytics />} />
                   <Route path="settings" element={<ArtistSettings />} />

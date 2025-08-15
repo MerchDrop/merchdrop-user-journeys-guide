@@ -1,5 +1,5 @@
 import React from 'react';
-import { AdminProductTable } from '@/components/admin/AdminProductTable';
+import { FixedAdminProductTable } from '@/components/admin/FixedAdminProductTable';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function AdminProducts() {
@@ -17,7 +17,7 @@ export default function AdminProducts() {
           </p>
         </div>
         
-        <AdminProductTable />
+        <FixedAdminProductTable />
       </div>
     </>
   );

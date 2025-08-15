@@ -1,5 +1,5 @@
 import React from 'react';
-import { AdminUserTable } from '@/components/admin/AdminUserTable';
+import { CleanAdminUserTable } from '@/components/admin/CleanAdminUserTable';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function AdminUsers() {
@@ -17,7 +17,7 @@ export default function AdminUsers() {
           </p>
         </div>
         
-        <AdminUserTable />
+        <CleanAdminUserTable />
       </div>
     </>
   );

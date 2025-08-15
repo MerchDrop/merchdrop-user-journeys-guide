@@ -27,49 +27,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency } from '@/context/CurrencyContext';
 
-// Mock data
-const mockProducts = [
-  {
-    id: 'P001',
-    title: 'Mystic Forest Poster',
-    artist: 'Maya Rodriguez',
-    status: 'live',
-    price: 29.99,
-    stock: 15,
-    sales: 42,
-    image: '/placeholder.svg'
-  },
-  {
-    id: 'P002',
-    title: 'Urban Dreams Print',
-    artist: 'Alex Chen',
-    status: 'draft',
-    price: 24.99,
-    stock: 0,
-    sales: 0,
-    image: '/placeholder.svg'
-  },
-  {
-    id: 'P003',
-    title: 'Galaxy Cat T-Shirt',
-    artist: 'Luna Martinez',
-    status: 'live',
-    price: 34.99,
-    stock: 8,
-    sales: 28,
-    image: '/placeholder.svg'
-  },
-  {
-    id: 'P004',
-    title: 'Retro Wave Mug',
-    artist: 'David Kim',
-    status: 'disabled',
-    price: 19.99,
-    stock: 5,
-    sales: 15,
-    image: '/placeholder.svg'
-  },
-];
+// Real products will be fetched from the database
+const products: any[] = [];
 
 export const AdminProductTable = () => {
   const { toast } = useToast();
@@ -115,7 +74,14 @@ export const AdminProductTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockProducts.map((product) => (
+            {products.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  No products found. Products will appear here when artists create them.
+                </TableCell>
+              </TableRow>
+            ) : (
+              products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
