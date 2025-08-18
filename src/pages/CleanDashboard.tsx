@@ -23,10 +23,10 @@ import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 // Empty data for new users - they start with a clean slate
 const kpiData = [
-  { title: 'Total Sales', value: '$0.00', change: '+0%', icon: DollarSign },
-  { title: 'Orders', value: '0', change: '+0%', icon: ShoppingCart },
-  { title: 'Products', value: '0', change: '+0%', icon: Package },
-  { title: 'Customers', value: '0', change: '+0%', icon: Users },
+  { title: 'Total Sales', value: '$0.00', change: '+0%', trend: 'neutral' as const, icon: DollarSign },
+  { title: 'Orders', value: '0', change: '+0%', trend: 'neutral' as const, icon: ShoppingCart },
+  { title: 'Products', value: '0', change: '+0%', trend: 'neutral' as const, icon: Package },
+  { title: 'Customers', value: '0', change: '+0%', trend: 'neutral' as const, icon: Users },
 ];
 
 const salesData: any[] = [];
@@ -92,7 +92,7 @@ export default function Dashboard() {
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {kpiData.map((kpi, index) => (
-            <KpiCard key={index} {...kpi} />
+            <KpiCard key={index} {...kpi} index={index} />
           ))}
         </div>
 

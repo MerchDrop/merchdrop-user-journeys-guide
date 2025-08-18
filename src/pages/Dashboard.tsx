@@ -25,104 +25,17 @@ import RecentOrders from "@/components/dashboard/RecentOrders";
 import ProductPerformance from "@/components/dashboard/ProductPerformance";
 import PayoutsList from "@/components/dashboard/PayoutsList";
 
-// Mock data for the dashboard
-const mockKpiData = [
-  {
-    title: "Total Revenue",
-    value: 12458,
-    change: "18.2%",
-    trend: "up" as const,
-    icon: DollarSign,
-  },
-  {
-    title: "Products Sold",
-    value: "342",
-    change: "12.5%",
-    trend: "up" as const,
-    icon: Package,
-  },
-  {
-    title: "Profile Views",
-    value: "2,847",
-    change: "8.1%",
-    trend: "up" as const,
-    icon: Users,
-  },
-  {
-    title: "Active Products",
-    value: "15",
-    change: "25.0%",
-    trend: "up" as const,
-    icon: BarChart3,
-  },
-];
-
-const mockSalesData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  sales: Math.floor(Math.random() * 1000) + 200,
-}));
-
-const mockRecentOrders = [
-  {
-    id: "ORD-12345",
-    date: "2024-01-15",
-    itemCount: 2,
-    total: 59.99,
-    status: "delivered" as const,
-    product: "Artist T-Shirt - Black",
-    customer: "John D."
-  },
-  {
-    id: "ORD-12346",
-    date: "2024-01-14", 
-    itemCount: 1,
-    total: 39.99,
-    status: "shipped" as const,
-    product: "Vinyl Record Print",
-    customer: "Sarah M."
-  },
-  {
-    id: "ORD-12347",
-    date: "2024-01-14",
-    itemCount: 3,
-    total: 89.97,
-    status: "processing" as const,
-    product: "Tour Hoodie - White",
-    customer: "Mike R."
-  },
-];
-
-const mockProducts = [
-  { name: "Artist T-Shirt", unitsSold: 124, stock: 67 },
-  { name: "Tour Hoodie", unitsSold: 87, stock: 23 },
-  { name: "Vinyl Print", unitsSold: 65, stock: 45 },
-  { name: "Phone Case", unitsSold: 32, stock: 12 },
-];
-
-const mockPayouts = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    amount: 1250.00,
-    status: "pending" as const,
-  },
-  {
-    id: "2", 
-    date: "2024-01-01",
-    amount: 890.50,
-    status: "completed" as const,
-  },
-];
-
-const mockGoals = [
-  { title: "Monthly Revenue", current: 12458, target: 15000, progress: 83 },
-  { title: "Product Sales", current: 342, target: 500, progress: 68 },
-  { title: "New Followers", current: 847, target: 1000, progress: 85 },
-];
-
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { formatPrice } = useCurrency();
+
+  // Initialize empty data for clean state
+  const kpiData: any[] = [];
+  const salesData: any[] = [];
+  const products: any[] = [];
+  const goals: any[] = [];
+  const recentOrders: any[] = [];
+  const payouts: any[] = [];
 
   useEffect(() => {
     // Simulate loading
@@ -159,17 +72,23 @@ export default function Dashboard() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {kpiData.map((kpi, index) => (
-            <KpiCard
-              key={kpi.title}
-              title={kpi.title}
-              value={kpi.title === "Total Revenue" ? formatPrice(kpi.value as number) : kpi.value.toString()}
-              change={kpi.change}
-              trend={kpi.trend}
-              icon={kpi.icon}
-              index={index}
-            />
-          ))}
+          {kpiData.length === 0 ? (
+            <div className="col-span-full text-center py-8 text-muted-foreground">
+              No KPI data available yet. Start creating products to see metrics.
+            </div>
+          ) : (
+            kpiData.map((kpi, index) => (
+              <KpiCard
+                key={kpi.title}
+                title={kpi.title}
+                value={kpi.title === "Total Revenue" ? formatPrice(kpi.value as number) : kpi.value.toString()}
+                change={kpi.change}
+                trend={kpi.trend}
+                icon={kpi.icon}
+                index={index}
+              />
+            ))
+          )}
         </div>
 
         {/* Goals Progress */}
@@ -191,18 +110,19 @@ export default function Dashboard() {
                   <p className="text-muted-foreground text-center py-4">No goals set yet</p>
                 ) : (
                   goals.map((goal, index) => (
-                  <div key={goal.title} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{goal.title}</span>
-                      <span className="font-medium">{goal.progress}%</span>
+                    <div key={goal.title} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{goal.title}</span>
+                        <span className="font-medium">{goal.progress}%</span>
+                      </div>
+                      <Progress value={goal.progress} className="h-2" />
+                       <div className="flex justify-between text-xs text-muted-foreground">
+                         <span>{formatPrice(goal.current)}</span>
+                         <span>{formatPrice(goal.target)}</span>
+                       </div>
                     </div>
-                    <Progress value={goal.progress} className="h-2" />
-                     <div className="flex justify-between text-xs text-muted-foreground">
-                       <span>{formatPrice(goal.current)}</span>
-                       <span>{formatPrice(goal.target)}</span>
-                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -233,19 +153,20 @@ export default function Dashboard() {
                   <p className="text-muted-foreground text-center py-4">No products yet</p>
                 ) : (
                   products.slice(0, 3).map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{product.name}</h4>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                        <span>{product.unitsSold} sold</span>
-                        <span>{product.stock} in stock</span>
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{product.name}</h4>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                          <span>{product.unitsSold} sold</span>
+                          <span>{product.stock} in stock</span>
+                        </div>
                       </div>
+                      <Badge variant="default">
+                        Active
+                      </Badge>
                     </div>
-                    <Badge variant="default">
-                      Active
-                    </Badge>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -271,27 +192,28 @@ export default function Dashboard() {
                     <p className="text-muted-foreground text-center py-4">No recent orders</p>
                   ) : (
                     recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 rounded-lg border">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{order.product}</h4>
-                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <span>{order.customer}</span>
-                          <span>•</span>
-                          <span>{order.date}</span>
+                      <div key={order.id} className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex-1">
+                          <h4 className="font-medium">{order.product}</h4>
+                          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                            <span>{order.customer}</span>
+                            <span>•</span>
+                            <span>{order.date}</span>
+                          </div>
+                        </div>
+                         <div className="text-right">
+                           <p className="font-medium">{formatPrice(order.total)}</p>
+                          <Badge variant={
+                            order.status === "delivered" ? "default" :
+                            order.status === "shipped" ? "secondary" : 
+                            "outline"
+                          }>
+                            {order.status}
+                          </Badge>
                         </div>
                       </div>
-                       <div className="text-right">
-                         <p className="font-medium">{formatPrice(order.total)}</p>
-                        <Badge variant={
-                          order.status === "delivered" ? "default" :
-                          order.status === "shipped" ? "secondary" : 
-                          "outline"
-                        }>
-                          {order.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

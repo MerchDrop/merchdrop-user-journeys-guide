@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, UserCheck, UserX } from 'lucide-react';
 
-export function AdminUserTable() {
+export function CleanAdminUserTable() {
   const getRoleBadgeVariant = (role: string) => {
     switch (role.toLowerCase()) {
       case 'admin':

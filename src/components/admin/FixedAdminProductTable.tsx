@@ -27,7 +27,7 @@ import { MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
 // Real products will be fetched from the database
 const products: any[] = [];
 
-export function AdminProductTable() {
+export function FixedAdminProductTable() {
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'published':
