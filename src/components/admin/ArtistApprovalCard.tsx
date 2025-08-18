@@ -3,121 +3,117 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Check, X, ExternalLink, Calendar } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-// Mock data for pending artist applications
-const mockArtistApplications = [
-  {
-    id: '1',
-    name: 'Maya Rodriguez',
-    email: 'maya@example.com',
-    portfolio: 'https://mayaart.com',
-    bio: 'Digital artist specializing in fantasy illustrations and character design.',
-    experience: '5+ years',
-    submittedDate: '2024-01-20',
-    avatar: '/placeholder.svg',
-    samples: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg']
-  },
-  {
-    id: '2',
-    name: 'Alex Chen',
-    email: 'alex@example.com',
-    portfolio: 'https://alexdesigns.com',
-    bio: 'Graphic designer with expertise in logo design and brand identity.',
-    experience: '3+ years',
-    submittedDate: '2024-01-18',
-    avatar: '/placeholder.svg',
-    samples: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg']
-  },
-];
+import { Check, X, ExternalLink, Calendar, Loader2 } from 'lucide-react';
+import { usePendingArtists, useArtists } from '@/hooks/useArtists';
 
 export const ArtistApprovalCard = () => {
-  const { toast } = useToast();
+  const { pendingArtists, loading } = usePendingArtists();
+  const { approveArtist, rejectArtist } = useArtists();
 
-  const handleApprove = (artistId: string, artistName: string) => {
-    // TODO: Call API to approve artist
-    toast({
-      title: "Artist Approved",
-      description: `${artistName} has been approved as an artist.`,
+  const handleApprove = async (artistId: string, artistName: string) => {
+    await approveArtist(artistId);
+  };
+
+  const handleReject = async (artistId: string, artistName: string) => {
+    await rejectArtist(artistId);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
-  const handleReject = (artistId: string, artistName: string) => {
-    // TODO: Call API to reject artist
-    toast({
-      title: "Artist Rejected",
-      description: `${artistName}'s application has been rejected.`,
-      variant: "destructive",
-    });
-  };
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading artist applications...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (pendingArtists.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending Artist Applications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            No pending artist applications at this time.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {mockArtistApplications.map((artist) => (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending Artist Applications ({pendingArtists.length})</CardTitle>
+        </CardHeader>
+      </Card>
+      
+      {pendingArtists.map((artist) => (
         <Card key={artist.id}>
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarImage src={artist.avatar} alt={artist.name} />
+                  <AvatarImage src={artist.avatar_url || '/placeholder.svg'} alt={artist.artist_name} />
                   <AvatarFallback>
-                    {artist.name.split(' ').map(n => n[0]).join('')}
+                    {(artist.display_name || artist.artist_name).split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-xl">{artist.name}</CardTitle>
+                  <CardTitle className="text-xl">{artist.artist_name}</CardTitle>
                   <p className="text-muted-foreground">{artist.email}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Applied on {artist.submittedDate}
+                      Applied on {formatDate(artist.created_at)}
                     </span>
                   </div>
                 </div>
               </div>
-              <Badge variant="outline">Pending</Badge>
+              <Badge variant="outline" className="capitalize">{artist.status}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">Bio</h4>
-              <p className="text-muted-foreground">{artist.bio}</p>
-            </div>
+            {artist.bio && (
+              <div>
+                <h4 className="font-semibold mb-2">Bio</h4>
+                <p className="text-muted-foreground">{artist.bio}</p>
+              </div>
+            )}
             
             <div>
-              <h4 className="font-semibold mb-2">Experience</h4>
-              <p className="text-muted-foreground">{artist.experience}</p>
+              <h4 className="font-semibold mb-2">Commission Rate</h4>
+              <p className="text-muted-foreground">{artist.commission_rate}%</p>
             </div>
 
-            <div>
-              <h4 className="font-semibold mb-2">Portfolio</h4>
-              <Button variant="outline" size="sm" asChild>
-                <a href={artist.portfolio} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Portfolio
-                </a>
-              </Button>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">Work Samples</h4>
-              <div className="flex gap-2">
-                {artist.samples.map((sample, index) => (
-                  <img
-                    key={index}
-                    src={sample}
-                    alt={`Sample ${index + 1}`}
-                    className="w-20 h-20 object-cover rounded-lg border"
-                  />
-                ))}
+            {artist.website_url && (
+              <div>
+                <h4 className="font-semibold mb-2">Portfolio</h4>
+                <Button variant="outline" size="sm" asChild>
+                  <a href={artist.website_url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Portfolio
+                  </a>
+                </Button>
               </div>
-            </div>
+            )}
 
             <div className="flex gap-2 pt-4">
               <Button
                 variant="default"
-                onClick={() => handleApprove(artist.id, artist.name)}
+                onClick={() => handleApprove(artist.id, artist.artist_name)}
                 className="flex-1"
               >
                 <Check className="h-4 w-4 mr-2" />
@@ -125,7 +121,7 @@ export const ArtistApprovalCard = () => {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => handleReject(artist.id, artist.name)}
+                onClick={() => handleReject(artist.id, artist.artist_name)}
                 className="flex-1"
               >
                 <X className="h-4 w-4 mr-2" />

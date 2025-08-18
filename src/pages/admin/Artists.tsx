@@ -1,5 +1,7 @@
 import React from 'react';
+import { ArtistOverview } from '@/components/admin/ArtistOverview';
 import { ArtistApprovalCard } from '@/components/admin/ArtistApprovalCard';
+import { AdminArtistTable } from '@/components/admin/AdminArtistTable';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function AdminArtists() {
@@ -17,7 +19,11 @@ export default function AdminArtists() {
           </p>
         </div>
         
+        <ArtistOverview />
+        
         <ArtistApprovalCard />
+        
+        <AdminArtistTable />
       </div>
     </>
   );
