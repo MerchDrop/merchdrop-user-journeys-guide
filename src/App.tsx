@@ -24,6 +24,7 @@ import Admin from '@/pages/Admin';
 import AdminProducts from '@/pages/admin/Products';
 import AdminUsers from '@/pages/admin/Users';
 import AdminArtists from '@/pages/admin/Artists';
+import AdminSettingsPage from '@/pages/admin/Settings';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
 import Login from '@/pages/Login';
@@ -82,7 +83,7 @@ function App() {
                   <Route path="artists" element={<AdminArtists />} />
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="analytics" element={<div className="p-6"><h1 className="text-2xl font-bold">Admin Analytics</h1><p>Advanced analytics dashboard coming soon...</p></div>} />
-                  <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold">Admin Settings</h1><p>Admin settings panel coming soon...</p></div>} />
+                  <Route path="settings" element={<AdminSettingsPage />} />
                 </Route>
                 
                 <Route path="/health" element={<HealthCheck />} />
