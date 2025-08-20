@@ -97,4 +97,5 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
   );
 };
 
+export { SEOHelmet };
 export default SEOHelmet;
