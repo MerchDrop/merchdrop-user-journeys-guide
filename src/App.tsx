@@ -22,6 +22,7 @@ import ArtistOrders from '@/pages/artist/Orders';
 import ArtistPayouts from '@/pages/artist/Payouts';
 import Admin from '@/pages/Admin';
 import AdminProducts from '@/pages/admin/Products';
+import AdminOrders from '@/pages/admin/Orders';
 import AdminUsers from '@/pages/admin/Users';
 import AdminArtists from '@/pages/admin/Artists';
 import AdminSettingsPage from '@/pages/admin/Settings';
@@ -80,7 +81,7 @@ function App() {
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Admin />} />
                   <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<div className="p-6"><h1 className="text-2xl font-bold">Admin Orders</h1><p>Admin orders management coming soon...</p></div>} />
+                  <Route path="orders" element={<AdminOrders />} />
                   <Route path="artists" element={<AdminArtists />} />
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="analytics" element={<AdminAnalytics />} />
