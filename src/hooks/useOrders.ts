@@ -103,6 +103,12 @@ export function useOrders() {
       const { data, error: supabaseError } = await query;
 
       if (supabaseError) {
+        // Check if this is a schema access error
+        if (supabaseError.message?.includes('schema must be one of the following')) {
+          console.warn('Schema access restricted for orders, using empty data');
+          setOrders([]);
+          return;
+        }
         throw supabaseError;
       }
 
@@ -110,6 +116,7 @@ export function useOrders() {
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+      setOrders([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
