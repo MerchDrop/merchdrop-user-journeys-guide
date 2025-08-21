@@ -31,14 +31,18 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useOrders } from '@/hooks/useOrders';
-import { MoreHorizontal, Eye, Truck, CheckCircle, AlertCircle, Search } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { OrderStatusDialog } from './OrderStatusDialog';
+import { OrderTrackingBadge } from './OrderTrackingBadge';
 
 export function AdminOrdersTable() {
   const { orders, loading, updateOrderStatus } = useOrders();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -69,14 +73,19 @@ export function AdminOrdersTable() {
     }
   };
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: string, trackingNumber?: string) => {
     try {
-      await updateOrderStatus(orderId, newStatus as any);
+      await updateOrderStatus(orderId, newStatus as any, trackingNumber);
       toast.success('Order status updated successfully');
     } catch (error) {
       toast.error('Failed to update order status');
       console.error('Error updating order status:', error);
     }
+  };
+
+  const openStatusDialog = (order: any) => {
+    setSelectedOrder(order);
+    setDialogOpen(true);
   };
 
   const filteredOrders = orders.filter(order => {
@@ -146,6 +155,7 @@ export function AdminOrdersTable() {
               <TableHead>Items</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Tracking</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Actions</TableHead>
@@ -154,7 +164,7 @@ export function AdminOrdersTable() {
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   {searchTerm || statusFilter !== 'all' ? 'No orders match your filters.' : 'No orders found.'}
                 </TableCell>
               </TableRow>
@@ -194,6 +204,12 @@ export function AdminOrdersTable() {
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    <OrderTrackingBadge 
+                      trackingNumber={order.tracking_number} 
+                      status={order.status || 'pending'} 
+                    />
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={getPaymentStatusBadgeVariant(order.payment_status || 'pending')}>
                       {order.payment_status || 'pending'}
                     </Badge>
@@ -215,25 +231,11 @@ export function AdminOrdersTable() {
                           View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleStatusUpdate(order.id, 'processing')}
+                          onClick={() => openStatusDialog(order)}
                           className="cursor-pointer"
                         >
-                          <AlertCircle className="mr-2 h-4 w-4" />
-                          Mark Processing
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleStatusUpdate(order.id, 'shipped')}
-                          className="cursor-pointer"
-                        >
-                          <Truck className="mr-2 h-4 w-4" />
-                          Mark Shipped
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleStatusUpdate(order.id, 'delivered')}
-                          className="cursor-pointer"
-                        >
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Mark Delivered
+                          <Edit className="mr-2 h-4 w-4" />
+                          Update Status
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -244,6 +246,13 @@ export function AdminOrdersTable() {
           </TableBody>
         </Table>
       </CardContent>
+      
+      <OrderStatusDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        order={selectedOrder}
+        onUpdateStatus={handleStatusUpdate}
+      />
     </Card>
   );
 }
