@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
@@ -6,22 +5,25 @@ import { useRef } from 'react';
 import { Check, Upload, DollarSign, Share2, Clock, Zap, BarChart3, Grid } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
 const HowItWorks = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-
-  return (
-    <section className="py-20 lg:py-32 bg-background" ref={ref}>
+  const isInView = useInView(ref, {
+    once: true,
+    amount: 0.3
+  });
+  return <section className="py-20 lg:py-32 bg-background" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="flex items-center justify-between mb-12"
-        >
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={isInView ? {
+        opacity: 1,
+        y: 0
+      } : {}} transition={{
+        duration: 0.8
+      }} className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-3">
             <Grid className="h-5 w-5 text-muted-foreground" />
             <span className="text-[13px] text-muted-foreground">How it works</span>
@@ -33,12 +35,16 @@ const HowItWorks = () => {
         </motion.div>
 
         {/* Main Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="mb-12"
-        >
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={isInView ? {
+        opacity: 1,
+        y: 0
+      } : {}} transition={{
+        duration: 0.8,
+        delay: 0.1
+      }} className="mb-12">
           <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
             From idea to shipped—fast
           </h2>
@@ -48,16 +54,19 @@ const HowItWorks = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Step 1: Set up your store */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={isInView ? {
+          opacity: 1,
+          y: 0
+        } : {}} transition={{
+          duration: 0.8,
+          delay: 0.2
+        }}>
             <Card className="h-full border border-border bg-card hover:shadow-lg transition-all duration-300">
               <CardContent className="p-6">
-                <h3 className="text-[18px] font-bold text-foreground mb-4">
-                  1. Set up your store
-                </h3>
+                <h3 className="text-[18px] font-bold text-foreground mb-4">1. Set up your profile</h3>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-3">
@@ -92,11 +101,16 @@ const HowItWorks = () => {
           </motion.div>
 
           {/* Step 2: Customize your drop */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={isInView ? {
+          opacity: 1,
+          y: 0
+        } : {}} transition={{
+          duration: 0.8,
+          delay: 0.3
+        }}>
             <Card className="h-full border border-border bg-card hover:shadow-lg transition-all duration-300">
               <CardContent className="p-6">
                 <h3 className="text-[18px] font-bold text-foreground mb-4">
@@ -129,11 +143,16 @@ const HowItWorks = () => {
           </motion.div>
 
           {/* Step 3: Share and fulfill */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={isInView ? {
+          opacity: 1,
+          y: 0
+        } : {}} transition={{
+          duration: 0.8,
+          delay: 0.4
+        }}>
             <Card className="h-full border border-border bg-card hover:shadow-lg transition-all duration-300">
               <CardContent className="p-6">
                 <h3 className="text-[18px] font-bold text-foreground mb-4">
@@ -167,8 +186,6 @@ const HowItWorks = () => {
 
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HowItWorks;
