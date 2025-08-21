@@ -54,6 +54,11 @@ export function useOrders() {
   const [error, setError] = useState<string | null>(null);
   const { user, isArtist } = useAuth();
 
+  // Auto-fetch orders on mount
+  useEffect(() => {
+    fetchOrders();
+  }, [user?.id]);
+
   const fetchOrders = async (filters?: {
     status?: string;
     artistId?: string;
