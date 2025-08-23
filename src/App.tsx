@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import ScrollToTop from '@/components/ScrollToTop';
 import { AuthProvider } from '@/context/AuthContext';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import { CartProvider } from '@/context/CartContext';
@@ -54,6 +55,7 @@ function App() {
       <AuthProvider>
         <CurrencyProvider>
           <CartProvider>
+            <ScrollToTop />
             <div className="min-h-screen bg-background">
               <Routes>
                 <Route path="/" element={<Home />} />
