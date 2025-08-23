@@ -17,10 +17,6 @@ const Footer = () => {
                 alt="MerchDrop" 
                 className="h-9 w-auto"
               />
-              <div className="flex flex-col">
-                <span className="text-[15px] font-semibold tracking-tight text-foreground">MerchDrop</span>
-                <span className="text-[12px] text-muted-foreground">Sell merch in minutes</span>
-              </div>
             </div>
             <p className="mt-4 text-[14px] text-muted-foreground max-w-sm">
               Launch limited drops, manage orders, and ship globally—without inventory risk.
