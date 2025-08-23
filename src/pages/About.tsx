@@ -14,9 +14,9 @@ export default function About() {
       />
       <Header />
       <main className="overflow-hidden">
-        {/* Hero Section */}
-        <section className="relative py-24 md:py-32">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5"></div>
+        {/* Hero Section - Gradient Background */}
+        <section className="relative py-24 md:py-32 bg-gradient-to-br from-primary/8 via-background to-secondary/8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-secondary/3"></div>
           <div className="relative container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-2 rounded-full mb-8">
@@ -34,9 +34,10 @@ export default function About() {
           </div>
         </section>
 
-        {/* Mission & Vision Section */}
-        <section className="py-20 md:py-28">
-          <div className="container mx-auto px-4">
+        {/* Mission & Vision Section - Clean White Background */}
+        <section className="py-20 md:py-28 bg-background relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-muted/10"></div>
+          <div className="relative container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div className="space-y-8">
                 <div>
@@ -60,14 +61,14 @@ export default function About() {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="bg-card border rounded-xl p-6">
+                  <div className="bg-card border rounded-xl p-6 shadow-sm">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                       <Users className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="font-semibold mb-2">10K+</h3>
                     <p className="text-sm text-muted-foreground">Active Artists</p>
                   </div>
-                  <div className="bg-card border rounded-xl p-6">
+                  <div className="bg-card border rounded-xl p-6 shadow-sm">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                       <Globe className="w-6 h-6 text-primary" />
                     </div>
@@ -79,7 +80,7 @@ export default function About() {
 
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur-2xl"></div>
-                <div className="relative bg-card border rounded-2xl p-8 md:p-12">
+                <div className="relative bg-card border rounded-2xl p-8 md:p-12 shadow-lg">
                   <div className="space-y-6">
                     <div className="flex items-start gap-4">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
@@ -115,8 +116,8 @@ export default function About() {
           </div>
         </section>
 
-        {/* Values Section */}
-        <section className="py-20 md:py-28 bg-muted/30">
+        {/* Values Section - Elevated Background with Borders */}
+        <section className="py-20 md:py-28 bg-gradient-to-b from-muted/30 via-muted/40 to-muted/30 border-y border-border/50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-2 rounded-full mb-6">
@@ -130,7 +131,7 @@ export default function About() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="group bg-card border rounded-2xl p-8 hover:shadow-lg transition-all duration-300">
+              <div className="group bg-background border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-sm">
                 <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl">🎨</span>
                 </div>
@@ -141,7 +142,7 @@ export default function About() {
                 </p>
               </div>
               
-              <div className="group bg-card border rounded-2xl p-8 hover:shadow-lg transition-all duration-300">
+              <div className="group bg-background border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-sm">
                 <div className="w-16 h-16 bg-gradient-to-br from-secondary to-secondary/80 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl">🤝</span>
                 </div>
@@ -152,7 +153,7 @@ export default function About() {
                 </p>
               </div>
               
-              <div className="group bg-card border rounded-2xl p-8 hover:shadow-lg transition-all duration-300">
+              <div className="group bg-background border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-sm">
                 <div className="w-16 h-16 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl">🌍</span>
                 </div>
@@ -166,9 +167,10 @@ export default function About() {
           </div>
         </section>
 
-        {/* How We Work Section */}
-        <section className="py-20 md:py-28">
-          <div className="container mx-auto px-4">
+        {/* How We Work Section - Contrast Card Background */}
+        <section className="py-20 md:py-28 bg-card border-y border-border/30 relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/2 to-secondary/2"></div>
+          <div className="relative container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-16">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6">How We Work</h2>
@@ -179,7 +181,7 @@ export default function About() {
               
               <div className="grid md:grid-cols-2 gap-12">
                 <div className="space-y-8">
-                  <div>
+                  <div className="bg-background border rounded-xl p-6 shadow-sm">
                     <h3 className="text-2xl font-semibold mb-6 text-primary">For Artists</h3>
                     <div className="space-y-4">
                       {[
@@ -199,7 +201,7 @@ export default function About() {
                 </div>
                 
                 <div className="space-y-8">
-                  <div>
+                  <div className="bg-background border rounded-xl p-6 shadow-sm">
                     <h3 className="text-2xl font-semibold mb-6 text-secondary">For Customers</h3>
                     <div className="space-y-4">
                       {[
@@ -222,8 +224,8 @@ export default function About() {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-20 md:py-28 bg-muted/30">
+        {/* Stats Section - Rich Gradient Background */}
+        <section className="py-20 md:py-28 bg-gradient-to-br from-primary/5 via-muted/50 to-secondary/5 border-y border-border/50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">MerchDrop by the Numbers</h2>
@@ -239,7 +241,7 @@ export default function About() {
                 { value: "50+", label: "Countries Served", icon: Globe },
                 { value: "$2M+", label: "Paid to Artists", icon: Award }
               ].map((stat, index) => (
-                <div key={index} className="text-center group">
+                <div key={index} className="text-center group bg-background/80 backdrop-blur-sm border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300">
                   <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                     <stat.icon className="w-8 h-8 text-primary" />
                   </div>
@@ -251,8 +253,8 @@ export default function About() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 md:py-28">
+        {/* CTA Section - Final Clean Background */}
+        <section className="py-20 md:py-28 bg-gradient-to-t from-background via-background to-muted/10">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-4xl md:text-5xl font-bold mb-8">
@@ -266,7 +268,7 @@ export default function About() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
                   href="/"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-lg text-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-lg text-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg hover:shadow-xl"
                 >
                   Start Your Drop
                   <span className="text-xl">→</span>
