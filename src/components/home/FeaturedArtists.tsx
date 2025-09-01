@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useFeaturedArtists } from '@/hooks/useFeaturedArtists';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const FeaturedArtists = () => {
   const { featuredArtists, loading, error } = useFeaturedArtists(6);
@@ -23,15 +24,7 @@ const FeaturedArtists = () => {
     return num.toString();
   };
 
-  // Helper function to format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatPrice } = useCurrency();
 
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
@@ -181,7 +174,7 @@ const FeaturedArtists = () => {
                         <div className="text-[11px] text-muted-foreground">Followers</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-[13px] font-medium text-foreground">{formatCurrency(artist.revenue)}</div>
+                        <div className="text-[13px] font-medium text-foreground">{formatPrice(artist.revenue)}</div>
                         <div className="text-[11px] text-muted-foreground">Revenue</div>
                       </div>
                       <div className="text-center">

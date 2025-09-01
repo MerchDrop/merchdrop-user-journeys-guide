@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Clock, CheckCircle, XCircle, TrendingUp, DollarSign } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export function ArtistOverview() {
   const { artists, loading } = useArtists();
@@ -31,14 +32,7 @@ export function ArtistOverview() {
   const totalSales = artists.reduce((sum, artist) => sum + artist.total_sales, 0);
   const totalEarnings = artists.reduce((sum, artist) => sum + artist.total_earnings, 0);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatPrice } = useCurrency();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -87,7 +81,7 @@ export function ArtistOverview() {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(totalSales)}</div>
+          <div className="text-2xl font-bold">{formatPrice(totalSales)}</div>
           <p className="text-xs text-muted-foreground">
             Artist revenue generated
           </p>

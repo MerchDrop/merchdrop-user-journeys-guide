@@ -994,7 +994,7 @@ International shipping: 10-14 business days"
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="default-currency">Default Currency</Label>
-                <Select defaultValue="USD">
+                <Select defaultValue="NGN">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -1002,6 +1002,7 @@ International shipping: 10-14 business days"
                     <SelectItem value="USD">USD - US Dollar</SelectItem>
                     <SelectItem value="EUR">EUR - Euro</SelectItem>
                     <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                    <SelectItem value="NGN">NGN - Nigerian Naira</SelectItem>
                     <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
                     <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
                   </SelectContent>

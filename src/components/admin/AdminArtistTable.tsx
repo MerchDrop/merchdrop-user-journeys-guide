@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { MoreHorizontal, UserCheck, UserX, ExternalLink, Loader2 } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export function AdminArtistTable() {
   const { artists, loading, approveArtist, rejectArtist } = useArtists();
@@ -50,12 +51,7 @@ export function AdminArtistTable() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const { formatPrice } = useCurrency();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -162,8 +158,8 @@ export function AdminArtistTable() {
                     </Badge>
                   </TableCell>
                   <TableCell>{artist.commission_rate}%</TableCell>
-                  <TableCell>{formatCurrency(artist.total_sales)}</TableCell>
-                  <TableCell>{formatCurrency(artist.total_earnings)}</TableCell>
+                  <TableCell>{formatPrice(artist.total_sales)}</TableCell>
+                  <TableCell>{formatPrice(artist.total_earnings)}</TableCell>
                   <TableCell>{formatDate(artist.created_at)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
