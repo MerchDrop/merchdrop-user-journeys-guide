@@ -26,7 +26,23 @@ export const useUsers = () => {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
+      console.log('Starting fetchUsers...');
+
+      // Test basic connection first
+      const { data: testData, error: testError } = await supabase
+        .from('profiles')
+        .select('count', { count: 'exact', head: true });
+
+      console.log('Test query result:', { testData, testError });
+
+      if (testError) {
+        console.error('Test query failed:', testError);
+        throw testError;
+      }
+
+      // Fetch profiles data
+      console.log('Fetching profiles...');
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -39,18 +55,33 @@ export const useUsers = () => {
         `)
         .order('created_at', { ascending: false });
 
+      console.log('Profiles query result:', { profilesData, profilesError });
+
+      if (profilesError) {
+        console.error('Profiles query error:', profilesError);
+        throw profilesError;
+      }
+
       // Fetch user roles separately
-      const { data: rolesData } = await supabase
+      console.log('Fetching user roles...');
+      const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
 
+      console.log('Roles query result:', { rolesData, rolesError });
+
+      if (rolesError) {
+        console.error('Roles query error:', rolesError);
+        // Don't throw error for roles, just continue without them
+      }
+
       // Combine profiles with roles
-      const usersWithRoles = (data || []).map(profile => ({
+      const usersWithRoles = (profilesData || []).map(profile => ({
         ...profile,
         user_roles: rolesData?.filter(role => role.user_id === profile.id) || []
       }));
 
-      if (error) throw error;
+      console.log('Final users data:', usersWithRoles);
 
       setUsers(usersWithRoles);
     } catch (err) {
