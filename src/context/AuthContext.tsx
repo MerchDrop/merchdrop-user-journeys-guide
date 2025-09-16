@@ -64,6 +64,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const ensureUserSetup = async (userId: string, userType: string = 'user') => {
+    try {
+      // Call RPC to ensure profile and role exist
+      const { data: setupResult, error: rpcError } = await supabase.rpc(
+        'ensure_profile_and_role',
+        { user_type: userType }
+      );
+
+      if (rpcError) throw rpcError;
+
+      console.log('User setup result:', setupResult);
+
+      // Fetch updated profile and roles
+      await Promise.all([
+        fetchProfile(userId),
+        fetchUserRoles(userId)
+      ]);
+    } catch (error) {
+      console.error('Error ensuring user setup:', error);
+    }
+  };
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -109,28 +131,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Get user type from metadata or default to 'user'
+          const userType = session.user.user_metadata?.user_type || 'user';
+          
           // Use setTimeout to prevent infinite recursion
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            fetchUserRoles(session.user.id);
+          setTimeout(async () => {
+            await ensureUserSetup(session.user.id, userType);
+            setLoading(false);
           }, 0);
         } else {
           setProfile(null);
           setUserRoles([]);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchUserRoles(session.user.id);
+        const userType = session.user.user_metadata?.user_type || 'user';
+        await ensureUserSetup(session.user.id, userType);
       }
       
       setLoading(false);

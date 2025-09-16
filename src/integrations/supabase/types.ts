@@ -583,6 +583,10 @@ export type Database = {
         Args: { product_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      ensure_profile_and_role: {
+        Args: { user_type?: string }
+        Returns: Json
+      }
       generate_product_slug: {
         Args: { title: string }
         Returns: string
