@@ -221,7 +221,7 @@ const MerchCategories = () => {
   );
 };
 
-export default function Shop() {
+const Shop = () => {
   return (
     <>
       <SEOHelmet 
@@ -239,4 +239,6 @@ export default function Shop() {
       </div>
     </>
   );
-}
+};
+
+export default Shop;
