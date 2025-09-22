@@ -58,7 +58,7 @@ const ShopHeroSection = () => {
           <Button 
             variant="outline" 
             size="lg" 
-            className="border-white text-white hover:bg-white hover:text-black px-8 py-3 text-lg font-semibold"
+            className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-black px-8 py-3 text-lg font-semibold backdrop-blur-sm"
             asChild
           >
             <Link to="/artist-auth">I'm an Artist/Creative</Link>
