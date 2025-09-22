@@ -26,7 +26,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
   };
 
   return (
-    <header className={`sticky top-0 z-50 w-full ${transparent ? 'bg-transparent border-transparent' : 'border-b border-gray-200 bg-white'}`}>
+    <header className={`sticky top-0 z-40 w-full ${transparent ? 'bg-transparent border-transparent' : 'border-b border-gray-200 bg-white'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}

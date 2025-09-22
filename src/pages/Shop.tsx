@@ -25,7 +25,7 @@ const ShopHeroSection = () => {
   }, [sliderImages.length]);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Background Image Slider */}
       {sliderImages.map((image, index) => (
         <div
@@ -38,17 +38,6 @@ const ShopHeroSection = () => {
           <div className="absolute inset-0 bg-black/40" />
         </div>
       ))}
-      
-      {/* Scrolling Text Banner */}
-      <div className="absolute top-0 left-0 w-full bg-black text-white py-2 overflow-hidden">
-        <div className="animate-scroll whitespace-nowrap">
-          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
-        </div>
-      </div>
       
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
@@ -252,6 +241,17 @@ const Shop = () => {
         keywords="shop merchandise, artist merch, custom t-shirts, hoodies, accessories, prints"
       />
       <div className="min-h-screen bg-background">
+        {/* Top Scrolling Banner */}
+        <div className="w-full bg-black text-white py-2 overflow-hidden relative z-50">
+          <div className="animate-scroll whitespace-nowrap">
+            <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+            <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+            <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+            <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+            <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+          </div>
+        </div>
+        
         <Header transparent />
         <main>
           <ShopHeroSection />
