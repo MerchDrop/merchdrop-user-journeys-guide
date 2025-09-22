@@ -42,7 +42,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
           {/* Centered Logo */}
           <Link to="/" className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2">
             <img 
-              src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+              src="/Merchdrop.png" 
               alt="MerchDrop" 
               className={`h-8 w-auto ${transparent ? 'invert brightness-200 mix-blend-screen' : ''}`}
             />
