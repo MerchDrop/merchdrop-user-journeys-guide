@@ -40,7 +40,7 @@ const ShopHeroSection = () => {
       ))}
       
       {/* Content */}
-      <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
+      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-10 text-center text-white px-4 max-w-4xl w-full">
         <div className="mb-12">
           <p className="text-lg mb-4 text-white/90">EXPLORE OUR NEW MERCH</p>
         </div>
