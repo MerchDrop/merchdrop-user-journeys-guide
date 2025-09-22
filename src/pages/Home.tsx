@@ -7,6 +7,7 @@ import HowItWorks from '@/components/home/HowItWorks';
 import Showcase from '@/components/home/Showcase';
 import ShopArtistDrops from '@/components/home/ShopArtistDrops';
 import FeaturedArtists from '@/components/home/FeaturedArtists';
+import MerchCategories from '@/components/home/MerchCategories';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 export default function Home() {
@@ -30,6 +31,7 @@ export default function Home() {
             <FeaturedArtists />
             <ShopArtistDrops />
           </div>
+          <MerchCategories />
         </main>
         <Footer />
       </div>
