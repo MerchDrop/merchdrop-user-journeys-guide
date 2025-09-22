@@ -29,8 +29,18 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
     <header className={`sticky top-0 z-50 w-full ${transparent ? 'bg-transparent border-transparent' : 'border-b border-gray-200 bg-white'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          {/* Left Navigation */}
+          <div className="flex items-center space-x-6">
+            <Link to="/artists" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+              Browse Artists
+            </Link>
+            <Link to="/shop" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+              Shop
+            </Link>
+          </div>
+
+          {/* Centered Logo */}
+          <Link to="/" className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2">
             <img 
               src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
               alt="MerchDrop" 
@@ -38,27 +48,25 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             />
           </Link>
 
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search artists, products..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black"
-              />
+          {/* Right Navigation */}
+          <div className="flex items-center space-x-4">
+            {/* Search Bar - Desktop */}
+            <div className="hidden md:flex">
+              <div className="relative">
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${transparent ? 'text-white' : 'text-gray-400'}`} />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className={`pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                    transparent 
+                      ? 'border-white/20 bg-white/10 text-white placeholder-white/70 focus:bg-white/20' 
+                      : 'border-gray-200 bg-white focus:ring-black'
+                  }`}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/artists" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
-              Browse Artists
-            </Link>
-            <Link to="/shop" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
-              Shop
-            </Link>
-            <Link to="/cart" className="relative p-2 text-black hover:text-gray-600 transition-colors">
+            <Link to="/cart" className={`relative p-2 transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               <ShoppingCart className="h-5 w-5" />
               {getTotalItems() > 0 && (
                 <span className="absolute -top-1 -right-1 bg-black text-white text-[11px] rounded-full h-5 w-5 flex items-center justify-center">
@@ -116,19 +124,19 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className="text-[14px] text-black hover:text-gray-600" asChild>
+                <Button variant="ghost" size="sm" className={`text-[14px] ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} asChild>
                   <Link to="/user-auth">Shop</Link>
                 </Button>
-                <Button variant="default" size="sm" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
+                <Button variant="default" size="sm" className={`text-[14px] ${transparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
                   <Link to="/artist-auth">Start Creating</Link>
                 </Button>
               </div>
             )}
-          </nav>
+          </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className={`md:hidden p-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

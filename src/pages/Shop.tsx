@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -8,35 +8,52 @@ import { Badge } from '@/components/ui/badge';
 import { useProducts } from '@/hooks/useProducts';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
-import shopHeroBg from '@/assets/shop-hero-bg.png';
+import fashionSlider1 from '@/assets/fashion-slider-1.jpg';
+import fashionSlider2 from '@/assets/fashion-slider-2.jpg';
+import fashionSlider3 from '@/assets/fashion-slider-3.jpg';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
 const ShopHeroSection = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const sliderImages = [fashionSlider1, fashionSlider2, fashionSlider3];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    }, 5000); // Change slide every 5 seconds
+    return () => clearInterval(interval);
+  }, [sliderImages.length]);
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${shopHeroBg})` }}
-      >
-        <div className="absolute inset-0 bg-black/30" />
-      </div>
+      {/* Background Image Slider */}
+      {sliderImages.map((image, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${
+            index === currentSlide ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ backgroundImage: `url(${image})` }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      ))}
       
       {/* Scrolling Text Banner */}
       <div className="absolute top-0 left-0 w-full bg-black text-white py-2 overflow-hidden">
         <div className="animate-scroll whitespace-nowrap">
-          <span className="text-sm font-medium px-8">SUMMER SCORCH COLLECTION OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH COLLECTION OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH COLLECTION OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH COLLECTION OUT NOW!!!</span>
-          <span className="text-sm font-medium px-8">SUMMER SCORCH COLLECTION OUT NOW!!!</span>
+          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
+          <span className="text-sm font-medium px-8">SUMMER SCORCH MERCH OUT NOW!!!</span>
         </div>
       </div>
       
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
         <div className="mb-12">
-          <p className="text-lg mb-4 text-white/90">EXPLORE OUR NEW COLLECTION</p>
+          <p className="text-lg mb-4 text-white/90">EXPLORE OUR NEW MERCH</p>
         </div>
         
         {/* Call to Action Buttons */}
@@ -60,12 +77,17 @@ const ShopHeroSection = () => {
         </div>
       </div>
       
-      {/* Scroll indicator dots */}
+      {/* Slider indicator dots */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        <div className="w-2 h-2 rounded-full bg-white/50"></div>
-        <div className="w-2 h-2 rounded-full bg-white"></div>
-        <div className="w-2 h-2 rounded-full bg-white/50"></div>
-        <div className="w-2 h-2 rounded-full bg-white/50"></div>
+        {sliderImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
