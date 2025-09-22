@@ -60,13 +60,14 @@ function App() {
             <ScrollToTop />
             <div className="min-h-screen bg-background">
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Shop />} />
+                <Route path="/creators" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/user-auth" element={<UserAuth />} />
                 <Route path="/artist-auth" element={<ArtistAuth />} />
                 <Route path="/admin-auth" element={<AdminAuth />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/shop" element={<Shop />} />
+          
           <Route path="/artists" element={<Artists />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/artist/:slug" element={<ArtistProfile />} />

@@ -31,8 +31,8 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}
           <div className="flex items-center space-x-6">
-            <Link to="/artists" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
-              Browse Artists
+            <Link to="/creators" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+              For Creators
             </Link>
             <Link to="/shop" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               Shop
@@ -128,7 +128,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                   <Link to="/user-auth">Shop</Link>
                 </Button>
                 <Button variant="default" size="sm" className={`text-[14px] ${transparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
-                  <Link to="/artist-auth">Start Creating</Link>
+                  <Link to="/creators">Start Creating</Link>
                 </Button>
               </div>
             )}
@@ -158,11 +158,11 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               </div>
               
               <Link 
-                to="/artists" 
+                to="/creators" 
                 className={`text-[14px] transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Browse Artists
+                For Creators
               </Link>
               <Link 
                 to="/shop" 
@@ -203,7 +203,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                     <Link to="/user-auth" onClick={() => setIsMenuOpen(false)}>Shop</Link>
                   </Button>
                   <Button variant="default" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
-                    <Link to="/artist-auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
+                    <Link to="/creators" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
                   </Button>
                 </div>
               )}

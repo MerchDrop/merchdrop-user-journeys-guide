@@ -61,7 +61,7 @@ const ShopHeroSection = () => {
             className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-black px-8 py-3 text-lg font-semibold backdrop-blur-sm"
             asChild
           >
-            <Link to="/artist-auth">I'm an Artist/Creative</Link>
+            <Link to="/creators">I'm an Artist/Creative</Link>
           </Button>
         </div>
       </div>
