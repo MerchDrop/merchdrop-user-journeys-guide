@@ -44,7 +44,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             <img 
               src="/Merchdrop.png" 
               alt="MerchDrop" 
-              className={`h-8 w-auto ${transparent ? 'invert brightness-200 mix-blend-screen' : ''}`}
+              className={`h-8 w-auto ${transparent ? 'brightness-200 mix-blend-screen' : ''}`}
             />
           </Link>
 
