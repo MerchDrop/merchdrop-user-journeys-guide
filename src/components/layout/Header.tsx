@@ -79,9 +79,9 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className={`relative ${transparent ? 'text-white hover:bg-white/10' : 'text-black hover:bg-gray-100'}`}>
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8 border-2 border-white/20">
                       <AvatarImage src={profile?.avatar_url || ''} />
-                      <AvatarFallback>
+                      <AvatarFallback className={`${transparent ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-900'} font-medium`}>
                         {getInitials(profile?.display_name || profile?.first_name)}
                       </AvatarFallback>
                     </Avatar>
@@ -186,9 +186,9 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               
 {user ? (
                 <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 border-2 border-gray-300">
                     <AvatarImage src={profile?.avatar_url || ''} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-gray-100 text-gray-900 font-medium">
                       {getInitials(profile?.display_name || profile?.first_name)}
                     </AvatarFallback>
                   </Avatar>
