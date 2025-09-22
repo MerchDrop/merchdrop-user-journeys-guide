@@ -27,7 +27,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
 
   return (
     <header className={`absolute top-8 z-40 w-full ${transparent ? 'bg-transparent border-transparent' : 'sticky top-0 border-b border-gray-200 bg-white'}`}>
-      <div className={`container mx-auto px-4 sm:px-6 lg:px-8 ${transparent ? 'bg-transparent text-white' : ''}`}>
+      <div className={`container mx-auto px-4 sm:px-6 lg:px-8 my-4 ${transparent ? 'bg-transparent text-white' : ''}`}>
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}
           <div className="flex items-center space-x-6">
@@ -44,7 +44,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             <img 
               src="/Merchdrop.png" 
               alt="MerchDrop" 
-              className={`h-8 w-auto ${transparent ? 'brightness-200 mix-blend-screen' : ''}`}
+              className={`h-12 w-auto ${transparent ? 'brightness-200 mix-blend-screen' : ''}`}
             />
           </Link>
 
