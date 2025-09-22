@@ -255,9 +255,7 @@ const Shop = () => {
         <Header transparent />
         <main>
           <ShopHeroSection />
-          <MerchCategories />
         </main>
-        <Footer />
       </div>
     </>
   );
