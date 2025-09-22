@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,6 +14,11 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
   const { getTotalItems } = useCart();
   const { user, profile, signOut, loading, isAdmin, isArtist } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Only show transparent header on main landing page
+  const isMainLandingPage = location.pathname === '/';
+  const shouldBeTransparent = transparent && isMainLandingPage;
 
   const handleSignOut = async () => {
     await signOut();
@@ -26,15 +31,15 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
   };
 
   return (
-    <header className={`absolute top-8 z-40 w-full ${transparent ? 'bg-transparent border-transparent' : 'sticky top-0 border-b border-gray-200 bg-white'}`}>
-      <div className={`container mx-auto px-4 sm:px-6 lg:px-8 my-4 ${transparent ? 'bg-transparent text-white' : ''}`}>
+    <header className={`${shouldBeTransparent ? 'absolute top-8 z-40 w-full bg-transparent border-transparent' : 'sticky top-0 z-40 w-full border-b border-gray-200 bg-white'}`}>
+      <div className={`container mx-auto px-4 sm:px-6 lg:px-8 ${shouldBeTransparent ? 'my-4 bg-transparent text-white' : ''}`}>
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}
           <div className="flex items-center space-x-6">
-            <Link to="/creators" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+            <Link to="/creators" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               For Creators
             </Link>
-            <Link to="/shop" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+            <Link to="/shop" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               Shop
             </Link>
           </div>
@@ -44,7 +49,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             <img 
               src="/Merchdrop.png" 
               alt="MerchDrop" 
-              className={`h-12 w-auto ${transparent ? 'brightness-200 mix-blend-screen' : ''}`}
+              className={`h-12 w-auto ${shouldBeTransparent ? 'brightness-200 mix-blend-screen' : ''}`}
             />
           </Link>
 
@@ -53,12 +58,12 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             {/* Search Bar - Desktop */}
             <div className="hidden md:flex">
               <div className="relative">
-                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${transparent ? 'text-white' : 'text-gray-400'}`} />
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${shouldBeTransparent ? 'text-white' : 'text-gray-400'}`} />
                 <input
                   type="text"
                   placeholder="Search..."
                   className={`pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                    transparent 
+                    shouldBeTransparent 
                       ? 'border-white/20 bg-white/10 text-white placeholder-white/70 focus:bg-white/20' 
                       : 'border-gray-200 bg-white focus:ring-black'
                   }`}
@@ -66,7 +71,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               </div>
             </div>
 
-            <Link to="/cart" className={`relative p-2 transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+            <Link to="/cart" className={`relative p-2 transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               <ShoppingCart className="h-5 w-5" />
               {getTotalItems() > 0 && (
                 <span className="absolute -top-1 -right-1 bg-black text-white text-[11px] rounded-full h-5 w-5 flex items-center justify-center">
@@ -74,14 +79,14 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 </span>
               )}
             </Link>
-            <CurrencySelector className={transparent ? 'text-white border-white/20' : ''} />
+            <CurrencySelector className={shouldBeTransparent ? 'text-white border-white/20' : ''} />
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className={`relative ${transparent ? 'text-white hover:bg-white/10' : 'text-black hover:bg-gray-100'}`}>
+                  <Button variant="ghost" size="sm" className={`relative ${shouldBeTransparent ? 'text-white hover:bg-white/10' : 'text-black hover:bg-gray-100'}`}>
                     <Avatar className="h-8 w-8 border-2 border-white/20">
                       <AvatarImage src={profile?.avatar_url || ''} />
-                      <AvatarFallback className={`${transparent ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-900'} font-medium`}>
+                      <AvatarFallback className={`${shouldBeTransparent ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-900'} font-medium`}>
                         {getInitials(profile?.display_name || profile?.first_name)}
                       </AvatarFallback>
                     </Avatar>
@@ -124,10 +129,10 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className={`text-[14px] ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} asChild>
+                <Button variant="ghost" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} asChild>
                   <Link to="/user-auth">Shop</Link>
                 </Button>
-                <Button variant="default" size="sm" className={`text-[14px] ${transparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
+                <Button variant="default" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
                   <Link to="/creators">Start Creating</Link>
                 </Button>
               </div>
@@ -136,7 +141,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
 
           {/* Mobile menu button */}
           <button
-            className={`md:hidden p-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
+            className={`md:hidden p-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -159,21 +164,21 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               
               <Link 
                 to="/creators" 
-                className={`text-[14px] transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
+                className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 For Creators
               </Link>
               <Link 
                 to="/shop" 
-                className={`text-[14px] transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
+                className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Shop
               </Link>
             <Link 
               to="/cart" 
-              className={`text-[14px] flex items-center transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
+              className={`text-[14px] flex items-center transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
               onClick={() => setIsMenuOpen(false)}
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
