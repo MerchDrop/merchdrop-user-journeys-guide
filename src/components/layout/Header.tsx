@@ -74,11 +74,11 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 </span>
               )}
             </Link>
-            <CurrencySelector />
+            <CurrencySelector className={transparent ? 'text-white border-white/20' : ''} />
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="relative">
+                  <Button variant="ghost" size="sm" className={`relative ${transparent ? 'text-white hover:bg-white/10' : 'text-black hover:bg-gray-100'}`}>
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={profile?.avatar_url || ''} />
                       <AvatarFallback>
@@ -87,7 +87,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg z-50">
                   <div className="px-2 py-1.5">
                     <p className="text-[14px] font-medium">{profile?.display_name || profile?.first_name || 'User'}</p>
                     <p className="text-[12px] text-muted-foreground">{profile?.email}</p>

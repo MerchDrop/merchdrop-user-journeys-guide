@@ -21,12 +21,12 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({ className })
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={cn("gap-2", className)}>
+        <Button variant="outline" size="sm" className={cn("gap-2 bg-transparent", className)}>
           <Globe className="h-4 w-4" />
           <span>{currentCurrency.symbol} {currentCurrency.code}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg z-50">
         {Object.values(CURRENCIES).map((curr) => (
           <DropdownMenuItem
             key={curr.code}
