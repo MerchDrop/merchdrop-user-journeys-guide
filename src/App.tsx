@@ -10,6 +10,7 @@ import Auth from '@/pages/Auth';
 import AdminAuth from '@/pages/AdminAuth';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
+import Shop from '@/pages/Shop';
 import Artists from '@/pages/Artists';
 import Cart from '@/pages/Cart';
 import ArtistProfile from '@/pages/ArtistProfile';
@@ -64,8 +65,9 @@ function App() {
                 <Route path="/user-auth" element={<UserAuth />} />
                 <Route path="/artist-auth" element={<ArtistAuth />} />
                 <Route path="/admin-auth" element={<AdminAuth />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/artists" element={<Artists />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/artists" element={<Artists />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/artist/:slug" element={<ArtistProfile />} />
                 <Route path="/product/:id" element={<ProductDetail />} />

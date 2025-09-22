@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { CurrencySelector } from '@/components/ui/currency-selector';
 import { Search, Menu, X, ShoppingCart, User, Settings, LogOut } from 'lucide-react';
 
-const Header = () => {
+const Header = ({ transparent = false }: { transparent?: boolean }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { getTotalItems } = useCart();
   const { user, profile, signOut, loading, isAdmin, isArtist } = useAuth();
@@ -26,7 +26,7 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+    <header className={`sticky top-0 z-50 w-full ${transparent ? 'bg-transparent border-transparent' : 'border-b border-gray-200 bg-white'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -34,7 +34,7 @@ const Header = () => {
             <img 
               src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
               alt="MerchDrop" 
-              className="h-8 w-auto"
+              className={`h-8 w-auto ${transparent ? 'brightness-0 invert' : ''}`}
             />
           </Link>
 
@@ -52,11 +52,11 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/artists" className="text-[14px] text-black hover:text-gray-600 transition-colors">
+            <Link to="/artists" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               Browse Artists
             </Link>
-            <Link to="/products" className="text-[14px] text-black hover:text-gray-600 transition-colors">
-              Products
+            <Link to="/shop" className={`text-[14px] transition-colors ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+              Shop
             </Link>
             <Link to="/cart" className="relative p-2 text-black hover:text-gray-600 transition-colors">
               <ShoppingCart className="h-5 w-5" />
@@ -151,26 +151,26 @@ const Header = () => {
               
               <Link 
                 to="/artists" 
-                className="text-[14px] text-black hover:text-gray-600 transition-colors py-2"
+                className={`text-[14px] transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Browse Artists
               </Link>
               <Link 
-                to="/products" 
-                className="text-[14px] text-black hover:text-gray-600 transition-colors py-2"
+                to="/shop" 
+                className={`text-[14px] transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Products
+                Shop
               </Link>
-              <Link 
-                to="/cart" 
-                className="text-[14px] flex items-center text-black hover:text-gray-600 transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Cart ({getTotalItems()})
-              </Link>
+            <Link 
+              to="/cart" 
+              className={`text-[14px] flex items-center transition-colors py-2 ${transparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Cart ({getTotalItems()})
+            </Link>
               
               <div className="py-2">
                 <CurrencySelector className="w-full" />
