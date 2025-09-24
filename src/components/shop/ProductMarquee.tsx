@@ -9,12 +9,21 @@ const ProductMarquee = () => {
   const { formatPrice } = useCurrency();
   const [duplicatedProducts, setDuplicatedProducts] = useState<any[]>([]);
 
+  // Mock products as fallback
+  const mockProducts = [
+    { id: '1', title: 'Summer Vibes T-Shirt', price_cents: 2500, artist_profiles: { artist_name: 'Alex River' }, published_at: new Date().toISOString(), stock: 15 },
+    { id: '2', title: 'Urban Hoodie', price_cents: 4500, artist_profiles: { artist_name: 'Maya Studio' }, published_at: new Date().toISOString(), stock: 8 },
+    { id: '3', title: 'Neon Dreams Print', price_cents: 1800, artist_profiles: { artist_name: 'Digital Arts Co' }, published_at: new Date().toISOString(), stock: 25 },
+    { id: '4', title: 'Retro Cap', price_cents: 2200, artist_profiles: { artist_name: 'Vintage Works' }, published_at: new Date().toISOString(), stock: 12 },
+    { id: '5', title: 'Abstract Art Tote', price_cents: 2800, artist_profiles: { artist_name: 'Creative Mind' }, published_at: new Date().toISOString(), stock: 20 },
+    { id: '6', title: 'Minimalist Poster', price_cents: 1500, artist_profiles: { artist_name: 'Clean Design' }, published_at: new Date().toISOString(), stock: 30 }
+  ];
+
   useEffect(() => {
-    if (products && products.length > 0) {
-      // Take first 8 products and duplicate them for smooth infinite scroll
-      const productSlice = products.slice(0, 8);
-      setDuplicatedProducts([...productSlice, ...productSlice, ...productSlice]);
-    }
+    const productsToUse = products && products.length > 0 ? products : mockProducts;
+    // Take first 8 products and duplicate them for smooth infinite scroll
+    const productSlice = productsToUse.slice(0, 8);
+    setDuplicatedProducts([...productSlice, ...productSlice, ...productSlice]);
   }, [products]);
 
   const getBadge = (product: any) => {
@@ -27,7 +36,7 @@ const ProductMarquee = () => {
     return { text: 'Hot', variant: 'secondary' };
   };
 
-  if (loading || duplicatedProducts.length === 0) {
+  if (duplicatedProducts.length === 0) {
     return (
       <div className="w-full bg-muted/30 py-8">
         <div className="flex space-x-6 animate-pulse">
