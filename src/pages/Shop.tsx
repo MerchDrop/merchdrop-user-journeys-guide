@@ -12,6 +12,7 @@ import fashionSlider1 from '@/assets/fashion-slider-1.jpg';
 import fashionSlider2 from '@/assets/fashion-slider-2.jpg';
 import fashionSlider3 from '@/assets/fashion-slider-3.jpg';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
+import ProductMarquee from '@/components/shop/ProductMarquee';
 
 const ShopHeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -255,7 +256,10 @@ const Shop = () => {
         <Header transparent />
         <main>
           <ShopHeroSection />
+          <ProductMarquee />
+          <MerchCategories />
         </main>
+        <Footer />
       </div>
     </>
   );
