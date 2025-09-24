@@ -18,7 +18,7 @@ export default function Home() {
         description="The ultimate platform for artists to create, sell, and monetize custom merchandise. Turn your creativity into a thriving business with MerchDrop."
         keywords="custom merchandise, artist platform, print on demand, merch store, creative business"
       />
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background overflow-x-hidden">
         <Header />
         <main className="w-full">
           <HeroSection />

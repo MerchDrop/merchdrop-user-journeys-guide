@@ -6,7 +6,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative border-t border-border bg-background">
+    <footer className="relative border-t border-border bg-background w-full" style={{ zIndex: 10, minHeight: '200px' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
           {/* Brand + Newsletter */}
