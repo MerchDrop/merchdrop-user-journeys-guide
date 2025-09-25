@@ -28,6 +28,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
+import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
 
 // Mock orders data - replace with actual API call
 const mockOrders = [
@@ -80,6 +81,8 @@ export default function ArtistOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState<typeof mockOrders[0] | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const ordersPerPage = 10;
 
   // Filter orders based on search and status
@@ -122,6 +125,11 @@ export default function ArtistOrders() {
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(order => order.status === 'pending').length;
   const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
+
+  const handleViewOrder = (order: typeof mockOrders[0]) => {
+    setSelectedOrder(order);
+    setIsDetailsDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -289,10 +297,7 @@ export default function ArtistOrders() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => {
-                            // TODO: Navigate to order details page
-                            console.log('View order details for:', order.order_number);
-                          }}
+                          onClick={() => handleViewOrder(order)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -305,6 +310,12 @@ export default function ArtistOrders() {
           </div>
         </CardContent>
       </Card>
+
+      <OrderDetailsDialog
+        order={selectedOrder}
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+      />
     </div>
   );
 }
