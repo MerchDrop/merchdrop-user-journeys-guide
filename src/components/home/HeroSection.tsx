@@ -194,18 +194,18 @@ const HeroSection = () => {
           {/* Badge and Headline */}
           <div className="mb-12">
             <Badge variant="outline" className="mb-6 px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
               Launch your merch line in minutes
             </Badge>
             
             <h1 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight leading-tight">
-              MerchDrop launches design, you create, sell, and manage. 
+              Your Merch, Your Brand, 
               <br />
-              <span className="text-accent">No upfront. No software.</span>
+              <span className="text-accent">Your Revenue.</span>
             </h1>
             
             <p className="text-[16px] lg:text-[18px] text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Create your online store that sells custom swag, from t-shirts to mugs. 
-              Quality on-demand products, global shipping, and instant payouts.
+              Create your online dashboard that sells custom swag, from t-shirts, to belts ,  Quality on-demand products, global shipping, and instant payouts.
             </p>
           </div>
 
