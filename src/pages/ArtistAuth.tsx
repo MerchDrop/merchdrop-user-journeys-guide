@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, ArrowLeft, Palette } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import merchdropLogo from "@/assets/merchdrop-logo.png";
 
 const ArtistAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -156,7 +157,7 @@ const ArtistAuth = () => {
           <Card className="shadow-lg">
             <CardHeader className="text-center">
               <div className="flex items-center justify-center mb-4">
-                <Palette className="w-8 h-8 text-primary" />
+                <img src={merchdropLogo} alt="Merchdrop" className="w-8 h-8" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 {isSignUp ? "Start Your" : "Welcome"} <span className="text-accent">Creator Journey</span>
