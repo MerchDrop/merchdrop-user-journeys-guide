@@ -610,6 +610,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      repair_missing_artist_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "artist" | "user"

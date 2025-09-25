@@ -43,9 +43,26 @@ const ArtistOnboarding = () => {
 
   // Redirect if not authenticated or not an artist
   useEffect(() => {
-    if (!loading && (!user || !isArtist)) {
-      navigate('/artist-auth', { replace: true });
+    console.log('ArtistOnboarding: user:', user, 'loading:', loading, 'isArtist:', isArtist);
+    
+    if (loading) {
+      console.log('ArtistOnboarding: Still loading, waiting...');
+      return;
     }
+    
+    if (!user) {
+      console.log('ArtistOnboarding: No user, redirecting to artist-auth');
+      navigate('/artist-auth', { replace: true });
+      return;
+    }
+    
+    if (!isArtist) {
+      console.log('ArtistOnboarding: User is not artist, redirecting to artist-auth');
+      navigate('/artist-auth', { replace: true });
+      return;
+    }
+    
+    console.log('ArtistOnboarding: User is authenticated artist, staying on page');
   }, [user, isArtist, loading, navigate]);
 
   const totalSteps = 3;
@@ -92,30 +109,68 @@ const ArtistOnboarding = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user) {
+      console.error('ArtistOnboarding: No user found in handleSubmit');
+      toast.error('User not found. Please log in again.');
+      return;
+    }
     
     setIsLoading(true);
     
     try {
+      console.log('ArtistOnboarding: Starting profile creation for user:', user.id);
+      
       // Create artist slug from display name
       const artistSlug = formData.displayName
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '-');
 
-      // Create artist profile
-      const { error: profileError } = await supabase
+      // First check if artist profile already exists
+      const { data: existingProfile, error: checkError } = await supabase
         .from('artist_profiles')
-        .insert({
-          user_id: user.id,
-          artist_name: formData.displayName,
-          artist_slug: artistSlug,
-          status: 'pending'
-        });
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (profileError) {
-        toast.error('Failed to create artist profile: ' + profileError.message);
+      if (checkError) {
+        console.error('ArtistOnboarding: Error checking existing profile:', checkError);
+        toast.error('Failed to check existing profile: ' + checkError.message);
         return;
+      }
+
+      if (existingProfile) {
+        console.log('ArtistOnboarding: Updating existing artist profile');
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('artist_profiles')
+          .update({
+            artist_name: formData.displayName,
+            artist_slug: artistSlug,
+            status: 'approved' // Mark as approved when they complete onboarding
+          })
+          .eq('user_id', user.id);
+
+        if (updateError) {
+          toast.error('Failed to update artist profile: ' + updateError.message);
+          return;
+        }
+      } else {
+        console.log('ArtistOnboarding: Creating new artist profile');
+        // Create new artist profile
+        const { error: createError } = await supabase
+          .from('artist_profiles')
+          .insert({
+            user_id: user.id,
+            artist_name: formData.displayName,
+            artist_slug: artistSlug,
+            status: 'approved' // Mark as approved when they complete onboarding
+          });
+
+        if (createError) {
+          toast.error('Failed to create artist profile: ' + createError.message);
+          return;
+        }
       }
 
       // Update user profile with bio and social links
@@ -123,18 +178,22 @@ const ArtistOnboarding = () => {
         .from('profiles')
         .update({
           bio: formData.bio,
-          social_links: formData.socialLinks
+          social_links: formData.socialLinks,
+          display_name: formData.displayName
         })
         .eq('id', user.id);
 
       if (updateError) {
-        console.error('Error updating profile:', updateError);
+        console.error('ArtistOnboarding: Error updating profile:', updateError);
+        // Don't fail the whole process for this
       }
 
-      toast.success('Artist profile created successfully!');
+      console.log('ArtistOnboarding: Profile creation successful');
+      toast.success('Artist profile completed successfully!');
       navigate('/dashboard', { replace: true });
       
     } catch (error: any) {
+      console.error('ArtistOnboarding: Error in handleSubmit:', error);
       toast.error('Failed to create profile: ' + error.message);
     } finally {
       setIsLoading(false);

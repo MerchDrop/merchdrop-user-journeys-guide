@@ -66,23 +66,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const ensureUserSetup = async (userId: string, userType: string = 'user') => {
     try {
+      console.log('AuthContext: Starting ensureUserSetup for user:', userId, 'type:', userType);
+      
       // Call RPC to ensure profile and role exist
       const { data: setupResult, error: rpcError } = await supabase.rpc(
         'ensure_profile_and_role',
         { user_type: userType }
       );
 
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        console.error('AuthContext: RPC error:', rpcError);
+        throw rpcError;
+      }
 
-      console.log('User setup result:', setupResult);
+      console.log('AuthContext: User setup result:', setupResult);
 
-      // Fetch updated profile and roles
-      await Promise.all([
+      // Fetch updated profile and roles in parallel
+      const [profileResult, rolesResult] = await Promise.all([
         fetchProfile(userId),
         fetchUserRoles(userId)
       ]);
+      
+      console.log('AuthContext: Setup complete for user:', userId);
+      return { profileResult, rolesResult };
     } catch (error) {
-      console.error('Error ensuring user setup:', error);
+      console.error('AuthContext: Error ensuring user setup:', error);
+      throw error;
     }
   };
 
@@ -124,9 +133,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('AuthContext: Auth state change:', event, session?.user?.id);
+        
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -134,11 +149,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Get user type from metadata or default to 'user'
           const userType = session.user.user_metadata?.user_type || 'user';
           
-          // Use setTimeout to prevent infinite recursion
-          setTimeout(async () => {
-            await ensureUserSetup(session.user.id, userType);
-            setLoading(false);
-          }, 0);
+          // Fetch user data without setTimeout to prevent race conditions
+          ensureUserSetup(session.user.id, userType)
+            .catch((error) => {
+              console.error('AuthContext: Failed to ensure user setup:', error);
+            })
+            .finally(() => {
+              if (isMounted) {
+                setLoading(false);
+              }
+            });
         } else {
           setProfile(null);
           setUserRoles([]);
@@ -147,25 +167,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Check for existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      
+      console.log('AuthContext: Initial session check:', session?.user?.id);
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         const userType = session.user.user_metadata?.user_type || 'user';
-        await ensureUserSetup(session.user.id, userType);
+        ensureUserSetup(session.user.id, userType)
+          .catch((error) => {
+            console.error('AuthContext: Failed to ensure user setup on mount:', error);
+          })
+          .finally(() => {
+            if (isMounted) {
+              setLoading(false);
+            }
+          });
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -202,7 +237,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUpArtist = async (email: string, password: string, metadata = {}) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -364,6 +399,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Helper functions for role checking
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user') => {
+    if (loading || !user || userRoles.length === 0) return false;
     return userRoles.some(userRole => userRole.role === role);
   };
 

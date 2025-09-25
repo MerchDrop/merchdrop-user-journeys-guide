@@ -30,21 +30,33 @@ const ArtistAuth = () => {
   // Redirect if already authenticated
   useEffect(() => {
     console.log('ArtistAuth: user:', user, 'loading:', loading, 'isArtist:', isArtist);
-    if (user && !loading) {
+    
+    // Wait for auth to fully initialize
+    if (loading) {
+      console.log('ArtistAuth: Still loading, waiting...');
+      return;
+    }
+    
+    if (user) {
       if (isArtist) {
-        // Check if artist has completed profile
+        console.log('ArtistAuth: User is artist, checking profile...');
         checkArtistProfile();
       } else {
-        console.log('Redirecting to home');
+        console.log('ArtistAuth: User is not artist, redirecting to home');
         navigate('/', { replace: true });
       }
     }
-  }, [user, loading, navigate, isArtist]);
+  }, [user, loading, isArtist, navigate]);
 
   const checkArtistProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('ArtistAuth: No user found in checkArtistProfile');
+      return;
+    }
     
     try {
+      console.log('ArtistAuth: Checking artist profile for user:', user.id);
+      
       const { data: artistProfile, error } = await supabase
         .from('artist_profiles')
         .select('*')
@@ -52,19 +64,26 @@ const ArtistAuth = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking artist profile:', error);
+        console.error('ArtistAuth: Error checking artist profile:', error);
+        toast.error('Failed to check artist profile: ' + error.message);
         return;
       }
 
-      if (artistProfile) {
-        console.log('Artist profile exists, redirecting to dashboard');
+      console.log('ArtistAuth: Artist profile result:', artistProfile);
+
+      if (artistProfile && artistProfile.status !== 'pending') {
+        console.log('ArtistAuth: Artist profile exists and is not pending, redirecting to dashboard');
         navigate('/dashboard', { replace: true });
+      } else if (artistProfile && artistProfile.status === 'pending') {
+        console.log('ArtistAuth: Artist profile exists but is pending, redirecting to onboarding');
+        navigate('/onboarding', { replace: true });
       } else {
-        console.log('No artist profile found, redirecting to onboarding');
+        console.log('ArtistAuth: No artist profile found, redirecting to onboarding');
         navigate('/onboarding', { replace: true });
       }
     } catch (error) {
-      console.error('Error checking artist profile:', error);
+      console.error('ArtistAuth: Error checking artist profile:', error);
+      toast.error('An error occurred while checking your profile.');
     }
   };
 
