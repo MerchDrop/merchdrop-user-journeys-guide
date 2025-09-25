@@ -33,52 +33,75 @@ export function useArtists() {
   const fetchArtists = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // First get all artist profiles
+      const { data: artistProfiles, error: artistError } = await supabase
         .from('artist_profiles')
-        .select(`
-          *,
-          profiles!inner(
-            display_name,
-            email,
-            avatar_url,
-            bio,
-            website_url
-          ),
-          user_roles!inner(
-            role
-          )
-        `)
-        .eq('user_roles.role', 'artist')
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (artistError) throw artistError;
 
-      const formattedArtists: Artist[] = (data || []).map((item: any) => ({
-        id: item.id,
-        user_id: item.user_id,
-        artist_name: item.artist_name,
-        artist_slug: item.artist_slug,
-        status: item.status,
-        commission_rate: item.commission_rate,
-        total_sales: item.total_sales,
-        total_earnings: item.total_earnings,
-        approval_date: item.approval_date,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        display_name: item.profiles?.display_name,
-        email: item.profiles?.email,
-        avatar_url: item.profiles?.avatar_url,
-        bio: item.profiles?.bio,
-        website_url: item.profiles?.website_url,
-        role: item.user_roles?.role
-      }));
+      if (!artistProfiles || artistProfiles.length === 0) {
+        setArtists([]);
+        return;
+      }
+
+      // Get user IDs
+      const userIds = artistProfiles.map(ap => ap.user_id);
+
+      // Get profiles for these users
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, display_name, email, avatar_url, bio, website_url')
+        .in('id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Get user roles for these users
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds)
+        .eq('role', 'artist');
+
+      if (rolesError) throw rolesError;
+
+      // Combine the data
+      const formattedArtists: Artist[] = artistProfiles
+        .filter(ap => userRoles?.some(ur => ur.user_id === ap.user_id))
+        .map((ap: any) => {
+          const profile = profiles?.find(p => p.id === ap.user_id);
+          const role = userRoles?.find(ur => ur.user_id === ap.user_id);
+          
+          return {
+            id: ap.id,
+            user_id: ap.user_id,
+            artist_name: ap.artist_name,
+            artist_slug: ap.artist_slug,
+            status: ap.status,
+            commission_rate: ap.commission_rate,
+            total_sales: ap.total_sales,
+            total_earnings: ap.total_earnings,
+            approval_date: ap.approval_date,
+            created_at: ap.created_at,
+            updated_at: ap.updated_at,
+            display_name: profile?.display_name || null,
+            email: profile?.email || null,
+            avatar_url: profile?.avatar_url || null,
+            bio: profile?.bio || null,
+            website_url: profile?.website_url || null,
+            role: role?.role || 'artist'
+          };
+        });
 
       setArtists(formattedArtists);
     } catch (err: any) {
+      console.error('Error fetching artists:', err);
       setError(err.message);
       toast({
         title: "Error",
-        description: "Failed to fetch artists",
+        description: "Failed to fetch artists: " + err.message,
         variant: "destructive"
       });
     } finally {
@@ -164,49 +187,72 @@ export function usePendingArtists() {
   const fetchPendingArtists = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Get pending artist profiles
+      const { data: artistProfiles, error: artistError } = await supabase
         .from('artist_profiles')
-        .select(`
-          *,
-          profiles!inner(
-            display_name,
-            email,
-            avatar_url,
-            bio,
-            website_url
-          ),
-          user_roles!inner(
-            role
-          )
-        `)
+        .select('*')
         .eq('status', 'pending')
-        .eq('user_roles.role', 'artist')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (artistError) throw artistError;
 
-      const formattedArtists: Artist[] = (data || []).map((item: any) => ({
-        id: item.id,
-        user_id: item.user_id,
-        artist_name: item.artist_name,
-        artist_slug: item.artist_slug,
-        status: item.status,
-        commission_rate: item.commission_rate,
-        total_sales: item.total_sales,
-        total_earnings: item.total_earnings,
-        approval_date: item.approval_date,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        display_name: item.profiles?.display_name,
-        email: item.profiles?.email,
-        avatar_url: item.profiles?.avatar_url,
-        bio: item.profiles?.bio,
-        website_url: item.profiles?.website_url,
-        role: item.user_roles?.role
-      }));
+      if (!artistProfiles || artistProfiles.length === 0) {
+        setPendingArtists([]);
+        return;
+      }
+
+      // Get user IDs
+      const userIds = artistProfiles.map(ap => ap.user_id);
+
+      // Get profiles for these users
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, display_name, email, avatar_url, bio, website_url')
+        .in('id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Get user roles for these users (must have artist role)
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds)
+        .eq('role', 'artist');
+
+      if (rolesError) throw rolesError;
+
+      // Combine the data
+      const formattedArtists: Artist[] = artistProfiles
+        .filter(ap => userRoles?.some(ur => ur.user_id === ap.user_id))
+        .map((ap: any) => {
+          const profile = profiles?.find(p => p.id === ap.user_id);
+          const role = userRoles?.find(ur => ur.user_id === ap.user_id);
+          
+          return {
+            id: ap.id,
+            user_id: ap.user_id,
+            artist_name: ap.artist_name,
+            artist_slug: ap.artist_slug,
+            status: ap.status,
+            commission_rate: ap.commission_rate,
+            total_sales: ap.total_sales,
+            total_earnings: ap.total_earnings,
+            approval_date: ap.approval_date,
+            created_at: ap.created_at,
+            updated_at: ap.updated_at,
+            display_name: profile?.display_name || null,
+            email: profile?.email || null,
+            avatar_url: profile?.avatar_url || null,
+            bio: profile?.bio || null,
+            website_url: profile?.website_url || null,
+            role: role?.role || 'artist'
+          };
+        });
 
       setPendingArtists(formattedArtists);
     } catch (err: any) {
+      console.error('Error fetching pending artists:', err);
       setError(err.message);
     } finally {
       setLoading(false);
