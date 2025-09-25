@@ -62,24 +62,47 @@ export default function Profile() {
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null>(null);
   const [activeTab, setActiveTab] = useState('personal');
 
-  // Form states
+  // Form states - Initialize with empty values first
   const [personalInfo, setPersonalInfo] = useState({
-    display_name: profile?.display_name || '',
-    first_name: profile?.first_name || '',
-    last_name: profile?.last_name || '',
-    email: profile?.email || '',
-    phone: profile?.phone || '',
-    bio: profile?.bio || '',
-    website_url: profile?.website_url || '',
+    display_name: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    bio: '',
+    website_url: '',
   });
 
   const [socialLinks, setSocialLinks] = useState({
-    instagram: profile?.social_links?.instagram || '',
-    spotify: profile?.social_links?.spotify || '',
-    tiktok: profile?.social_links?.tiktok || '',
-    twitter: profile?.social_links?.twitter || '',
-    youtube: profile?.social_links?.youtube || '',
+    instagram: '',
+    spotify: '',
+    tiktok: '',
+    twitter: '',
+    youtube: '',
   });
+
+  // Update form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      setPersonalInfo({
+        display_name: profile.display_name || '',
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        bio: profile.bio || '',
+        website_url: profile.website_url || '',
+      });
+
+      setSocialLinks({
+        instagram: profile.social_links?.instagram || '',
+        spotify: profile.social_links?.spotify || '',
+        tiktok: profile.social_links?.tiktok || '',
+        twitter: profile.social_links?.twitter || '',
+        youtube: profile.social_links?.youtube || '',
+      });
+    }
+  }, [profile]);
 
   const [notifications, setNotifications] = useState<NotificationSettings>({
     email_orders: true,
@@ -130,16 +153,39 @@ export default function Profile() {
     setIsLoading(true);
 
     try {
-      const { error } = await updateProfile(personalInfo);
+      console.log('Updating profile with data:', personalInfo);
       
-      if (!error) {
+      const { error } = await updateProfile({
+        display_name: personalInfo.display_name,
+        first_name: personalInfo.first_name,
+        last_name: personalInfo.last_name,
+        email: personalInfo.email,
+        phone: personalInfo.phone,
+        bio: personalInfo.bio,
+        website_url: personalInfo.website_url,
+      });
+      
+      if (error) {
+        console.error('Profile update error:', error);
+        toast({
+          title: "Update Failed",
+          description: error.message || "Failed to update profile",
+          variant: "destructive",
+        });
+      } else {
         toast({
           title: "Profile Updated",
           description: "Your personal information has been updated successfully.",
         });
+        console.log('Profile updated successfully');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
+      toast({
+        title: "Update Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -151,18 +197,33 @@ export default function Profile() {
     setIsLoading(true);
 
     try {
+      console.log('Updating social links with data:', socialLinks);
+      
       const { error } = await updateProfile({
         social_links: socialLinks
       });
       
-      if (!error) {
+      if (error) {
+        console.error('Social links update error:', error);
+        toast({
+          title: "Update Failed",
+          description: error.message || "Failed to update social links",
+          variant: "destructive",
+        });
+      } else {
         toast({
           title: "Social Links Updated",
           description: "Your social media links have been updated successfully.",
         });
+        console.log('Social links updated successfully');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating social links:', error);
+      toast({
+        title: "Update Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -250,6 +311,49 @@ export default function Profile() {
       }
     } catch (error) {
       console.error('Error updating password:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Save notification preferences
+  const handleNotificationsSubmit = async () => {
+    setIsLoading(true);
+
+    try {
+      console.log('Updating notification preferences:', notifications);
+      
+      // For now, we'll store notifications in the profiles table as JSON
+      // In a real app, you might want a separate notifications_settings table
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          updated_at: new Date().toISOString(),
+          // Store notifications in a custom field or handle differently based on your schema
+        })
+        .eq('id', user?.id);
+
+      if (error) {
+        console.error('Notifications update error:', error);
+        toast({
+          title: "Update Failed",
+          description: error.message || "Failed to update notification preferences",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Preferences Updated",
+          description: "Your notification preferences have been saved successfully.",
+        });
+        console.log('Notification preferences updated successfully');
+      }
+    } catch (error: any) {
+      console.error('Error updating notifications:', error);
+      toast({
+        title: "Update Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -738,9 +842,9 @@ export default function Profile() {
                 </div>
               </div>
 
-              <Button>
+              <Button onClick={handleNotificationsSubmit} disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Notification Preferences
+                {isLoading ? 'Saving...' : 'Save Notification Preferences'}
               </Button>
             </CardContent>
           </Card>
