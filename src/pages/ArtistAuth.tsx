@@ -157,7 +157,7 @@ const ArtistAuth = () => {
           <Card className="shadow-lg">
             <CardHeader className="text-center">
               <div className="flex items-center justify-center mb-4">
-                <img src={merchdropLogo} alt="Merchdrop" className="w-8 h-8" />
+                <img src={merchdropLogo} alt="Merchdrop" className="w-8 h-8 object-contain" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 {isSignUp ? "Start Your" : "Welcome"} <span className="text-accent">Creator Journey</span>
