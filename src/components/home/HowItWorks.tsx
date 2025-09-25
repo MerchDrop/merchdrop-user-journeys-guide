@@ -121,7 +121,7 @@ const HowItWorks = () => {
                   <div className="flex items-center gap-3">
                     <Upload className="h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-[14px] text-muted-foreground">
-                      Upload designs or request a designer assist.
+                      Upload designs or approve a designer assist.
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
