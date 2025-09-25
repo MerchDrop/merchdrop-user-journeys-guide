@@ -9,38 +9,46 @@ import SearchBar from './SearchBar';
 import HeroBackground from './HeroBackground';
 import { useCurrency } from '@/context/CurrencyContext';
 // Live animated counter component
-const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 2000 }: { 
-  value: number; 
-  prefix?: string; 
-  suffix?: string; 
-  duration?: number; 
+const AnimatedCounter = ({
+  value,
+  prefix = '',
+  suffix = '',
+  duration = 2000
+}: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
 }) => {
   const [count, setCount] = useState(0);
-
   useEffect(() => {
     let startTime: number;
     let animationFrame: number;
-
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime;
       const progress = Math.min((currentTime - startTime) / duration, 1);
-      
       setCount(Math.floor(progress * value));
-      
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);
       }
     };
-
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
   }, [value, duration]);
-
   return <span>{prefix}{count.toLocaleString()}{suffix}</span>;
 };
 
 // Interactive dashboard card component
-const DashboardCard = ({ title, value, prefix, suffix, icon: Icon, color, delay, onClick }: any) => {
+const DashboardCard = ({
+  title,
+  value,
+  prefix,
+  suffix,
+  icon: Icon,
+  color,
+  delay,
+  onClick
+}: any) => {
   const [isHovered, setIsHovered] = useState(false);
   const [currentValue, setCurrentValue] = useState(value);
 
@@ -49,142 +57,132 @@ const DashboardCard = ({ title, value, prefix, suffix, icon: Icon, color, delay,
     const interval = setInterval(() => {
       setCurrentValue(prev => prev + Math.floor(Math.random() * 5));
     }, 3000);
-    
     return () => clearInterval(interval);
   }, []);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.6, delay, type: "spring", bounce: 0.3 }}
-      whileHover={{ 
-        scale: 1.05, 
-        y: -5,
-        transition: { duration: 0.2 }
-      }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      onClick={onClick}
-      className="cursor-pointer"
-    >
-      <Card className={`relative overflow-hidden border transition-all duration-300 ${
-        isHovered ? 'shadow-lg border-primary/30 bg-gradient-to-br from-background to-muted/20' : 'shadow-sm'
-      }`}>
-        <motion.div
-          className={`absolute inset-0 bg-gradient-to-r ${color} opacity-5`}
-          initial={{ x: '-100%' }}
-          animate={{ x: isHovered ? '0%' : '-100%' }}
-          transition={{ duration: 0.5 }}
-        />
+  return <motion.div initial={{
+    opacity: 0,
+    y: 30,
+    scale: 0.9
+  }} animate={{
+    opacity: 1,
+    y: 0,
+    scale: 1
+  }} transition={{
+    duration: 0.6,
+    delay,
+    type: "spring",
+    bounce: 0.3
+  }} whileHover={{
+    scale: 1.05,
+    y: -5,
+    transition: {
+      duration: 0.2
+    }
+  }} onHoverStart={() => setIsHovered(true)} onHoverEnd={() => setIsHovered(false)} onClick={onClick} className="cursor-pointer">
+      <Card className={`relative overflow-hidden border transition-all duration-300 ${isHovered ? 'shadow-lg border-primary/30 bg-gradient-to-br from-background to-muted/20' : 'shadow-sm'}`}>
+        <motion.div className={`absolute inset-0 bg-gradient-to-r ${color} opacity-5`} initial={{
+        x: '-100%'
+      }} animate={{
+        x: isHovered ? '0%' : '-100%'
+      }} transition={{
+        duration: 0.5
+      }} />
         
         <CardContent className="p-6 relative z-10">
           <div className="flex items-center justify-between mb-4">
-            <motion.div
-              animate={{ 
-                rotate: isHovered ? 360 : 0,
-                scale: isHovered ? 1.1 : 1
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              <Icon className={`h-8 w-8 transition-colors duration-300 ${
-                isHovered ? 'text-primary' : 'text-muted-foreground'
-              }`} />
+            <motion.div animate={{
+            rotate: isHovered ? 360 : 0,
+            scale: isHovered ? 1.1 : 1
+          }} transition={{
+            duration: 0.3
+          }}>
+              <Icon className={`h-8 w-8 transition-colors duration-300 ${isHovered ? 'text-primary' : 'text-muted-foreground'}`} />
             </motion.div>
             
-            <motion.div
-              className="w-2 h-2 bg-green-500 rounded-full"
-              animate={{ scale: [1, 1.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
+            <motion.div className="w-2 h-2 bg-green-500 rounded-full" animate={{
+            scale: [1, 1.5, 1]
+          }} transition={{
+            duration: 2,
+            repeat: Infinity
+          }} />
           </div>
           
-          <motion.div 
-            className="text-3xl font-bold text-foreground mb-2"
-            initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: delay + 0.2 }}
-          >
-            <AnimatedCounter 
-              value={currentValue} 
-              prefix={prefix} 
-              suffix={suffix}
-              duration={1500}
-            />
+          <motion.div className="text-3xl font-bold text-foreground mb-2" initial={{
+          scale: 0.5
+        }} animate={{
+          scale: 1
+        }} transition={{
+          duration: 0.5,
+          delay: delay + 0.2
+        }}>
+            <AnimatedCounter value={currentValue} prefix={prefix} suffix={suffix} duration={1500} />
           </motion.div>
           
-          <motion.p 
-            className="text-sm text-muted-foreground"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: delay + 0.4 }}
-          >
+          <motion.p className="text-sm text-muted-foreground" initial={{
+          opacity: 0
+        }} animate={{
+          opacity: 1
+        }} transition={{
+          duration: 0.4,
+          delay: delay + 0.4
+        }}>
             {title}
           </motion.p>
         </CardContent>
       </Card>
-    </motion.div>
-  );
+    </motion.div>;
 };
-
 const HeroSection = () => {
-  const { formatPrice } = useCurrency();
+  const {
+    formatPrice
+  } = useCurrency();
   const [currentTime, setCurrentTime] = useState(new Date());
-  
+
   // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
     return () => clearInterval(timer);
   }, []);
-
-  const dashboardData = [
-    {
-      title: 'Total Revenue',
-      value: 125420,
-      prefix: '₦',
-      suffix: '',
-      icon: DollarSign,
-      color: 'from-green-500 to-green-600',
-      delay: 0
-    },
-    {
-      title: 'Active Orders',
-      value: 1342,
-      prefix: '',
-      suffix: '',
-      icon: Package,
-      color: 'from-blue-500 to-blue-600',
-      delay: 0.1
-    },
-    {
-      title: 'Live Viewers',
-      value: 847,
-      prefix: '',
-      suffix: '',
-      icon: Eye,
-      color: 'from-purple-500 to-purple-600',
-      delay: 0.2
-    },
-    {
-      title: 'Products Sold',
-      value: 2156,
-      prefix: '',
-      suffix: '',
-      icon: TrendingUp,
-      color: 'from-orange-500 to-orange-600',
-      delay: 0.3
-    }
-  ];
-
+  const dashboardData = [{
+    title: 'Total Revenue',
+    value: 125420,
+    prefix: '₦',
+    suffix: '',
+    icon: DollarSign,
+    color: 'from-green-500 to-green-600',
+    delay: 0
+  }, {
+    title: 'Active Orders',
+    value: 1342,
+    prefix: '',
+    suffix: '',
+    icon: Package,
+    color: 'from-blue-500 to-blue-600',
+    delay: 0.1
+  }, {
+    title: 'Live Viewers',
+    value: 847,
+    prefix: '',
+    suffix: '',
+    icon: Eye,
+    color: 'from-purple-500 to-purple-600',
+    delay: 0.2
+  }, {
+    title: 'Products Sold',
+    value: 2156,
+    prefix: '',
+    suffix: '',
+    icon: TrendingUp,
+    color: 'from-orange-500 to-orange-600',
+    delay: 0.3
+  }];
   const handleCardClick = (title: string) => {
     // Navigate to live dashboard or show more details
     window.location.href = '/live-dashboard';
   };
-  return (
-    <section className="relative overflow-hidden bg-background text-foreground py-20 lg:py-32">
+  return <section className="relative overflow-hidden bg-background text-foreground py-20 lg:py-32">
       <HeroBackground />
       
       {/* Main Content Container - centered and constrained width */}
@@ -199,9 +197,9 @@ const HeroSection = () => {
             </Badge>
             
             <h1 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight leading-tight">
-              Your merch, Your brand,
+              MerchDrop launches design, you create, sell, and manage. 
               <br />
-              <span className="text-accent">No upfront. No software.</span>
+              <span className="text-accent">Your Revenue</span>
             </h1>
             
             <p className="text-[16px] lg:text-[18px] text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -238,17 +236,24 @@ const HeroSection = () => {
         </div>
 
         <div className="mt-20 max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-center mb-8"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 50
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.8,
+          delay: 0.5
+        }} className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
+              <motion.div animate={{
+              rotate: 360
+            }} transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "linear"
+            }}>
                 <Zap className="h-6 w-6 text-primary" />
               </motion.div>
               <h2 className="text-2xl font-bold text-foreground">Live Performance Dashboard</h2>
@@ -259,44 +264,40 @@ const HeroSection = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {dashboardData.map((item, index) => (
-              <DashboardCard
-                key={item.title}
-                {...item}
-                onClick={() => handleCardClick(item.title)}
-              />
-            ))}
+            {dashboardData.map((item, index) => <DashboardCard key={item.title} {...item} onClick={() => handleCardClick(item.title)} />)}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="text-center"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => window.location.href = '/live-dashboard'}
-                className="group relative overflow-hidden"
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10"
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '0%' }}
-                  transition={{ duration: 0.3 }}
-                />
+          <motion.div initial={{
+          opacity: 0,
+          scale: 0.9
+        }} animate={{
+          opacity: 1,
+          scale: 1
+        }} transition={{
+          duration: 0.6,
+          delay: 0.8
+        }} className="text-center">
+            <motion.div whileHover={{
+            scale: 1.05
+          }} whileTap={{
+            scale: 0.95
+          }}>
+              <Button variant="outline" size="lg" onClick={() => window.location.href = '/live-dashboard'} className="group relative overflow-hidden">
+                <motion.div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10" initial={{
+                x: '-100%'
+              }} whileHover={{
+                x: '0%'
+              }} transition={{
+                duration: 0.3
+              }} />
                 <span className="relative z-10 flex items-center">
                   View Full Dashboard
-                  <motion.div
-                    className="ml-2"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
+                  <motion.div className="ml-2" animate={{
+                  x: [0, 5, 0]
+                }} transition={{
+                  duration: 1.5,
+                  repeat: Infinity
+                }}>
                     <ArrowRight className="h-4 w-4" />
                   </motion.div>
                 </span>
@@ -305,7 +306,6 @@ const HeroSection = () => {
           </motion.div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
 export default HeroSection;
