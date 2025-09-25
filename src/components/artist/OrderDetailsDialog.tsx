@@ -85,7 +85,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange }: OrderDetailsDi
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="p-6">
           {/* Order Status */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
