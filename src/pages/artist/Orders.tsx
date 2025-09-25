@@ -131,6 +131,33 @@ export default function ArtistOrders() {
     setIsDetailsDialogOpen(true);
   };
 
+  const handleStatusUpdate = (orderId: string, status: string, trackingNumber?: string) => {
+    setOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId 
+          ? { 
+              ...order, 
+              status,
+              shipped_at: status === 'shipped' ? new Date().toISOString() : order.shipped_at,
+              delivered_at: status === 'delivered' ? new Date().toISOString() : order.delivered_at
+            }
+          : order
+      )
+    );
+    
+    // Update the selected order as well so the dialog reflects the change immediately
+    setSelectedOrder(prev => 
+      prev?.id === orderId 
+        ? { 
+            ...prev, 
+            status,
+            shipped_at: status === 'shipped' ? new Date().toISOString() : prev.shipped_at,
+            delivered_at: status === 'delivered' ? new Date().toISOString() : prev.delivered_at
+          }
+        : prev
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -315,6 +342,7 @@ export default function ArtistOrders() {
         order={selectedOrder}
         open={isDetailsDialogOpen}
         onOpenChange={setIsDetailsDialogOpen}
+        onStatusUpdate={handleStatusUpdate}
       />
     </div>
   );

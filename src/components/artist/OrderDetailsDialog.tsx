@@ -55,9 +55,10 @@ interface OrderDetailsDialogProps {
   order: Order | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onStatusUpdate?: (orderId: string, status: string, trackingNumber?: string) => void;
 }
 
-export function OrderDetailsDialog({ order, open, onOpenChange }: OrderDetailsDialogProps) {
+export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -108,12 +109,18 @@ export function OrderDetailsDialog({ order, open, onOpenChange }: OrderDetailsDi
   };
 
   const handleStatusUpdate = () => {
-    // TODO: Implement status update logic
+    if (!selectedStatus || !order) return;
+    
+    // Update the order status via callback
+    onStatusUpdate?.(order.id, selectedStatus, trackingNumber || undefined);
+    
     toast({
       title: "Status Updated",
       description: `Order status changed to ${selectedStatus}`,
     });
     setIsEditingStatus(false);
+    setSelectedStatus('');
+    setTrackingNumber('');
   };
 
   const handleCopyOrderNumber = () => {
