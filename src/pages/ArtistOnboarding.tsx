@@ -62,7 +62,36 @@ const ArtistOnboarding = () => {
       return;
     }
     
-    console.log('ArtistOnboarding: User is authenticated artist, staying on page');
+    // Check if artist has already completed onboarding
+    const checkOnboardingStatus = async () => {
+      try {
+        const { data: artistProfile, error } = await supabase
+          .from('artist_profiles')
+          .select('status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('ArtistOnboarding: Error checking artist profile:', error);
+          return;
+        }
+
+        // If artist profile exists and is approved, redirect to dashboard
+        if (artistProfile && artistProfile.status === 'approved') {
+          console.log('ArtistOnboarding: Artist has already completed onboarding, redirecting to dashboard');
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
+        console.log('ArtistOnboarding: Artist needs to complete onboarding, staying on page');
+      } catch (error) {
+        console.error('ArtistOnboarding: Error in checkOnboardingStatus:', error);
+      }
+    };
+
+    checkOnboardingStatus();
+    
+    console.log('ArtistOnboarding: User is authenticated artist, checking onboarding status');
   }, [user, isArtist, loading, navigate]);
 
   const totalSteps = 3;
