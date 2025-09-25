@@ -134,7 +134,17 @@ export default function ArtistOrders() {
           </p>
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => {
+            const csv = filteredOrders.map(order => 
+              `${order.order_number},${order.customer_name},${order.customer_email},${order.product_title},${order.quantity},${order.total_amount},${order.status},${order.created_at}`
+            ).join('\n');
+            const blob = new Blob([`Order Number,Customer Name,Email,Product,Quantity,Total,Status,Date\n${csv}`], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'orders.csv';
+            a.click();
+          }}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -276,7 +286,14 @@ export default function ArtistOrders() {
                         {formatDate(order.created_at)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            // TODO: Navigate to order details page
+                            console.log('View order details for:', order.order_number);
+                          }}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>
