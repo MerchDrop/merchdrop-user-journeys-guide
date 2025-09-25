@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Save, Instagram, Twitter, Youtube, Globe, Plus, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface SocialLink {
   id: string;
@@ -26,35 +28,108 @@ const platformIcons = {
 };
 
 export default function ProfileSettings() {
+  const { user, profile, updateProfile } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  
   const [profileData, setProfileData] = useState({
-    name: 'John Artist',
-    bio: 'Creating unique designs and bringing artistic visions to life through merch.',
-    email: 'john.artist@example.com',
-    phone: '+1 234 567 8900',
-    profileImage: '/placeholder.svg',
-    isPublic: true,
-    allowMessages: true,
-    emailNotifications: true,
+    display_name: '',
+    bio: '',
+    email: '',
+    phone: '',
+    avatar_url: '',
+    website_url: '',
+    social_links: {},
   });
 
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
-    { id: '1', platform: 'instagram', url: 'https://instagram.com/johnartist', icon: Instagram },
-    { id: '2', platform: 'twitter', url: 'https://twitter.com/johnartist', icon: Twitter },
-  ]);
-
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [newSocialLink, setNewSocialLink] = useState({ platform: 'instagram', url: '' });
+
+  // Load profile data when component mounts or profile changes
+  useEffect(() => {
+    if (profile) {
+      setProfileData({
+        display_name: profile.display_name || '',
+        bio: profile.bio || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        avatar_url: profile.avatar_url || '',
+        website_url: profile.website_url || '',
+        social_links: profile.social_links || {},
+      });
+
+      // Convert social_links object to array format
+      if (profile.social_links) {
+        const linksArray = Object.entries(profile.social_links).map(([platform, url]) => ({
+          id: platform,
+          platform,
+          url: url as string,
+          icon: platformIcons[platform as keyof typeof platformIcons] || Globe,
+        }));
+        setSocialLinks(linksArray);
+      }
+    }
+  }, [profile]);
 
   const handleProfileUpdate = (field: string, value: any) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleSaveChanges = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to update your profile.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Convert social links array back to object format
+      const socialLinksObject = socialLinks.reduce((acc, link) => {
+        acc[link.platform] = link.url;
+        return acc;
+      }, {} as Record<string, string>);
+
+      const updates = {
+        display_name: profileData.display_name,
+        bio: profileData.bio,
+        phone: profileData.phone,
+        website_url: profileData.website_url,
+        social_links: socialLinksObject,
+        ...(profileData.avatar_url && profileData.avatar_url !== profile?.avatar_url && {
+          avatar_url: profileData.avatar_url
+        })
+      };
+
+      const { error } = await updateProfile(updates);
+      
+      if (!error) {
+        toast({
+          title: "Success",
+          description: "Your profile has been updated successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addSocialLink = () => {
-    if (newSocialLink.url) {
+    if (newSocialLink.url && !socialLinks.find(link => link.platform === newSocialLink.platform)) {
       const newLink: SocialLink = {
-        id: Date.now().toString(),
+        id: newSocialLink.platform,
         platform: newSocialLink.platform,
         url: newSocialLink.url,
-        icon: platformIcons[newSocialLink.platform as keyof typeof platformIcons],
+        icon: platformIcons[newSocialLink.platform as keyof typeof platformIcons] || Globe,
       };
       setSocialLinks(prev => [...prev, newLink]);
       setNewSocialLink({ platform: 'instagram', url: '' });
@@ -64,6 +139,29 @@ export default function ProfileSettings() {
   const removeSocialLink = (id: string) => {
     setSocialLinks(prev => prev.filter(link => link.id !== id));
   };
+
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // For now, create a temporary URL for preview
+      // In a real implementation, you'd upload to Supabase Storage
+      const objectUrl = URL.createObjectURL(file);
+      handleProfileUpdate('avatar_url', objectUrl);
+      
+      toast({
+        title: "Avatar Updated",
+        description: "Avatar preview updated. Don't forget to save your changes.",
+      });
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Please log in to view your profile settings.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -80,68 +178,99 @@ export default function ProfileSettings() {
               <CardTitle>Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Profile Picture */}
-              <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profileData.profileImage} />
-                  <AvatarFallback>{profileData.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <Button variant="outline" className="mb-2">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Change Photo
-                  </Button>
-                  <p className="text-sm text-muted-foreground">
-                    JPG, PNG or GIF. Max size 5MB.
-                  </p>
-                </div>
-              </div>
+               {/* Profile Picture */}
+               <div className="flex items-center gap-4">
+                 <Avatar className="h-20 w-20">
+                   <AvatarImage src={profileData.avatar_url || '/placeholder.svg'} />
+                   <AvatarFallback>
+                     {profileData.display_name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
+                   </AvatarFallback>
+                 </Avatar>
+                 <div>
+                   <Label htmlFor="avatar-upload">
+                     <Button variant="outline" className="mb-2 cursor-pointer" asChild>
+                       <span>
+                         <Camera className="h-4 w-4 mr-2" />
+                         Change Photo
+                       </span>
+                     </Button>
+                   </Label>
+                   <Input
+                     id="avatar-upload"
+                     type="file"
+                     accept="image/*"
+                     onChange={handleAvatarUpload}
+                     className="hidden"
+                   />
+                   <p className="text-sm text-muted-foreground">
+                     JPG, PNG or GIF. Max size 5MB.
+                   </p>
+                 </div>
+               </div>
 
               <Separator />
 
-              {/* Form Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Artist Name</Label>
-                  <Input
-                    id="name"
-                    value={profileData.name}
-                    onChange={(e) => handleProfileUpdate('name', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => handleProfileUpdate('email', e.target.value)}
-                  />
-                </div>
-              </div>
+               {/* Form Fields */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="display_name">Display Name</Label>
+                   <Input
+                     id="display_name"
+                     value={profileData.display_name}
+                     onChange={(e) => handleProfileUpdate('display_name', e.target.value)}
+                     placeholder="Your display name"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="email">Email</Label>
+                   <Input
+                     id="email"
+                     type="email"
+                     value={profileData.email}
+                     disabled
+                     className="bg-muted"
+                   />
+                   <p className="text-xs text-muted-foreground">
+                     Email cannot be changed here
+                   </p>
+                 </div>
+               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Tell fans about yourself and your art..."
-                  value={profileData.bio}
-                  onChange={(e) => handleProfileUpdate('bio', e.target.value)}
-                  rows={4}
-                />
-                <p className="text-sm text-muted-foreground">
-                  {profileData.bio.length}/500 characters
-                </p>
-              </div>
+               <div className="space-y-2">
+                 <Label htmlFor="bio">Bio</Label>
+                 <Textarea
+                   id="bio"
+                   placeholder="Tell fans about yourself and your art..."
+                   value={profileData.bio}
+                   onChange={(e) => handleProfileUpdate('bio', e.target.value)}
+                   rows={4}
+                   maxLength={500}
+                 />
+                 <p className="text-sm text-muted-foreground">
+                   {profileData.bio?.length || 0}/500 characters
+                 </p>
+               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={profileData.phone}
-                  onChange={(e) => handleProfileUpdate('phone', e.target.value)}
-                />
-              </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="phone">Phone Number</Label>
+                   <Input
+                     id="phone"
+                     value={profileData.phone}
+                     onChange={(e) => handleProfileUpdate('phone', e.target.value)}
+                     placeholder="+1 234 567 8900"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="website">Website</Label>
+                   <Input
+                     id="website"
+                     value={profileData.website_url}
+                     onChange={(e) => handleProfileUpdate('website_url', e.target.value)}
+                     placeholder="https://yourwebsite.com"
+                   />
+                 </div>
+               </div>
             </CardContent>
           </Card>
 
@@ -193,75 +322,40 @@ export default function ProfileSettings() {
           </Card>
         </div>
 
-        {/* Settings Sidebar */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Public Profile</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Make your profile visible to everyone
-                  </p>
-                </div>
-                <Switch
-                  checked={profileData.isPublic}
-                  onCheckedChange={(checked) => handleProfileUpdate('isPublic', checked)}
-                />
-              </div>
+         {/* Settings Sidebar */}
+         <div className="space-y-6">
+           <Card>
+             <CardHeader>
+               <CardTitle>Profile Status</CardTitle>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="flex items-center gap-2">
+                 <Badge variant="default">Active User</Badge>
+               </div>
+               {profile?.avatar_url && (
+                 <div className="flex items-center gap-2">
+                   <Badge variant="secondary">Has Avatar</Badge>
+                 </div>
+               )}
+               {profile?.bio && (
+                 <div className="flex items-center gap-2">
+                   <Badge variant="secondary">Bio Complete</Badge>
+                 </div>
+               )}
+               <p className="text-sm text-muted-foreground">
+                 Keep your profile updated to help fans connect with you.
+               </p>
+             </CardContent>
+           </Card>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Allow Messages</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Let fans send you direct messages
-                  </p>
-                </div>
-                <Switch
-                  checked={profileData.allowMessages}
-                  onCheckedChange={(checked) => handleProfileUpdate('allowMessages', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive updates about orders and sales
-                  </p>
-                </div>
-                <Switch
-                  checked={profileData.emailNotifications}
-                  onCheckedChange={(checked) => handleProfileUpdate('emailNotifications', checked)}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="default">Verified Artist</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">Profile Complete</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Your profile is 95% complete. Add more social links to reach 100%.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Button className="w-full">
-            <Save className="h-4 w-4 mr-2" />
-            Save Changes
-          </Button>
+           <Button 
+             className="w-full" 
+             onClick={handleSaveChanges}
+             disabled={loading}
+           >
+             <Save className="h-4 w-4 mr-2" />
+             {loading ? 'Saving...' : 'Save Changes'}
+           </Button>
         </div>
       </div>
     </div>
