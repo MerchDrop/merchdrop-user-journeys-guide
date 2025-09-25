@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,9 +19,13 @@ import {
   ArrowLeft 
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ArtistOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     displayName: '',
     bio: '',
@@ -32,6 +37,16 @@ const ArtistOnboarding = () => {
       website: ''
     }
   });
+
+  const { user, isArtist, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if not authenticated or not an artist
+  useEffect(() => {
+    if (!loading && (!user || !isArtist)) {
+      navigate('/artist-auth', { replace: true });
+    }
+  }, [user, isArtist, loading, navigate]);
 
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
@@ -76,9 +91,54 @@ const ArtistOnboarding = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Artist profile submitted:', formData);
-    // Handle profile creation logic here
+  const handleSubmit = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Create artist slug from display name
+      const artistSlug = formData.displayName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-');
+
+      // Create artist profile
+      const { error: profileError } = await supabase
+        .from('artist_profiles')
+        .insert({
+          user_id: user.id,
+          artist_name: formData.displayName,
+          artist_slug: artistSlug,
+          status: 'pending'
+        });
+
+      if (profileError) {
+        toast.error('Failed to create artist profile: ' + profileError.message);
+        return;
+      }
+
+      // Update user profile with bio and social links
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          bio: formData.bio,
+          social_links: formData.socialLinks
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+      }
+
+      toast.success('Artist profile created successfully!');
+      navigate('/dashboard', { replace: true });
+      
+    } catch (error: any) {
+      toast.error('Failed to create profile: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -283,9 +343,14 @@ const ArtistOnboarding = () => {
                     onClick={handleSubmit}
                     variant="hero"
                     className="flex items-center space-x-2"
+                    disabled={isLoading}
                   >
-                    <Check className="w-4 h-4" />
-                    <span>Complete Profile</span>
+                    {isLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    <span>{isLoading ? 'Creating Profile...' : 'Complete Profile'}</span>
                   </Button>
                 )}
               </div>

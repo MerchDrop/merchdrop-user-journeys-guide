@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User, ArrowLeft, Palette } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const ArtistAuth = () => {
@@ -30,14 +31,41 @@ const ArtistAuth = () => {
     console.log('ArtistAuth: user:', user, 'loading:', loading, 'isArtist:', isArtist);
     if (user && !loading) {
       if (isArtist) {
-        console.log('Redirecting to dashboard');
-        navigate('/dashboard', { replace: true });
+        // Check if artist has completed profile
+        checkArtistProfile();
       } else {
         console.log('Redirecting to home');
         navigate('/', { replace: true });
       }
     }
   }, [user, loading, navigate, isArtist]);
+
+  const checkArtistProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: artistProfile, error } = await supabase
+        .from('artist_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking artist profile:', error);
+        return;
+      }
+
+      if (artistProfile) {
+        console.log('Artist profile exists, redirecting to dashboard');
+        navigate('/dashboard', { replace: true });
+      } else {
+        console.log('No artist profile found, redirecting to onboarding');
+        navigate('/onboarding', { replace: true });
+      }
+    } catch (error) {
+      console.error('Error checking artist profile:', error);
+    }
+  };
 
   // Show loading while auth is initializing
   if (loading) {
@@ -102,7 +130,7 @@ const ArtistAuth = () => {
           toast.error(error.message || "Failed to sign in");
         } else {
           toast.success("Welcome back!");
-          navigate('/dashboard', { replace: true });
+          // Don't navigate here, let the useEffect handle it based on profile status
         }
       }
     } catch (error: any) {
