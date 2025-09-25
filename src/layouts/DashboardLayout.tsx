@@ -36,11 +36,17 @@ export default function DashboardLayout() {
 
   // Redirect non-authenticated users or non-artists
   useEffect(() => {
+    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist);
+    
     if (!loading) {
       if (!user) {
+        console.log('DashboardLayout: No user, redirecting to artist-auth');
         navigate('/artist-auth', { replace: true });
       } else if (!isArtist) {
+        console.log('DashboardLayout: User is not artist, redirecting to home');
         navigate('/', { replace: true });
+      } else {
+        console.log('DashboardLayout: User is artist, staying on dashboard');
       }
     }
   }, [user, isArtist, loading, navigate]);

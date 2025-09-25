@@ -399,8 +399,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Helper functions for role checking
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user') => {
-    if (loading || !user || userRoles.length === 0) return false;
-    return userRoles.some(userRole => userRole.role === role);
+    // Don't return false immediately if loading - wait for the actual role data
+    if (!user) {
+      console.log('AuthContext: hasRole - no user');
+      return false;
+    }
+    
+    // If still loading but we have some roles, check them
+    if (loading && userRoles.length === 0) {
+      console.log('AuthContext: hasRole - still loading and no roles yet');
+      return false;
+    }
+    
+    const result = userRoles.some(userRole => userRole.role === role);
+    console.log(`AuthContext: hasRole(${role}) = ${result}, userRoles:`, userRoles);
+    return result;
   };
 
   const isAdmin = hasRole('admin');

@@ -71,12 +71,11 @@ const ArtistAuth = () => {
 
       console.log('ArtistAuth: Artist profile result:', artistProfile);
 
-      if (artistProfile && artistProfile.status !== 'pending') {
-        console.log('ArtistAuth: Artist profile exists and is not pending, redirecting to dashboard');
+      if (artistProfile) {
+        // If profile exists, always redirect to dashboard
+        // Artists should be able to access dashboard regardless of status
+        console.log('ArtistAuth: Artist profile exists, redirecting to dashboard');
         navigate('/dashboard', { replace: true });
-      } else if (artistProfile && artistProfile.status === 'pending') {
-        console.log('ArtistAuth: Artist profile exists but is pending, redirecting to onboarding');
-        navigate('/onboarding', { replace: true });
       } else {
         console.log('ArtistAuth: No artist profile found, redirecting to onboarding');
         navigate('/onboarding', { replace: true });
