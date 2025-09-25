@@ -32,6 +32,7 @@ interface AuthContextType {
   userRoles: UserRole[];
   loading: boolean;
   hasRole: (role: 'admin' | 'moderator' | 'artist' | 'user') => boolean;
+  getPrimaryRole: () => 'admin' | 'moderator' | 'artist' | 'user' | null;
   isAdmin: boolean;
   isArtist: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
@@ -413,7 +414,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     const result = userRoles.some(userRole => userRole.role === role);
     console.log(`AuthContext: hasRole(${role}) = ${result}, userRoles:`, userRoles);
+    
+    // Admin users should have access to everything
+    if (role !== 'admin' && userRoles.some(userRole => userRole.role === 'admin')) {
+      console.log(`AuthContext: User is admin, granting ${role} access`);
+      return true;
+    }
+    
     return result;
+  };
+
+  // Get the primary role for the user (highest priority role)
+  const getPrimaryRole = (): 'admin' | 'moderator' | 'artist' | 'user' | null => {
+    if (!userRoles || userRoles.length === 0) return null;
+    
+    // Role priority order (admin > moderator > artist > user)
+    const priorities = { admin: 1, moderator: 2, artist: 3, user: 4 };
+    
+    return userRoles
+      .sort((a, b) => priorities[a.role] - priorities[b.role])[0]?.role || null;
   };
 
   const isAdmin = hasRole('admin');
@@ -426,6 +445,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userRoles,
     loading,
     hasRole,
+    getPrimaryRole,
     isAdmin,
     isArtist,
     signUp,
