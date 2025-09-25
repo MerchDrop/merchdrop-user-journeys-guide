@@ -23,7 +23,7 @@ const sidebarItems = [
   { name: 'Orders', href: '/dashboard/orders', icon: BarChart3 },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Payouts', href: '/dashboard/payouts', icon: CreditCard },
-  { name: 'Profile', href: '/onboarding', icon: User },
+  { name: 'Profile', href: '/dashboard/profile', icon: User },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

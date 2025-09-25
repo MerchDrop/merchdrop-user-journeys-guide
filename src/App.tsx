@@ -22,6 +22,7 @@ import LiveDashboard from '@/pages/LiveDashboard';
 import ArtistProducts from '@/pages/artist/Products';
 import ArtistAnalytics from '@/pages/artist/Analytics';
 import ArtistSettings from '@/pages/artist/Settings';
+import ArtistProfilePage from '@/pages/artist/Profile';
 import ArtistOrders from '@/pages/artist/Orders';
 import ArtistPayouts from '@/pages/artist/Payouts';
 import Admin from '@/pages/Admin';
@@ -87,6 +88,7 @@ function App() {
                     <Route path="settings" element={<ArtistSettings />} />
                     <Route path="orders" element={<ArtistOrders />} />
                     <Route path="payouts" element={<ArtistPayouts />} />
+                    <Route path="profile" element={<ArtistProfilePage />} />
                   </Route>
                   
                   {/* Admin Routes - Protected for Admins */}
