@@ -18,6 +18,11 @@ import {
 } from 'lucide-react';
 
 import { useCurrency } from '@/context/CurrencyContext';
+import { RequestPayoutDialog } from '@/components/artist/RequestPayoutDialog';
+import { PayoutDetailsDialog } from '@/components/artist/PayoutDetailsDialog';
+import { PaymentMethodDialog } from '@/components/artist/PaymentMethodDialog';
+import { CancelPayoutDialog } from '@/components/artist/CancelPayoutDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface Payout {
   id: string;
@@ -82,13 +87,54 @@ const statusConfig = {
 
 export default function Payouts() {
   const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [payouts, setPayouts] = useState(mockPayouts);
+  const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isPaymentMethodDialogOpen, setIsPaymentMethodDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [payoutToCancel, setPayoutToCancel] = useState<{ id: string; amount: number } | null>(null);
   const { formatPrice } = useCurrency();
+  const { toast } = useToast();
 
-  const totalEarnings = mockPayouts.reduce((sum, payout) => sum + payout.amount, 0);
-  const completedPayouts = mockPayouts.filter(p => p.status === 'completed');
-  const pendingAmount = mockPayouts
+  const totalEarnings = payouts.reduce((sum, payout) => sum + payout.amount, 0);
+  const completedPayouts = payouts.filter(p => p.status === 'completed');
+  const pendingAmount = payouts
     .filter(p => p.status === 'pending')
     .reduce((sum, payout) => sum + payout.amount, 0);
+  const availableBalance = 2450.75; // Mock available balance
+
+  const handleViewDetails = (payout: Payout) => {
+    setSelectedPayout(payout);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleCancelPayout = (payout: Payout) => {
+    setPayoutToCancel({ id: payout.id, amount: payout.amount });
+    setIsCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = (payoutId: string) => {
+    setPayouts(prevPayouts => 
+      prevPayouts.filter(payout => payout.id !== payoutId)
+    );
+  };
+
+  const handleExportReport = () => {
+    const csv = payouts.map(payout => 
+      `${payout.id},${payout.date},${payout.amount},${payout.status},${payout.method},${payout.reference || ''}`
+    ).join('\n');
+    const blob = new Blob([`ID,Date,Amount,Status,Method,Reference\n${csv}`], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'payouts-report.csv';
+    a.click();
+    toast({
+      title: "Export Complete",
+      description: "Payouts report has been downloaded",
+    });
+  };
 
   const stats = [
     {
@@ -128,11 +174,11 @@ export default function Payouts() {
             </p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportReport}>
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
-            <Button>Request Payout</Button>
+            <Button onClick={() => setIsRequestDialogOpen(true)}>Request Payout</Button>
           </div>
         </div>
 
@@ -188,7 +234,7 @@ export default function Payouts() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockPayouts.map((payout, index) => {
+                    {payouts.map((payout, index) => {
                       const StatusIcon = statusConfig[payout.status].icon;
                       return (
                         <motion.div
@@ -231,11 +277,19 @@ export default function Payouts() {
                           
                           <div className="flex items-center space-x-2">
                             {payout.status === 'pending' && (
-                              <Button variant="outline" size="sm">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleCancelPayout(payout)}
+                              >
                                 Cancel
                               </Button>
                             )}
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewDetails(payout)}
+                            >
                               View Details
                             </Button>
                           </div>
@@ -254,7 +308,7 @@ export default function Payouts() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockPayouts
+                    {payouts
                       .filter(p => p.status === 'pending')
                       .map((payout) => (
                         <div key={payout.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -264,7 +318,11 @@ export default function Payouts() {
                               Requested {new Date(payout.date).toLocaleDateString()}
                             </div>
                           </div>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleCancelPayout(payout)}
+                          >
                             Cancel Request
                           </Button>
                         </div>
@@ -334,7 +392,11 @@ export default function Payouts() {
                   <p className="text-sm text-muted-foreground">
                     Primary method for receiving payments
                   </p>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setIsPaymentMethodDialogOpen(true)}
+                  >
                     Bank Transfer (••••1234)
                   </Button>
                 </div>
@@ -342,6 +404,32 @@ export default function Payouts() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Dialogs */}
+        <RequestPayoutDialog
+          open={isRequestDialogOpen}
+          onOpenChange={setIsRequestDialogOpen}
+          availableBalance={availableBalance}
+        />
+
+        <PayoutDetailsDialog
+          open={isDetailsDialogOpen}
+          onOpenChange={setIsDetailsDialogOpen}
+          payout={selectedPayout}
+        />
+
+        <PaymentMethodDialog
+          open={isPaymentMethodDialogOpen}
+          onOpenChange={setIsPaymentMethodDialogOpen}
+        />
+
+        <CancelPayoutDialog
+          open={isCancelDialogOpen}
+          onOpenChange={setIsCancelDialogOpen}
+          payoutId={payoutToCancel?.id || null}
+          payoutAmount={payoutToCancel?.amount || 0}
+          onCancel={handleConfirmCancel}
+        />
     </div>
   );
 }
