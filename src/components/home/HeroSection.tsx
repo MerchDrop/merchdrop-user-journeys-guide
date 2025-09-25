@@ -199,7 +199,7 @@ const HeroSection = () => {
             </Badge>
             
             <h1 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight leading-tight">
-              MerchDrop launches design, you create, sell, and manage. 
+              Your merch, Your brand,
               <br />
               <span className="text-accent">No upfront. No software.</span>
             </h1>
