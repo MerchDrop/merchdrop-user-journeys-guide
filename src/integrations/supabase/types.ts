@@ -120,6 +120,59 @@ export type Database = {
         }
         Relationships: []
       }
+      designer_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          designer_id: string
+          id: string
+          net_amount: number
+          payment_method: string | null
+          payment_reference: string | null
+          processed_at: string | null
+          processing_fee: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          designer_id: string
+          id?: string
+          net_amount: number
+          payment_method?: string | null
+          payment_reference?: string | null
+          processed_at?: string | null
+          processing_fee?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          designer_id?: string
+          id?: string
+          net_amount?: number
+          payment_method?: string | null
+          payment_reference?: string | null
+          processed_at?: string | null
+          processing_fee?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "designer_payouts_designer_id_fkey"
+            columns: ["designer_id"]
+            isOneToOne: false
+            referencedRelation: "designer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       designer_profiles: {
         Row: {
           approved_designs: number | null
@@ -715,6 +768,10 @@ export type Database = {
         Returns: boolean
       }
       is_artist: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_designer: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

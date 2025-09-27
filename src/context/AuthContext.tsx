@@ -21,7 +21,7 @@ interface Profile {
 interface UserRole {
   id: string;
   user_id: string;
-  role: 'admin' | 'moderator' | 'artist' | 'user';
+  role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer';
   created_at: string;
 }
 
@@ -31,16 +31,17 @@ interface AuthContextType {
   profile: Profile | null;
   userRoles: UserRole[];
   loading: boolean;
-  hasRole: (role: 'admin' | 'moderator' | 'artist' | 'user') => boolean;
-  getPrimaryRole: () => 'admin' | 'moderator' | 'artist' | 'user' | null;
+  hasRole: (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => boolean;
+  getPrimaryRole: () => 'admin' | 'moderator' | 'artist' | 'user' | 'designer' | null;
   isAdmin: boolean;
   isArtist: boolean;
+  isDesigner: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signUpArtist: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
-  assignRole: (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user') => Promise<{ error: any }>;
+  assignRole: (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -359,7 +360,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const assignRole = async (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user') => {
+  const assignRole = async (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
     try {
       const { error } = await supabase
         .from('user_roles')
@@ -399,7 +400,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Helper functions for role checking
-  const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user') => {
+  const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
     // Don't return false immediately if loading - wait for the actual role data
     if (!user) {
       console.log('AuthContext: hasRole - no user');
@@ -425,18 +426,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Get the primary role for the user (highest priority role)
-  const getPrimaryRole = (): 'admin' | 'moderator' | 'artist' | 'user' | null => {
+  const getPrimaryRole = (): 'admin' | 'moderator' | 'artist' | 'user' | 'designer' | null => {
     if (!userRoles || userRoles.length === 0) return null;
     
-    // Role priority order (admin > moderator > artist > user)
-    const priorities = { admin: 1, moderator: 2, artist: 3, user: 4 };
+    // Role priority order (admin > moderator > artist > designer > user)
+    const priorities: Record<string, number> = { admin: 1, moderator: 2, artist: 3, designer: 4, user: 5 };
     
     return userRoles
-      .sort((a, b) => priorities[a.role] - priorities[b.role])[0]?.role || null;
+      .sort((a, b) => (priorities[a.role] || 999) - (priorities[b.role] || 999))[0]?.role || null;
   };
 
   const isAdmin = hasRole('admin');
   const isArtist = hasRole('artist');
+  const isDesigner = hasRole('designer');
 
   const value: AuthContextType = {
     user,
@@ -448,6 +450,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getPrimaryRole,
     isAdmin,
     isArtist,
+    isDesigner,
     signUp,
     signUpArtist,
     signIn,

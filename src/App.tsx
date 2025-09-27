@@ -38,6 +38,9 @@ import Login from '@/pages/Login';
 import UserAuth from '@/pages/UserAuth';
 import ArtistAuth from '@/pages/ArtistAuth';
 import ArtistOnboarding from '@/pages/ArtistOnboarding';
+import DesignerAuth from '@/pages/DesignerAuth';
+import DesignerDashboardPage from '@/pages/designer/Dashboard';
+import DesignUploadPage from '@/pages/designer/Upload';
 import EmailConfirmation from '@/pages/EmailConfirmation';
 import MerchCreator from '@/pages/MerchCreator';
 import OrderTracking from '@/pages/OrderTracking';
@@ -53,6 +56,7 @@ import Contact from '@/pages/Contact';
 import About from '@/pages/About';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AdminLayout from '@/layouts/AdminLayout';
+import DesignerLayout from '@/layouts/DesignerLayout';
 
 function App() {
   return (
@@ -70,6 +74,7 @@ function App() {
                   <Route path="/user-auth" element={<UserAuth />} />
                   <Route path="/artist-auth" element={<ArtistAuth />} />
                   <Route path="/admin-auth" element={<AdminAuth />} />
+                  <Route path="/designer-auth" element={<DesignerAuth />} />
                   <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/products" element={<Products />} />
             
@@ -100,6 +105,12 @@ function App() {
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="analytics" element={<AdminAnalytics />} />
                     <Route path="settings" element={<AdminSettingsPage />} />
+                  </Route>
+                  
+                  {/* Designer Routes - Protected for Designers */}
+                  <Route path="/designer" element={<DesignerLayout />}>
+                    <Route path="dashboard" element={<DesignerDashboardPage />} />
+                    <Route path="upload" element={<DesignUploadPage />} />
                   </Route>
                   
                   <Route path="/health" element={<HealthCheck />} />
