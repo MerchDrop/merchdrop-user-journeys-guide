@@ -25,8 +25,17 @@ const EmailConfirmation = () => {
           token: !!token,
           type,
           accessToken: !!accessToken,
-          refreshToken: !!refreshToken
+          refreshToken: !!refreshToken,
+          fullUrl: window.location.href
         });
+
+        // Check if user accessed this page directly without confirmation tokens
+        if (!accessToken && !refreshToken && !token) {
+          setError('Invalid confirmation link. Please check your email for the correct confirmation link.');
+          setStatus('error');
+          toast.error('Invalid confirmation link');
+          return;
+        }
 
         if (accessToken && refreshToken) {
           // Handle email confirmation with tokens
@@ -61,8 +70,26 @@ const EmailConfirmation = () => {
               navigate('/', { replace: true });
             }
           }, 2000);
+        } else if (token && type) {
+          // Handle token-based confirmation
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type as any
+          });
+
+          if (error) {
+            console.error('EmailConfirmation: Token verification error:', error);
+            throw error;
+          }
+
+          setStatus('success');
+          toast.success('Email confirmed successfully!');
+          
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 2000);
         } else {
-          throw new Error('Missing confirmation tokens');
+          throw new Error('Missing or invalid confirmation tokens');
         }
       } catch (error: any) {
         console.error('EmailConfirmation: Error:', error);
