@@ -120,6 +120,114 @@ export type Database = {
         }
         Relationships: []
       }
+      designer_profiles: {
+        Row: {
+          approved_designs: number | null
+          bio: string | null
+          created_at: string
+          declined_designs: number | null
+          designer_name: string
+          id: string
+          pending_designs: number | null
+          status: string | null
+          total_designs: number | null
+          total_earnings: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_designs?: number | null
+          bio?: string | null
+          created_at?: string
+          declined_designs?: number | null
+          designer_name: string
+          id?: string
+          pending_designs?: number | null
+          status?: string | null
+          total_designs?: number | null
+          total_earnings?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_designs?: number | null
+          bio?: string | null
+          created_at?: string
+          declined_designs?: number | null
+          designer_name?: string
+          id?: string
+          pending_designs?: number | null
+          status?: string | null
+          total_designs?: number | null
+          total_earnings?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      designs: {
+        Row: {
+          admin_feedback: string | null
+          approved_at: string | null
+          approved_by: string | null
+          artist_id: string
+          created_at: string
+          description: string | null
+          designer_id: string
+          file_urls: string[]
+          id: string
+          revenue_generated: number | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_feedback?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          designer_id: string
+          file_urls?: string[]
+          id?: string
+          revenue_generated?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_feedback?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          designer_id?: string
+          file_urls?: string[]
+          id?: string
+          revenue_generated?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "designs_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artist_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "designs_designer_id_fkey"
+            columns: ["designer_id"]
+            isOneToOne: false
+            referencedRelation: "designer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           artist_id: string
