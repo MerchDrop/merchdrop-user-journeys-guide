@@ -41,6 +41,12 @@ import ArtistOnboarding from '@/pages/ArtistOnboarding';
 import DesignerAuth from '@/pages/DesignerAuth';
 import DesignerDashboardPage from '@/pages/designer/Dashboard';
 import DesignUploadPage from '@/pages/designer/Upload';
+import MyDesignsPage from '@/pages/designer/Designs';
+import AllArtistsPage from '@/pages/designer/Artists';
+import DesignerAnalyticsPage from '@/pages/designer/Analytics';
+import DesignerPayoutsPage from '@/pages/designer/Payouts';
+import DesignerProfilePage from '@/pages/designer/Profile';
+import DesignerSettings from '@/pages/designer/Settings';
 import EmailConfirmation from '@/pages/EmailConfirmation';
 import MerchCreator from '@/pages/MerchCreator';
 import OrderTracking from '@/pages/OrderTracking';
@@ -111,6 +117,12 @@ function App() {
                   <Route path="/designer" element={<DesignerLayout />}>
                     <Route path="dashboard" element={<DesignerDashboardPage />} />
                     <Route path="upload" element={<DesignUploadPage />} />
+                    <Route path="designs" element={<MyDesignsPage />} />
+                    <Route path="artists" element={<AllArtistsPage />} />
+                    <Route path="analytics" element={<DesignerAnalyticsPage />} />
+                    <Route path="payouts" element={<DesignerPayoutsPage />} />
+                    <Route path="profile" element={<DesignerProfilePage />} />
+                    <Route path="settings" element={<DesignerSettings />} />
                   </Route>
                   
                   <Route path="/health" element={<HealthCheck />} />
