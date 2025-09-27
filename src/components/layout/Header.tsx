@@ -119,7 +119,7 @@ const Header = ({
                   
                 </Button>
                 <Button variant="default" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
-                  <Link to="/creators">Sign In</Link>
+                  <Link to="/artist-auth">Sign In</Link>
                 </Button>
               </div>}
           </div>
@@ -170,7 +170,7 @@ const Header = ({
                     <Link to="/user-auth" onClick={() => setIsMenuOpen(false)}>Shop</Link>
                   </Button>
                   <Button variant="default" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
-                    <Link to="/creators" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
+                    <Link to="/artist-auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
                   </Button>
                 </div>}
             </div>
