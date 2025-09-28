@@ -176,39 +176,12 @@ export default function Profile() {
           description: "Your personal information has been updated successfully.",
         });
         console.log('Profile updated successfully');
-        setIsEditingPersonal(false);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
         title: "Update Error",
         description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-      });
-      
-      if (error) {
-        console.error('Profile update error:', error);
-        toast({
-          title: "Update Failed",
-          description: error.message || "Failed to update profile",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Profile Updated",
-          description: "Your personal information has been updated successfully.",
-        });
-        console.log('Profile updated successfully');
-      }
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: "Update Failed",
-        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
