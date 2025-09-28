@@ -114,10 +114,12 @@ export default function DashboardLayout() {
           {/* User profile */}
           <div className="p-4 border-t border-border">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.avatar_url} />
+              <AvatarFallback>
+                {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
                   {profile?.display_name || profile?.first_name || 'Artist'}
@@ -184,8 +186,10 @@ export default function DashboardLayout() {
           <div className="p-4 border-t border-border">
             <div className="flex items-center space-x-3">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback>
+                  {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
@@ -224,8 +228,10 @@ export default function DashboardLayout() {
               <Bell className="h-5 w-5" />
             </Button>
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarImage src={profile?.avatar_url} />
+              <AvatarFallback>
+                {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
             </Avatar>
           </div>
         </header>

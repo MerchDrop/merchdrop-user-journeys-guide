@@ -16,10 +16,10 @@ import {
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const DesignerLayout = () => {
-  const { user, loading, isDesigner, isAdmin, signOut } = useAuth();
+  const { user, loading, isDesigner, isAdmin, signOut, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const canAccess = isDesigner || isAdmin;
@@ -93,8 +93,9 @@ const DesignerLayout = () => {
       <div className="p-4 border-t">
         <div className="flex items-center gap-3 mb-3">
           <Avatar className="h-8 w-8">
+            <AvatarImage src={profile?.avatar_url} />
             <AvatarFallback>
-              {user.email?.charAt(0).toUpperCase()}
+              {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'D'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -143,8 +144,9 @@ const DesignerLayout = () => {
               <Bell className="h-4 w-4" />
             </Button>
             <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.avatar_url} />
               <AvatarFallback>
-                {user.email?.charAt(0).toUpperCase()}
+                {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'D'}
               </AvatarFallback>
             </Avatar>
           </div>
@@ -159,8 +161,9 @@ const DesignerLayout = () => {
               <Bell className="h-4 w-4" />
             </Button>
             <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.avatar_url} />
               <AvatarFallback>
-                {user.email?.charAt(0).toUpperCase()}
+                {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'D'}
               </AvatarFallback>
             </Avatar>
           </div>

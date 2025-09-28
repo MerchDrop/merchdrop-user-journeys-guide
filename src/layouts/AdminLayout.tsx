@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { 
@@ -54,7 +55,7 @@ const adminNavItems = [
 ];
 
 export default function AdminLayout() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, profile } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -77,7 +78,15 @@ export default function AdminLayout() {
         {/* Admin Sidebar */}
         <div className="w-64 min-h-[calc(100vh-80px)] bg-card border-r border-border">
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Admin Panel</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback>
+                  {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'A'}
+                </AvatarFallback>
+              </Avatar>
+              <h2 className="text-lg font-semibold text-foreground">Admin Panel</h2>
+            </div>
             <nav className="space-y-2">
               {adminNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
