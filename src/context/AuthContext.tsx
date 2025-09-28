@@ -114,6 +114,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('AuthContext: Setting up user profile for:', userId, 'type:', userType);
       
+      // Verify we have a valid session before calling RPC
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.user?.id || currentSession.user.id !== userId) {
+        console.warn('AuthContext: Session mismatch or invalid, skipping profile setup');
+        return false;
+      }
+      
       // Use the new secure RPC function
       const { data: setupResult, error: rpcError } = await supabase.rpc(
         'setup_user_profile',
@@ -125,8 +132,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (rpcError) {
         console.error('AuthContext: Profile setup RPC error:', rpcError);
-        // Fall back to manual setup if RPC fails
-        return await manualUserSetup(userId, userType);
+        // Only fall back to manual setup for auth errors, not other errors
+        if (rpcError.code === 'P0001' || rpcError.message?.includes('not authenticated')) {
+          console.log('AuthContext: Falling back to manual setup due to auth error');
+          return await manualUserSetup(userId, userType);
+        }
+        return false;
       }
 
       console.log('AuthContext: Profile setup result:', setupResult);
@@ -191,6 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Auth state listener
   useEffect(() => {
     let isMounted = true;
+    let isSetupInProgress = false;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -205,6 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(null);
           setUserRoles([]);
           setLoading(false);
+          isSetupInProgress = false;
           return;
         }
 
@@ -213,27 +226,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           
-          if (session?.user) {
-            // Defer data loading to avoid auth state deadlocks
+          if (session?.user && !isSetupInProgress) {
+            isSetupInProgress = true;
+            
+            // Defer data loading to avoid auth state deadlocks and ensure auth context is ready
             setTimeout(async () => {
-              if (!isMounted) return;
+              if (!isMounted || !session?.user) {
+                isSetupInProgress = false;
+                return;
+              }
               
               try {
                 const userType = session.user.user_metadata?.user_type || 'user';
-                await setupUserProfile(session.user.id, userType);
-                await loadUserData(session.user.id);
+                const setupSuccess = await setupUserProfile(session.user.id, userType);
+                
+                if (setupSuccess || true) { // Always load user data even if setup fails
+                  await loadUserData(session.user.id);
+                }
               } catch (error) {
                 console.error('AuthContext: Error in deferred setup:', error);
               } finally {
                 if (isMounted) {
                   setLoading(false);
+                  isSetupInProgress = false;
                 }
               }
-            }, 100);
-          } else {
+            }, 250); // Increased delay to ensure auth context is established
+          } else if (!session?.user) {
             setProfile(null);
             setUserRoles([]);
             setLoading(false);
+            isSetupInProgress = false;
           }
         }
       }
@@ -243,25 +266,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       
-      if (session?.user) {
+      if (session?.user && !isSetupInProgress) {
         setSession(session);
         setUser(session.user);
+        isSetupInProgress = true;
         
         setTimeout(async () => {
-          if (!isMounted) return;
+          if (!isMounted || !session?.user) {
+            isSetupInProgress = false;
+            return;
+          }
           
           try {
             const userType = session.user.user_metadata?.user_type || 'user';
-            await setupUserProfile(session.user.id, userType);
-            await loadUserData(session.user.id);
+            const setupSuccess = await setupUserProfile(session.user.id, userType);
+            
+            if (setupSuccess || true) { // Always load user data even if setup fails
+              await loadUserData(session.user.id);
+            }
           } catch (error) {
             console.error('AuthContext: Error in initial setup:', error);
           } finally {
             if (isMounted) {
               setLoading(false);
+              isSetupInProgress = false;
             }
           }
-        }, 100);
+        }, 250); // Increased delay to ensure auth context is established
       } else {
         setLoading(false);
       }
@@ -269,6 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       isMounted = false;
+      isSetupInProgress = false;
       subscription.unsubscribe();
     };
   }, []);
