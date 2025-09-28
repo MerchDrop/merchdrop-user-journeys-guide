@@ -94,28 +94,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       // Check if user already has a role
-      const { data: existingRoles } = await supabase
+      const { data: existingRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId);
       
-      // Create user role if none exists
-      if (!existingRoles || existingRoles.length === 0) {
-        console.log('AuthContext: Creating user role:', userType);
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: userId,
-            role: userType as any
-          });
-        
-        if (roleError) {
-          console.error('AuthContext: Role creation error:', roleError);
-        } else {
-          console.log('AuthContext: Role created successfully');
-        }
+      if (rolesError) {
+        console.warn('AuthContext: Could not fetch existing roles, skipping role insert:', rolesError);
       } else {
-        console.log('AuthContext: User already has roles:', existingRoles);
+        // Create user role if none exists
+        if (!existingRoles || existingRoles.length === 0) {
+          const allowedInitialRoles = ['user', 'artist', 'designer'] as const;
+          const roleToInsert = allowedInitialRoles.includes(userType as any) ? userType : 'user';
+          console.log('AuthContext: Creating initial user role:', roleToInsert);
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert([{ user_id: userId, role: roleToInsert as any }]);
+          
+          if (roleError) {
+            console.error('AuthContext: Role creation error:', roleError);
+          } else {
+            console.log('AuthContext: Role created successfully');
+          }
+        } else {
+          console.log('AuthContext: User already has roles:', existingRoles);
+        }
       }
 
       // Fetch updated profile and roles in parallel
