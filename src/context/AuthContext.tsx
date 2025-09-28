@@ -77,48 +77,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
       
-      // Call RPC to ensure profile and role exist
-      const { data: setupResult, error: rpcError } = await supabase.rpc(
-        'ensure_profile_and_role',
-        { user_type: userType }
-      );
-
-      if (rpcError) {
-        console.error('AuthContext: RPC error:', rpcError);
-        // If RPC fails due to auth timing, create profile and role manually
-        if (rpcError.code === 'P0001' || rpcError.message?.includes('not authenticated')) {
-          console.log('AuthContext: RPC failed, creating profile and role manually');
-          
-          // Create profile manually
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: userId,
-              email: currentUser.email,
-              display_name: currentUser.email || currentUser.user_metadata?.display_name
-            });
-          
-          if (profileError) {
-            console.error('AuthContext: Profile creation error:', profileError);
-          }
-          
-          // Create user role manually  
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .upsert({
-              user_id: userId,
-              role: userType as any
-            });
-          
-          if (roleError) {
-            console.error('AuthContext: Role creation error:', roleError);
-          }
-        } else {
-          throw rpcError;
-        }
+      // Create profile directly (no RPC needed)
+      console.log('AuthContext: Creating/updating profile');
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          email: currentUser.email,
+          display_name: currentUser.email || currentUser.user_metadata?.display_name
+        });
+      
+      if (profileError) {
+        console.error('AuthContext: Profile creation error:', profileError);
+      } else {
+        console.log('AuthContext: Profile created/updated successfully');
       }
-
-      console.log('AuthContext: User setup result:', setupResult);
+      
+      // Check if user already has a role
+      const { data: existingRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+      
+      // Create user role if none exists
+      if (!existingRoles || existingRoles.length === 0) {
+        console.log('AuthContext: Creating user role:', userType);
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: userType as any
+          });
+        
+        if (roleError) {
+          console.error('AuthContext: Role creation error:', roleError);
+        } else {
+          console.log('AuthContext: Role created successfully');
+        }
+      } else {
+        console.log('AuthContext: User already has roles:', existingRoles);
+      }
 
       // Fetch updated profile and roles in parallel
       const [profileResult, rolesResult] = await Promise.all([
