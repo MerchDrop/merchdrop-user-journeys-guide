@@ -62,6 +62,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
+  const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
   if (!order) return null;
@@ -248,7 +249,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
                   </div>
                   <div>
                     <Label className="text-xs font-medium text-muted-foreground">Unit Price</Label>
-                    <p className="font-semibold">${(order.total_amount / order.quantity).toFixed(2)}</p>
+                    <p className="font-semibold">{formatPrice(order.total_amount / order.quantity)}</p>
                   </div>
                 </div>
               </div>
@@ -309,8 +310,8 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
                   <p className="text-sm text-muted-foreground">Total Amount</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-green-600">${order.total_amount.toFixed(2)}</div>
-                  <p className="text-sm text-muted-foreground">USD</p>
+                  <div className="text-3xl font-bold text-green-600">{formatPrice(order.total_amount)}</div>
+                  <p className="text-sm text-muted-foreground">Total</p>
                 </div>
               </div>
             </div>

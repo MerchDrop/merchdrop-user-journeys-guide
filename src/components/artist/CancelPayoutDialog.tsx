@@ -12,6 +12,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface CancelPayoutDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ export function CancelPayoutDialog({
 }: CancelPayoutDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { formatPrice } = useCurrency();
 
   const handleCancel = async () => {
     if (!payoutId) return;
@@ -41,7 +43,7 @@ export function CancelPayoutDialog({
       onCancel(payoutId);
       toast({
         title: "Payout Cancelled",
-        description: `Payout request for $${payoutAmount.toFixed(2)} has been cancelled`,
+        description: `Payout request for ${formatPrice(payoutAmount)} has been cancelled`,
       });
       setIsSubmitting(false);
       onOpenChange(false);
@@ -67,7 +69,7 @@ export function CancelPayoutDialog({
               <DollarSign className="h-8 w-8 text-orange-600" />
               <div>
                 <p className="font-medium text-orange-900">
-                  ${payoutAmount.toFixed(2)}
+                  {formatPrice(payoutAmount)}
                 </p>
                 <p className="text-sm text-orange-700">
                   This amount will be returned to your available balance

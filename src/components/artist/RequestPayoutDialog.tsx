@@ -23,6 +23,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface RequestPayoutDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
   const [paymentMethod, setPaymentMethod] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { formatPrice } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +63,7 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
     if (requestAmount < 50) {
       toast({
         title: "Minimum Amount Required",
-        description: "Minimum payout amount is $50",
+        description: "Minimum payout amount is " + formatPrice(50),
         variant: "destructive"
       });
       return;
@@ -73,7 +75,7 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
     setTimeout(() => {
       toast({
         title: "Payout Requested",
-        description: `Your payout request for $${requestAmount} has been submitted`,
+        description: `Your payout request for ${formatPrice(requestAmount)} has been submitted`,
       });
       setIsSubmitting(false);
       setAmount('');
@@ -97,7 +99,7 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
             Request Payout
           </DialogTitle>
           <DialogDescription>
-            Request a payout from your available balance of ${availableBalance.toFixed(2)}
+            Request a payout from your available balance of {formatPrice(availableBalance)}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,7 +118,7 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
               required
             />
             <p className="text-xs text-muted-foreground">
-              Minimum: $50 • Available: ${availableBalance.toFixed(2)}
+              Minimum: {formatPrice(50)} • Available: {formatPrice(availableBalance)}
             </p>
           </div>
 
@@ -145,15 +147,15 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
           <div className="bg-muted/30 rounded-lg p-4">
             <div className="flex justify-between text-sm">
               <span>Amount:</span>
-              <span>${amount || '0.00'}</span>
+              <span>{formatPrice(parseFloat(amount) || 0)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Processing Fee (2.5%):</span>
-              <span>-${((parseFloat(amount) || 0) * 0.025).toFixed(2)}</span>
+              <span>-{formatPrice((parseFloat(amount) || 0) * 0.025)}</span>
             </div>
             <div className="flex justify-between font-medium pt-2 border-t">
               <span>You'll receive:</span>
-              <span>${((parseFloat(amount) || 0) * 0.975).toFixed(2)}</span>
+              <span>{formatPrice((parseFloat(amount) || 0) * 0.975)}</span>
             </div>
           </div>
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const salesData = Array.from({ length: 30 }, (_, i) => ({
   date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -13,75 +14,77 @@ const salesData = Array.from({ length: 30 }, (_, i) => ({
   views: Math.floor(Math.random() * 200) + 50,
 }));
 
-const productData = [
-  { name: 'T-Shirt', sales: 156, revenue: 3120 },
-  { name: 'Hoodie', sales: 89, revenue: 3560 },
-  { name: 'Poster', sales: 67, revenue: 1340 },
-  { name: 'Sticker Pack', sales: 234, revenue: 1170 },
+const topProducts = [
+  { name: 'Product A', value: 2800, color: 'hsl(var(--primary))' },
+  { name: 'Product B', value: 1900, color: 'hsl(var(--secondary))' },
+  { name: 'Product C', value: 1200, color: 'hsl(var(--accent))' },
+  { name: 'Product D', value: 800, color: 'hsl(var(--muted))' },
 ];
 
 const revenueBreakdown = [
-  { name: 'Your Share (50%)', value: 6250, color: 'hsl(var(--primary))' },
+  { name: 'Artist (50%)', value: 6250, color: 'hsl(var(--primary))' },
   { name: 'Platform (25%)', value: 3125, color: 'hsl(var(--secondary))' },
   { name: 'Designer (10%)', value: 1250, color: 'hsl(var(--accent))' },
   { name: 'Operations (15%)', value: 1875, color: 'hsl(var(--muted))' },
 ];
 
-const kpis = [
-  {
-    title: 'Total Revenue',
-    value: '$12,500',
-    change: '+15.3%',
-    icon: TrendingUp,
-    color: 'text-green-600',
-  },
-  {
-    title: 'Profile Views',
-    value: '4,832',
-    change: '+8.2%',
-    icon: Eye,
-    color: 'text-blue-600',
-  },
-  {
-    title: 'Orders',
-    value: '284',
-    change: '+12.1%',
-    icon: ShoppingCart,
-    color: 'text-purple-600',
-  },
-  {
-    title: 'Conversion Rate',
-    value: '5.8%',
-    change: '+2.1%',
-    icon: Users,
-    color: 'text-orange-600',
-  },
-];
+export function AnalyticsOverview() {
+  const { formatPrice } = useCurrency();
 
-export default function AnalyticsOverview() {
+  const kpis = [
+    {
+      title: 'Total Revenue',
+      value: formatPrice(12500),
+      change: '+15.3%',
+      icon: TrendingUp,
+      color: 'text-green-600',
+    },
+    {
+      title: 'Profile Views',
+      value: '4,832',
+      change: '+12.5%',
+      icon: Eye,
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Orders',
+      value: '127',
+      change: '+8.2%',
+      icon: ShoppingCart,
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Followers',
+      value: '2,341',
+      change: '+5.1%',
+      icon: Users,
+      color: 'text-orange-600',
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Analytics</h1>
-          <p className="text-muted-foreground">Track your performance and revenue</p>
+          <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
+          <p className="text-muted-foreground">Track your performance and engagement metrics</p>
         </div>
-        <Select defaultValue="30d">
-          <SelectTrigger className="w-48">
-            <SelectValue />
+        <Select defaultValue="30days">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select period" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
-            <SelectItem value="1y">Last year</SelectItem>
+            <SelectItem value="7days">Last 7 days</SelectItem>
+            <SelectItem value="30days">Last 30 days</SelectItem>
+            <SelectItem value="90days">Last 90 days</SelectItem>
+            <SelectItem value="1year">Last year</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* KPIs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi, index) => (
           <motion.div
             key={kpi.title}
@@ -91,9 +94,9 @@ export default function AnalyticsOverview() {
           >
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{kpi.title}</p>
+                <div className="flex items-center justify-between space-y-0 pb-2">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">{kpi.title}</p>
                     <p className="text-2xl font-bold">{kpi.value}</p>
                     <p className={`text-sm ${kpi.color}`}>{kpi.change}</p>
                   </div>
@@ -106,131 +109,84 @@ export default function AnalyticsOverview() {
       </div>
 
       {/* Charts */}
-      <Tabs defaultValue="revenue" className="space-y-6">
+      <Tabs defaultValue="revenue" className="space-y-4">
         <TabsList>
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="breakdown">Revenue Split</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="views">Views</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="revenue" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+        <TabsContent value="revenue" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4">
               <CardHeader>
-                <CardTitle>Revenue Trend</CardTitle>
+                <CardTitle>Revenue Overview</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="pl-2">
+                <ResponsiveContainer width="100%" height={350}>
                   <LineChart data={salesData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <Tooltip />
                     <Line 
                       type="monotone" 
                       dataKey="revenue" 
                       stroke="hsl(var(--primary))" 
                       strokeWidth={2}
+                      dot={{ r: 4 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="col-span-3">
               <CardHeader>
-                <CardTitle>Orders & Views</CardTitle>
+                <CardTitle>Product Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="orders" 
-                      stroke="hsl(var(--secondary))" 
-                      strokeWidth={2}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="views" 
-                      stroke="hsl(var(--accent))" 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="products">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={productData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="sales" fill="hsl(var(--primary))" />
-                  <Bar dataKey="revenue" fill="hsl(var(--secondary))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="breakdown">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Revenue Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={350}>
                   <PieChart>
                     <Pie
-                      data={revenueBreakdown}
+                      data={topProducts}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
                       outerRadius={120}
-                      paddingAngle={5}
+                      paddingAngle={2}
                       dataKey="value"
+                      label
                     >
-                      {revenueBreakdown.map((entry, index) => (
+                      {topProducts.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value) => [formatPrice(Number(value)), 'Revenue']} />
                   </PieChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Breakdown Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {revenueBreakdown.map((item, index) => (
+                <div className="space-y-2 mt-4">
+                  {topProducts.map((item, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: item.color }}
                         />
                         <span className="text-sm">{item.name}</span>
                       </div>
-                      <span className="font-medium">${item.value.toLocaleString()}</span>
+                      <span className="font-medium">{formatPrice(Number(item.value))}</span>
                     </div>
                   ))}
                 </div>
@@ -238,7 +194,127 @@ export default function AnalyticsOverview() {
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="orders" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Orders Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={salesData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip />
+                  <Bar dataKey="orders" fill="hsl(var(--primary))" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="views" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Views</CardTitle>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={salesData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip />
+                  <Line 
+                    type="monotone" 
+                    dataKey="views" 
+                    stroke="hsl(var(--secondary))" 
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Revenue Breakdown */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Revenue Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {revenueBreakdown.map((item, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-sm">{item.name}</span>
+                  </div>
+                  <span className="font-medium">{formatPrice(item.value)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Stats</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Average Order Value</span>
+                <span className="font-medium">{formatPrice(98.50)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Conversion Rate</span>
+                <span className="font-medium">2.64%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Return Customer Rate</span>
+                <span className="font-medium">32%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Customer Satisfaction</span>
+                <span className="font-medium">4.8/5</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
