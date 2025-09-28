@@ -32,10 +32,14 @@ export function CleanAdminUserTable() {
     switch (role.toLowerCase()) {
       case 'admin':
         return 'destructive' as const;
-      case 'artist':
-        return 'default' as const;
       case 'moderator':
         return 'secondary' as const;
+      case 'artist':
+        return 'default' as const;
+      case 'designer':
+        return 'outline' as const;
+      case 'user':
+        return 'outline' as const;
       default:
         return 'outline' as const;
     }
@@ -139,8 +143,14 @@ export function CleanAdminUserTable() {
                           <DropdownMenuItem onClick={() => updateUserRole(user.id, 'admin')}>
                             Make Admin
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateUserRole(user.id, 'moderator')}>
+                            Make Moderator
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateUserRole(user.id, 'artist')}>
                             Make Artist
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateUserRole(user.id, 'designer')}>
+                            Make Designer
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateUserRole(user.id, 'user')}>
                             Make User

@@ -84,13 +84,71 @@ export const useUsers = () => {
       // Add new role
       const { error } = await supabase
         .from('user_roles')
-        .insert({ user_id: userId, role: newRole as 'admin' | 'moderator' | 'artist' | 'user' });
+        .insert({ user_id: userId, role: newRole as 'admin' | 'moderator' | 'artist' | 'designer' | 'user' });
 
       if (error) throw error;
 
+      // Create appropriate profile based on role
+      if (newRole === 'artist') {
+        // Get user profile for artist name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, email')
+          .eq('id', userId)
+          .single();
+
+        const artistName = profile?.display_name || profile?.email || 'New Artist';
+        const artistSlug = artistName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+
+        // Check if artist profile already exists
+        const { data: existingArtist } = await supabase
+          .from('artist_profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!existingArtist) {
+          await supabase
+            .from('artist_profiles')
+            .insert({
+              user_id: userId,
+              artist_name: artistName,
+              artist_slug: artistSlug + '-' + userId.slice(0, 8), // Add unique suffix
+              status: 'pending'
+            });
+        }
+      } else if (newRole === 'designer') {
+        // Get user profile for designer name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, email')
+          .eq('id', userId)
+          .single();
+
+        const designerName = profile?.display_name || profile?.email || 'New Designer';
+
+        // Check if designer profile already exists
+        const { data: existingDesigner } = await supabase
+          .from('designer_profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!existingDesigner) {
+          await supabase
+            .from('designer_profiles')
+            .insert({
+              user_id: userId,
+              designer_name: designerName,
+              bio: 'New designer on the platform',
+              status: 'active'
+            });
+        }
+      }
+
       toast({
         title: "Success",
-        description: "User role updated successfully.",
+        description: `User role updated to ${newRole} successfully.`,
       });
 
       // Refresh users list
