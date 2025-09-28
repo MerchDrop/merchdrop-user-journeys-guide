@@ -19,15 +19,16 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const DesignerLayout = () => {
-  const { user, loading, isDesigner, signOut } = useAuth();
+  const { user, loading, isDesigner, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const canAccess = isDesigner || isAdmin;
 
   useEffect(() => {
-    if (!loading && (!user || !isDesigner)) {
+    if (!loading && (!user || !canAccess)) {
       navigate('/designer-auth');
     }
-  }, [user, loading, isDesigner, navigate]);
+  }, [user, loading, canAccess, navigate]);
 
   if (loading) {
     return (
@@ -37,7 +38,7 @@ const DesignerLayout = () => {
     );
   }
 
-  if (!user || !isDesigner) {
+  if (!user || !canAccess) {
     return null;
   }
 
