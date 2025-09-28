@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -94,6 +95,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
   const { toast } = useToast();
   
   const [product, setProduct] = useState<any>(null);
@@ -498,7 +500,7 @@ export default function ProductDetail() {
               <div className="border-t pt-6 space-y-3">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Truck className="h-4 w-4 mr-3" />
-                  Free shipping on orders over $50
+                  Free shipping on orders over {formatPrice(50)}
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Shield className="h-4 w-4 mr-3" />

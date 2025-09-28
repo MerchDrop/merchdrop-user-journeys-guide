@@ -1,11 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDesigners } from '@/hooks/useDesignersQuery';
+import { useCurrency } from '@/context/CurrencyContext';
 import { TrendingUp, FileImage, CheckCircle, DollarSign, Calendar, Target } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 export const DesignerAnalytics = () => {
   const { designerProfile, designs, payouts, loading } = useDesigners();
+  const { formatPrice } = useCurrency();
 
   // Sample data for charts
   const monthlyData = [
@@ -83,8 +85,8 @@ export const DesignerAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
-                <p className="text-3xl font-bold">${totalEarnings.toFixed(2)}</p>
-                <p className="text-sm text-green-600">+$50 this month</p>
+                <p className="text-3xl font-bold">{formatPrice(totalEarnings)}</p>
+                <p className="text-sm text-green-600">+{formatPrice(50)} this month</p>
               </div>
               <DollarSign className="h-12 w-12 text-purple-600" />
             </div>
@@ -175,7 +177,7 @@ export const DesignerAnalytics = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`$${value}`, 'Earnings']} />
+                <Tooltip formatter={(value) => [formatPrice(Number(value)), 'Earnings']} />
                 <Bar dataKey="earnings" fill="#8b5cf6" />
               </BarChart>
             </ResponsiveContainer>
@@ -210,7 +212,7 @@ export const DesignerAnalytics = () => {
                     </div>
                     {design.revenue_generated > 0 && (
                       <p className="text-sm text-green-600 mt-1">
-                        +${design.revenue_generated.toFixed(2)}
+                        +{formatPrice(design.revenue_generated)}
                       </p>
                     )}
                   </div>
@@ -250,7 +252,7 @@ export const DesignerAnalytics = () => {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span>Monthly Earnings</span>
-                  <span>${totalEarnings.toFixed(2)}/$300</span>
+                  <span>{formatPrice(totalEarnings)}/{formatPrice(300)}</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${Math.min((totalEarnings / 300) * 100, 100)}%` }}></div>

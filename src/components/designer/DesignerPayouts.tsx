@@ -4,11 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDesigners } from '@/hooks/useDesignersQuery';
+import { useCurrency } from '@/context/CurrencyContext';
 import { CreditCard, Calendar, Download, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const DesignerPayouts = () => {
   const { payouts, loading } = useDesigners();
+  const { formatPrice } = useCurrency();
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const filteredPayouts = payouts.filter(payout => 
@@ -67,7 +69,7 @@ export const DesignerPayouts = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Paid</p>
-                <p className="text-2xl font-bold">${totalPaid.toFixed(2)}</p>
+                <p className="text-2xl font-bold">{formatPrice(totalPaid)}</p>
               </div>
             </div>
           </CardContent>
@@ -81,7 +83,7 @@ export const DesignerPayouts = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">${pendingAmount.toFixed(2)}</p>
+                <p className="text-2xl font-bold">{formatPrice(pendingAmount)}</p>
               </div>
             </div>
           </CardContent>
@@ -95,7 +97,7 @@ export const DesignerPayouts = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
-                <p className="text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
+                <p className="text-2xl font-bold">{formatPrice(totalEarnings)}</p>
               </div>
             </div>
           </CardContent>
@@ -142,7 +144,7 @@ export const DesignerPayouts = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold">
-                        ${payout.amount.toFixed(2)}
+                        {formatPrice(payout.amount)}
                       </h3>
                       <Badge className={getStatusColor(payout.status)}>
                         {payout.status}
@@ -152,15 +154,15 @@ export const DesignerPayouts = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Amount</p>
-                        <p className="font-medium">${payout.amount.toFixed(2)}</p>
+                        <p className="font-medium">{formatPrice(payout.amount)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Processing Fee</p>
-                        <p className="font-medium">-${payout.processing_fee.toFixed(2)}</p>
+                        <p className="font-medium">-{formatPrice(payout.processing_fee)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Net Amount</p>
-                        <p className="font-medium text-green-600">${payout.net_amount.toFixed(2)}</p>
+                        <p className="font-medium text-green-600">{formatPrice(payout.net_amount)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Currency</p>
@@ -221,7 +223,7 @@ export const DesignerPayouts = () => {
         <CardContent>
           <div className="space-y-2 text-sm text-blue-800">
             <p>• Payouts are processed monthly on the 15th of each month</p>
-            <p>• Minimum payout amount is $50</p>
+            <p>• Minimum payout amount is {formatPrice(50)}</p>
             <p>• Processing fees may apply depending on your payment method</p>
             <p>• Payouts typically take 3-5 business days to reach your account</p>
           </div>

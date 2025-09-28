@@ -3,6 +3,7 @@ import { Search, Filter, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useCurrency } from '@/context/CurrencyContext';
 import {
   Popover,
   PopoverContent,
@@ -11,6 +12,7 @@ import {
 import { motion } from 'framer-motion';
 
 const SearchBar = () => {
+  const { formatPrice } = useCurrency();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -76,7 +78,12 @@ const SearchBar = () => {
                   <div>
                     <label className="text-sm font-medium mb-2 block">Price Range</label>
                     <div className="flex flex-wrap gap-2">
-                      {['Under $25', '$25-$50', '$50-$75', '$75+'].map((range) => (
+                      {[
+                        `Under ${formatPrice(25)}`, 
+                        `${formatPrice(25)}-${formatPrice(50)}`, 
+                        `${formatPrice(50)}-${formatPrice(75)}`, 
+                        `${formatPrice(75)}+`
+                      ].map((range) => (
                         <Badge key={range} variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
                           {range}
                         </Badge>

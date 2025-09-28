@@ -196,10 +196,10 @@ const PlatformSalesReport = () => {
           <CardContent>
             <div className="space-y-4">
               {[
-                { name: 'Maya Rodriguez', revenue: '$8,450', products: 12 },
-                { name: 'Alex Chen', revenue: '$6,230', products: 8 },
-                { name: 'Luna Martinez', revenue: '$5,890', products: 15 },
-                { name: 'David Kim', revenue: '$4,720', products: 6 },
+                { name: 'Maya Rodriguez', revenue: formatPrice(8450), products: 12 },
+                { name: 'Alex Chen', revenue: formatPrice(6230), products: 8 },
+                { name: 'Luna Martinez', revenue: formatPrice(5890), products: 15 },
+                { name: 'David Kim', revenue: formatPrice(4720), products: 6 },
               ].map((artist, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div>
@@ -222,10 +222,10 @@ const PlatformSalesReport = () => {
           <CardContent>
             <div className="space-y-4">
               {[
-                { category: 'Prints & Posters', revenue: '$28,450', percentage: '42%' },
-                { category: 'Apparel', revenue: '$19,230', percentage: '28%' },
-                { category: 'Home Decor', revenue: '$15,890', percentage: '23%' },
-                { category: 'Accessories', revenue: '$4,720', percentage: '7%' },
+                { category: 'Prints & Posters', revenue: formatPrice(28450), percentage: '42%' },
+                { category: 'Apparel', revenue: formatPrice(19230), percentage: '28%' },
+                { category: 'Home Decor', revenue: formatPrice(15890), percentage: '23%' },
+                { category: 'Accessories', revenue: formatPrice(4720), percentage: '7%' },
               ].map((category, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div>

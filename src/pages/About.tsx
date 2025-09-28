@@ -2,9 +2,11 @@ import React from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
+import { useCurrency } from '@/context/CurrencyContext';
 import { Users, Target, Globe, Zap, TrendingUp, Award, Heart, Shield } from 'lucide-react';
 
 export default function About() {
+  const { formatPrice } = useCurrency();
   return (
     <div className="min-h-screen">
       <SEOHelmet 
@@ -239,7 +241,7 @@ export default function About() {
                 { value: "10K+", label: "Active Artists", icon: Users },
                 { value: "1M+", label: "Products Sold", icon: TrendingUp },
                 { value: "50+", label: "Countries Served", icon: Globe },
-                { value: "$2M+", label: "Paid to Artists", icon: Award }
+                { value: `${formatPrice(2000000)}+`, label: "Paid to Artists", icon: Award }
               ].map((stat, index) => (
                 <div key={index} className="text-center group bg-background/80 backdrop-blur-sm border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300">
                   <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">

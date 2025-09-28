@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
 
 // Mock data - in real app, this would come from API
 const artistData = {
@@ -25,11 +26,12 @@ const artistData = {
   }
 };
 
-const merchItems = [
+// Store base prices in USD for conversion
+const merchItemsData = [
   {
     id: 1,
     name: "Midnight Vibes Hoodie",
-    price: "$55",
+    basePrice: 55,
     image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format",
     sales: "340 sold",
     rating: 4.9
@@ -37,7 +39,7 @@ const merchItems = [
   {
     id: 2,
     name: "Ethereal Dreams Tee",
-    price: "$35",
+    basePrice: 35,
     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&auto=format",
     sales: "523 sold", 
     rating: 4.8
@@ -45,7 +47,7 @@ const merchItems = [
   {
     id: 3,
     name: "Luna Logo Cap",
-    price: "$28",
+    basePrice: 28,
     image: "https://images.unsplash.com/photo-1588117260148-b47c0c19383d?w=400&h=400&fit=crop&auto=format",
     sales: "789 sold",
     rating: 5.0
@@ -53,7 +55,7 @@ const merchItems = [
   {
     id: 4,
     name: "Cosmic Journey Poster",
-    price: "$22",
+    basePrice: 22,
     image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=400&fit=crop&auto=format",
     sales: "234 sold",
     rating: 4.7
@@ -61,7 +63,7 @@ const merchItems = [
   {
     id: 5,
     name: "Rivers Phone Case",
-    price: "$32",
+    basePrice: 32,
     image: "https://images.unsplash.com/photo-1607212640195-b3c4c0ca5f82?w=400&h=400&fit=crop&auto=format",
     sales: "445 sold",
     rating: 4.9
@@ -69,7 +71,7 @@ const merchItems = [
   {
     id: 6,
     name: "Dreamscape Vinyl Sticker Pack",
-    price: "$15",
+    basePrice: 15,
     image: "https://images.unsplash.com/photo-1541336032412-2048a678540d?w=400&h=400&fit=crop&auto=format",
     sales: "1.2K sold",
     rating: 4.8
@@ -79,8 +81,15 @@ const merchItems = [
 export default function ArtistProfile() {
   const { slug } = useParams();
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  
+  // Convert prices with current currency
+  const merchItems = merchItemsData.map(item => ({
+    ...item,
+    price: formatPrice(item.basePrice)
+  }));
   
   // Scroll animation for banner
   const { scrollY } = useScroll();
@@ -100,7 +109,7 @@ export default function ArtistProfile() {
       id: item.id,
       name: item.name,
       artist: artistData.name,
-      price: parseFloat(item.price.replace('$', '')),
+      price: item.basePrice, // Use base price for cart calculations
       image: item.image
     });
   };

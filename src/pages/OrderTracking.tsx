@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useCurrency } from '@/context/CurrencyContext';
 import { 
   Package, 
   Truck, 
@@ -20,6 +21,7 @@ import Footer from '@/components/layout/Footer';
 
 const OrderTracking = () => {
   const { orderId } = useParams();
+  const { formatPrice } = useCurrency();
   const [orderData, setOrderData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -322,22 +324,22 @@ const OrderTracking = () => {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Subtotal:</span>
-                      <span>${orderData.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Shipping:</span>
-                      <span>$8.99</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Tax:</span>
-                      <span>$12.40</span>
-                    </div>
-                    <div className="border-t pt-2 flex justify-between font-semibold">
-                      <span>Total:</span>
-                      <span>${(orderData.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) + 8.99 + 12.40).toFixed(2)}</span>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>{formatPrice(orderData.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Shipping:</span>
+                        <span>{formatPrice(8.99)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tax:</span>
+                        <span>{formatPrice(12.40)}</span>
+                      </div>
+                      <div className="border-t pt-2 flex justify-between font-semibold">
+                        <span>Total:</span>
+                        <span>{formatPrice(orderData.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) + 8.99 + 12.40)}</span>
                     </div>
                   </div>
                 </CardContent>

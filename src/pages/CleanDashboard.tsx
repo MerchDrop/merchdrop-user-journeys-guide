@@ -10,6 +10,7 @@ import SalesChart from '@/components/dashboard/SalesChart';
 import ProductPerformance from '@/components/dashboard/ProductPerformance';
 import RecentOrders from '@/components/dashboard/RecentOrders';
 import PayoutsList from '@/components/dashboard/PayoutsList';
+import { useCurrency } from '@/context/CurrencyContext';
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -21,14 +22,6 @@ import {
 } from 'lucide-react';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
-// Empty data for new users - they start with a clean slate
-const kpiData = [
-  { title: 'Total Sales', value: '$0.00', change: '+0%', trend: 'neutral' as const, icon: DollarSign },
-  { title: 'Orders', value: '0', change: '+0%', trend: 'neutral' as const, icon: ShoppingCart },
-  { title: 'Products', value: '0', change: '+0%', trend: 'neutral' as const, icon: Package },
-  { title: 'Customers', value: '0', change: '+0%', trend: 'neutral' as const, icon: Users },
-];
-
 const salesData: any[] = [];
 const recentOrders: any[] = [];
 const products: any[] = [];
@@ -37,7 +30,16 @@ const goals: any[] = [];
 
 export default function Dashboard() {
   const { user, isArtist, loading: authLoading } = useAuth();
+  const { formatPrice } = useCurrency();
   const [loading, setLoading] = useState(true);
+
+  // Empty data for new users - they start with a clean slate
+  const kpiData = [
+    { title: 'Total Sales', value: formatPrice(0), change: '+0%', trend: 'neutral' as const, icon: DollarSign },
+    { title: 'Orders', value: '0', change: '+0%', trend: 'neutral' as const, icon: ShoppingCart },
+    { title: 'Products', value: '0', change: '+0%', trend: 'neutral' as const, icon: Package },
+    { title: 'Customers', value: '0', change: '+0%', trend: 'neutral' as const, icon: Users },
+  ];
 
   useEffect(() => {
     // Simulate loading state
