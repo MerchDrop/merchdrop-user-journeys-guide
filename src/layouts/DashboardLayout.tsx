@@ -32,24 +32,23 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isArtist, loading, profile } = useAuth();
+  const { user, isArtist, isAdmin, loading, profile } = useAuth();
 
-  // Redirect non-authenticated users or non-artists
+  // Redirect non-authenticated users or non-artists (allow admins too)
   useEffect(() => {
-    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist);
+    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin);
     
     if (!loading) {
+      const canAccess = !!user && (isArtist || isAdmin);
       if (!user) {
         console.log('DashboardLayout: No user, redirecting to artist-auth');
         navigate('/artist-auth', { replace: true });
-      } else if (!isArtist) {
-        console.log('DashboardLayout: User is not artist, redirecting to home');
-        navigate('/', { replace: true });
-      } else {
-        console.log('DashboardLayout: User is artist, staying on dashboard');
+      } else if (!canAccess) {
+        console.log('DashboardLayout: User lacks access, redirecting to artist-auth');
+        navigate('/artist-auth', { replace: true });
       }
     }
-  }, [user, isArtist, loading, navigate]);
+  }, [user, isArtist, isAdmin, loading, navigate]);
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -60,8 +59,8 @@ export default function DashboardLayout() {
     );
   }
 
-  // Don't render dashboard if user is not authenticated or not an artist
-  if (!user || !isArtist) {
+  // Don't render dashboard if user is not authenticated or lacks access
+  if (!user || !(isArtist || isAdmin)) {
     return null;
   }
 
