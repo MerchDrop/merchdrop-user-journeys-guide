@@ -7,6 +7,7 @@ import { CurrencyProvider } from '@/context/CurrencyContext';
 import { CartProvider } from '@/context/CartContext';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthErrorBoundary } from '@/components/auth/AuthErrorBoundary';
+import { useRealtimeSubscriptions } from '@/hooks/useRealtimeSubscriptions';
 import Auth from '@/pages/Auth';
 import AdminAuth from '@/pages/AdminAuth';
 import Home from '@/pages/Home';
@@ -65,6 +66,9 @@ import AdminLayout from '@/layouts/AdminLayout';
 import DesignerLayout from '@/layouts/DesignerLayout';
 
 function App() {
+  // Enable real-time subscriptions
+  useRealtimeSubscriptions();
+
   return (
     <HelmetProvider>
       <AuthErrorBoundary>
