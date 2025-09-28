@@ -413,14 +413,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     }
     
-    const result = userRoles.some(userRole => userRole.role === role);
-    console.log(`AuthContext: hasRole(${role}) = ${result}, userRoles:`, userRoles);
-    
-    // Admin users should have access to everything
+    // Admin users should have access to everything (check this first)
     if (role !== 'admin' && userRoles.some(userRole => userRole.role === 'admin')) {
       console.log(`AuthContext: User is admin, granting ${role} access`);
       return true;
     }
+    
+    const result = userRoles.some(userRole => userRole.role === role);
+    console.log(`AuthContext: hasRole(${role}) = ${result}, userRoles:`, userRoles);
     
     return result;
   };
