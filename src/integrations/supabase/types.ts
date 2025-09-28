@@ -740,13 +740,17 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      can_manage_user_roles: {
+        Args: { _user_id?: string }
+        Returns: boolean
+      }
+      can_self_assign_initial_role: {
+        Args: { _user_id?: string }
+        Returns: boolean
+      }
       can_user_review_product: {
         Args: { product_uuid: string; user_uuid: string }
         Returns: boolean
-      }
-      ensure_profile_and_role: {
-        Args: { user_type?: string }
-        Returns: Json
       }
       generate_product_slug: {
         Args: { title: string }
