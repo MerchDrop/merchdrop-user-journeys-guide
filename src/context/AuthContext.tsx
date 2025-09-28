@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('AuthContext: Auth state change:', event, session?.user?.id);
         
         if (!isMounted) return;
@@ -173,47 +173,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
         
-        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           setSession(session);
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            console.log('AuthContext: User authenticated, starting setup...');
-            // Get user type from metadata or default to 'user'
             const userType = session.user.user_metadata?.user_type || 'user';
-            
-            try {
-              await ensureUserSetup(session.user.id, userType);
-              console.log('AuthContext: User setup completed, setting loading to false');
-            } catch (error) {
-              console.error('AuthContext: Failed to ensure user setup:', error);
-            } finally {
-              if (isMounted) {
-                console.log('AuthContext: Setting loading to false');
-                setLoading(false);
-              }
-            }
+            // Defer Supabase calls to avoid deadlocks inside the auth callback
+            setTimeout(() => {
+              ensureUserSetup(session.user!.id, userType)
+                .catch((error) => {
+                  console.error('AuthContext: ensureUserSetup error:', error);
+                })
+                .finally(() => {
+                  if (isMounted) {
+                    setLoading(false);
+                  }
+                });
+            }, 0);
           } else {
             setProfile(null);
             setUserRoles([]);
-            setLoading(false);
-          }
-        } else if (event === 'INITIAL_SESSION') {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            const userType = session.user.user_metadata?.user_type || 'user';
-            try {
-              await ensureUserSetup(session.user.id, userType);
-            } catch (error) {
-              console.error('AuthContext: Failed to ensure user setup on initial session:', error);
-            } finally {
-              if (isMounted) {
-                setLoading(false);
-              }
-            }
-          } else {
             setLoading(false);
           }
         }
