@@ -23,11 +23,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 // Real products will be fetched from the database
 const products: any[] = [];
 
 export function FixedAdminProductTable() {
+  const { formatPrice } = useCurrency();
+  
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'published':
@@ -89,7 +92,7 @@ export function FixedAdminProductTable() {
                       {product.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>${product.price}</TableCell>
+                  <TableCell>{formatPrice(product.price)}</TableCell>
                   <TableCell>{product.stock}</TableCell>
                   <TableCell>{product.sales}</TableCell>
                   <TableCell>

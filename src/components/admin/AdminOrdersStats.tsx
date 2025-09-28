@@ -2,9 +2,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrders } from '@/hooks/useOrdersQuery';
 import { ShoppingCart, Clock, Truck, CheckCircle, DollarSign } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export function AdminOrdersStats() {
   const { orders, loading } = useOrders();
+  const { formatPrice } = useCurrency();
 
   if (loading) {
     return (
@@ -50,7 +52,7 @@ export function AdminOrdersStats() {
     },
     {
       title: 'Total Revenue',
-      value: `$${orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0).toFixed(2)}`,
+      value: formatPrice(orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0)),
       icon: DollarSign,
       color: 'text-emerald-600'
     }

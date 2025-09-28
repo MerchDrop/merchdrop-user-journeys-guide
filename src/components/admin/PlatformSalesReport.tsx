@@ -19,6 +19,7 @@ import {
   Legend,
 } from 'recharts';
 import { TrendingUp, DollarSign, CreditCard, Banknote } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 // Mock sales data
 const mockSalesData = [
@@ -60,31 +61,31 @@ const mockSalesData = [
   },
 ];
 
-const summaryStats = [
+const summaryStats = (formatPrice: (price: number) => string) => [
   {
     title: 'Total Revenue',
-    value: '$103,900',
+    value: formatPrice(103900),
     change: '+12.5%',
     icon: DollarSign,
     color: 'text-green-500'
   },
   {
     title: 'Net Profit',
-    value: '$72,730',
+    value: formatPrice(72730),
     change: '+8.2%',
     icon: TrendingUp,
     color: 'text-blue-500'
   },
   {
     title: 'Artist Payouts',
-    value: '$31,170',
+    value: formatPrice(31170),
     change: '+15.3%',
     icon: CreditCard,
     color: 'text-purple-500'
   },
   {
     title: 'Platform Fee',
-    value: '$31,170',
+    value: formatPrice(31170),
     change: '+10.1%',
     icon: Banknote,
     color: 'text-orange-500'
@@ -92,6 +93,8 @@ const summaryStats = [
 ];
 
 const PlatformSalesReport = () => {
+  const { formatPrice } = useCurrency();
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -114,7 +117,7 @@ const PlatformSalesReport = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {summaryStats.map((stat, index) => {
+        {summaryStats(formatPrice).map((stat, index) => {
           const Icon = stat.icon;
           return (
             <Card key={index}>

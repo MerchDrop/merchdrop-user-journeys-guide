@@ -36,9 +36,11 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { OrderStatusDialog } from './OrderStatusDialog';
 import { OrderTrackingBadge } from './OrderTrackingBadge';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export function AdminOrdersTable() {
   const { orders, loading, updateOrderStatus } = useOrders();
+  const { formatPrice } = useCurrency();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -196,7 +198,7 @@ export function AdminOrdersTable() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">
-                    ${Number(order.total_amount || '0').toFixed(2)}
+                    {formatPrice(Number(order.total_amount || '0'))}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(order.status || 'pending')}>

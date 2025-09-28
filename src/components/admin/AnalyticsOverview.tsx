@@ -1,9 +1,10 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Palette } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalyticsQuery';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
 
@@ -81,6 +82,7 @@ const LoadingSkeleton = () => (
 
 export default function AnalyticsOverview() {
   const { data, loading, error } = useAnalytics();
+  const { formatPrice } = useCurrency();
 
   if (loading) return <LoadingSkeleton />;
   
@@ -160,10 +162,10 @@ export default function AnalyticsOverview() {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => formatPrice(value)}
                 />
                 <Tooltip 
-                  formatter={(value) => [`$${value}`, 'Revenue']}
+                  formatter={(value) => [formatPrice(Number(value)), 'Revenue']}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--background))',

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Package, Truck, Clock, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useCurrency } from '@/context/CurrencyContext';
 
 // Mock order data
 const mockOrders = [
@@ -78,6 +79,8 @@ const statusColumns = [
 ];
 
 const OrderCard = ({ order }: { order: any }) => {
+  const { formatPrice } = useCurrency();
+  
   return (
     <motion.div
       layout
@@ -102,7 +105,7 @@ const OrderCard = ({ order }: { order: any }) => {
                 <p className="text-xs text-muted-foreground">{order.id}</p>
               </div>
             </div>
-            <Badge variant="secondary">${order.total}</Badge>
+            <Badge variant="secondary">{formatPrice(order.total)}</Badge>
           </div>
           
           <div className="space-y-1 mb-3">
