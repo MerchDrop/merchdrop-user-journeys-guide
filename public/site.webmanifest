@@ -1,0 +1,16 @@
+{
+  "name": "MerchDrop",
+  "short_name": "MerchDrop",
+  "description": "The ultimate platform for artists to create, sell, and monetize custom merchandise",
+  "icons": [
+    {
+      "src": "/Merchdrop.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}

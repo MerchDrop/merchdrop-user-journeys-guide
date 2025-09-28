@@ -135,19 +135,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserRoles = async (userId: string) => {
     try {
+      console.log('AuthContext: Fetching roles for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Error fetching user roles:', error);
+        console.error('AuthContext: Error fetching user roles:', error);
         return;
       }
 
+      console.log('AuthContext: Roles fetched:', data);
       setUserRoles(data || []);
     } catch (error) {
-      console.error('Error fetching user roles:', error);
+      console.error('AuthContext: Error fetching user roles:', error);
     }
   };
 
@@ -176,15 +178,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(session?.user ?? null);
           
           if (session?.user) {
+            console.log('AuthContext: User authenticated, starting setup...');
             // Get user type from metadata or default to 'user'
             const userType = session.user.user_metadata?.user_type || 'user';
             
             try {
               await ensureUserSetup(session.user.id, userType);
+              console.log('AuthContext: User setup completed, setting loading to false');
             } catch (error) {
               console.error('AuthContext: Failed to ensure user setup:', error);
             } finally {
               if (isMounted) {
+                console.log('AuthContext: Setting loading to false');
                 setLoading(false);
               }
             }
