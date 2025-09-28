@@ -70,6 +70,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('AuthContext: Starting ensureUserSetup for user:', userId, 'type:', userType);
       
+      // Check if user still exists in auth before proceeding
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser || currentUser.id !== userId) {
+        console.log('AuthContext: User not authenticated or user ID mismatch, skipping setup');
+        return;
+      }
+      
       // Call RPC to ensure profile and role exist
       const { data: setupResult, error: rpcError } = await supabase.rpc(
         'ensure_profile_and_role',
@@ -78,6 +85,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (rpcError) {
         console.error('AuthContext: RPC error:', rpcError);
+        // If user not authenticated, just return instead of throwing
+        if (rpcError.code === 'P0001') {
+          console.log('AuthContext: User not authenticated during setup, skipping');
+          return;
+        }
         throw rpcError;
       }
 
@@ -93,6 +105,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { profileResult, rolesResult };
     } catch (error) {
       console.error('AuthContext: Error ensuring user setup:', error);
+      // Don't throw auth errors, just log them
+      if (error?.code === 'P0001') {
+        console.log('AuthContext: User not authenticated, setup skipped');
+        return;
+      }
       throw error;
     }
   };
@@ -139,32 +156,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('AuthContext: Auth state change:', event, session?.user?.id);
         
         if (!isMounted) return;
         
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Get user type from metadata or default to 'user'
-          const userType = session.user.user_metadata?.user_type || 'user';
-          
-          // Fetch user data without setTimeout to prevent race conditions
-          ensureUserSetup(session.user.id, userType)
-            .catch((error) => {
-              console.error('AuthContext: Failed to ensure user setup:', error);
-            })
-            .finally(() => {
-              if (isMounted) {
-                setLoading(false);
-              }
-            });
-        } else {
+        // Handle different auth events
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
           setProfile(null);
           setUserRoles([]);
           setLoading(false);
+          return;
+        }
+        
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            // Get user type from metadata or default to 'user'
+            const userType = session.user.user_metadata?.user_type || 'user';
+            
+            try {
+              await ensureUserSetup(session.user.id, userType);
+            } catch (error) {
+              console.error('AuthContext: Failed to ensure user setup:', error);
+            } finally {
+              if (isMounted) {
+                setLoading(false);
+              }
+            }
+          } else {
+            setProfile(null);
+            setUserRoles([]);
+            setLoading(false);
+          }
+        } else if (event === 'INITIAL_SESSION') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            const userType = session.user.user_metadata?.user_type || 'user';
+            try {
+              await ensureUserSetup(session.user.id, userType);
+            } catch (error) {
+              console.error('AuthContext: Failed to ensure user setup on initial session:', error);
+            } finally {
+              if (isMounted) {
+                setLoading(false);
+              }
+            }
+          } else {
+            setLoading(false);
+          }
         }
       }
     );
@@ -175,10 +221,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('AuthContext: Initial session check:', session?.user?.id);
       
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
+      // Only process if we don't already have a session (to avoid duplicate calls)
+      if (!user && session?.user) {
+        setSession(session);
+        setUser(session.user);
+        
         const userType = session.user.user_metadata?.user_type || 'user';
         ensureUserSetup(session.user.id, userType)
           .catch((error) => {
@@ -189,7 +236,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               setLoading(false);
             }
           });
-      } else {
+      } else if (!session) {
         setLoading(false);
       }
     });
