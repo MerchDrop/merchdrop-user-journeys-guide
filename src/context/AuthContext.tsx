@@ -102,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return [];
       }
 
+      console.log('AuthContext: Fetched user roles:', data);
       return data || [];
     } catch (error) {
       console.error('AuthContext: Error fetching user roles:', error);  
@@ -186,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(profileData);
       setUserRoles(rolesData);
       
-      console.log('AuthContext: User data loaded - Profile:', !!profileData, 'Roles:', rolesData.length);
+      console.log('AuthContext: User data loaded - Profile:', !!profileData, 'Roles:', rolesData.length, 'Role data:', rolesData);
     } catch (error) {
       console.error('AuthContext: Error loading user data:', error);
     }
@@ -574,6 +575,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAdmin = hasRole('admin');
   const isArtist = hasRole('artist');
   const isDesigner = hasRole('designer');
+
+  // Debug logging for role checking
+  React.useEffect(() => {
+    if (user) {
+      console.log('AuthContext: Role check - userRoles:', userRoles, 'isAdmin:', isAdmin, 'isArtist:', isArtist);
+    }
+  }, [userRoles, isAdmin, isArtist, user]);
 
   const value: AuthContextType = {
     user,
