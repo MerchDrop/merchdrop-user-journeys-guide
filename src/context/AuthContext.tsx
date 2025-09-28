@@ -85,12 +85,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (rpcError) {
         console.error('AuthContext: RPC error:', rpcError);
-        // If user not authenticated, just return instead of throwing
-        if (rpcError.code === 'P0001') {
-          console.log('AuthContext: User not authenticated during setup, skipping');
-          return;
+        // If RPC fails due to auth timing, create profile and role manually
+        if (rpcError.code === 'P0001' || rpcError.message?.includes('not authenticated')) {
+          console.log('AuthContext: RPC failed, creating profile and role manually');
+          
+          // Create profile manually
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: userId,
+              email: currentUser.email,
+              display_name: currentUser.email || currentUser.user_metadata?.display_name
+            });
+          
+          if (profileError) {
+            console.error('AuthContext: Profile creation error:', profileError);
+          }
+          
+          // Create user role manually  
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .upsert({
+              user_id: userId,
+              role: userType as any
+            });
+          
+          if (roleError) {
+            console.error('AuthContext: Role creation error:', roleError);
+          }
+        } else {
+          throw rpcError;
         }
-        throw rpcError;
       }
 
       console.log('AuthContext: User setup result:', setupResult);
@@ -105,12 +130,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { profileResult, rolesResult };
     } catch (error) {
       console.error('AuthContext: Error ensuring user setup:', error);
-      // Don't throw auth errors, just log them
-      if (error?.code === 'P0001') {
-        console.log('AuthContext: User not authenticated, setup skipped');
-        return;
-      }
-      throw error;
+      // Don't throw auth errors, just fetch existing data
+      console.log('AuthContext: Attempting to fetch existing profile and roles');
+      const [profileResult, rolesResult] = await Promise.all([
+        fetchProfile(userId),
+        fetchUserRoles(userId)
+      ]);
+      return { profileResult, rolesResult };
     }
   };
 
