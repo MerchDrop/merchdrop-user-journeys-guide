@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, UserCheck, UserX, Loader2 } from 'lucide-react';
-import { useUsers } from '@/hooks/useUsers';
+import { useUsers } from '@/hooks/useUsersQuery';
 
 export function CleanAdminUserTable() {
   const { users, loading, updateUserRole, suspendUser, activateUser } = useUsers();

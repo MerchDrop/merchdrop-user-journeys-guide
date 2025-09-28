@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders } from '@/hooks/useOrdersQuery';
 import { ShoppingCart, Clock, Truck, CheckCircle, DollarSign } from 'lucide-react';
 
 export function AdminOrdersStats() {

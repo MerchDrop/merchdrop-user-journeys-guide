@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Clock, CheckCircle, XCircle, TrendingUp, DollarSign } from 'lucide-react';
-import { useArtists } from '@/hooks/useArtists';
+import { useArtists } from '@/hooks/useArtistsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export function ArtistOverview() {

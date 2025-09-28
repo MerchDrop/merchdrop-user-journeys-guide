@@ -5,7 +5,7 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/useProductsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import fashionSlider1 from '@/assets/fashion-slider-1.jpg';

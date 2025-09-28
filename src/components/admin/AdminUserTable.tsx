@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { useUsers } from '@/hooks/useUsers';
+import { useUsers } from '@/hooks/useUsersQuery';
 
 export const AdminUserTable = () => {
   const { users, loading } = useUsers();

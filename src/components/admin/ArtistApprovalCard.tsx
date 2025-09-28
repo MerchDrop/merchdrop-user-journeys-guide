@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Check, X, ExternalLink, Calendar, Loader2 } from 'lucide-react';
-import { usePendingArtists, useArtists } from '@/hooks/useArtists';
+import { usePendingArtists, useArtists } from '@/hooks/useArtistsQuery';
 
 export const ArtistApprovalCard = () => {
   const { pendingArtists, loading } = usePendingArtists();

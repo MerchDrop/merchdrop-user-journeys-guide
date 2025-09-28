@@ -7,9 +7,12 @@ export interface UserProfile {
   id: string;
   email: string;
   display_name: string;
+  first_name?: string;
+  last_name?: string;
   avatar_url?: string;
   created_at: string;
   roles: string[];
+  user_roles?: Array<{ role: string }>;
 }
 
 // Fetch users with their roles
@@ -36,7 +39,8 @@ async function fetchUsers(): Promise<UserProfile[]> {
 
   return profiles.map(profile => ({
     ...profile,
-    roles: rolesByUser[profile.id] || ['user']
+    roles: rolesByUser[profile.id] || ['user'],
+    user_roles: (rolesByUser[profile.id] || ['user']).map(role => ({ role }))
   }));
 }
 

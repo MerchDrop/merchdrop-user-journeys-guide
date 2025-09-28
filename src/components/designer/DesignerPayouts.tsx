@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useDesigners } from '@/hooks/useDesigners';
+import { useDesigners } from '@/hooks/useDesignersQuery';
 import { CreditCard, Calendar, Download, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 

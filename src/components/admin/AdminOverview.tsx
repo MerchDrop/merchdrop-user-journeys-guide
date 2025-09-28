@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/context/CurrencyContext';
-import { useOrders } from '@/hooks/useOrders';
-import { useProducts } from '@/hooks/useProducts';
+import { useOrders } from '@/hooks/useOrdersQuery';
+import { useProducts } from '@/hooks/useProductsQuery';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AdminStats {

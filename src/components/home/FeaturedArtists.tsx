@@ -8,7 +8,7 @@ import { Star, TrendingUp, Users, ExternalLink, ArrowRight, Crown } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useFeaturedArtists } from '@/hooks/useFeaturedArtists';
+import { useFeaturedArtists } from '@/hooks/useArtistsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 
 const FeaturedArtists = () => {

@@ -19,6 +19,9 @@ export interface Artist {
   approval_date?: string;
   created_at: string;
   updated_at: string;
+  avatar_url?: string;
+  display_name?: string;
+  email?: string;
   user_profiles?: {
     id: string;
     email: string;
@@ -56,7 +59,11 @@ async function fetchArtists(): Promise<Artist[]> {
 
   return (data || []).map(artist => ({
     ...artist,
-    user_roles: rolesByUser[artist.user_id] || []
+    user_roles: rolesByUser[artist.user_id] || [],
+    // Add derived properties from user_profiles for compatibility
+    avatar_url: artist.user_profiles?.avatar_url,
+    display_name: artist.user_profiles?.display_name,
+    email: artist.user_profiles?.email
   }));
 }
 
@@ -87,7 +94,11 @@ async function fetchPendingArtists(): Promise<Artist[]> {
 
   return (data || []).map(artist => ({
     ...artist,
-    user_roles: rolesByUser[artist.user_id] || []
+    user_roles: rolesByUser[artist.user_id] || [],
+    // Add derived properties from user_profiles for compatibility
+    avatar_url: artist.user_profiles?.avatar_url,
+    display_name: artist.user_profiles?.display_name,
+    email: artist.user_profiles?.email
   }));
 }
 

@@ -3,9 +3,9 @@ import { ProductForm } from '@/components/forms/ProductForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Filter, Edit, Eye, Archive, MoreHorizontal } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/useProductsQuery';
 import { useAuth } from '@/context/AuthContext';
 import {
   DropdownMenu,

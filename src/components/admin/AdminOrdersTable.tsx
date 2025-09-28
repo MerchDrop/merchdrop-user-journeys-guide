@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders } from '@/hooks/useOrdersQuery';
 import { MoreHorizontal, Eye, Edit, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';

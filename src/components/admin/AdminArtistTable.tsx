@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MoreHorizontal, UserCheck, UserX, ExternalLink, Loader2 } from 'lucide-react';
-import { useArtists } from '@/hooks/useArtists';
+import { useArtists } from '@/hooks/useArtistsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export function AdminArtistTable() {

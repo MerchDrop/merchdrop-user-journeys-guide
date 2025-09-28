@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDesigners } from '@/hooks/useDesigners';
+import { useDesigners } from '@/hooks/useDesignersQuery';
 import { TrendingUp, FileImage, CheckCircle, DollarSign, Calendar, Target } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 

@@ -32,6 +32,11 @@ export interface Design {
   revenue_generated: number;
   created_at: string;
   updated_at: string;
+  artist_profiles?: {
+    id: string;
+    artist_name: string;
+    artist_slug: string;
+  };
 }
 
 export interface DesignerPayout {
@@ -80,7 +85,10 @@ async function fetchDesigns(): Promise<Design[]> {
 
   const { data, error } = await supabase
     .from('designs')
-    .select('*')
+    .select(`
+      *,
+      artist_profiles(id, artist_name, artist_slug)
+    `)
     .eq('designer_id', profile.id)
     .order('created_at', { ascending: false });
 

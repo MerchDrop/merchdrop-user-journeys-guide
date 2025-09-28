@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/useProductsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Badge } from '@/components/ui/badge';
 
