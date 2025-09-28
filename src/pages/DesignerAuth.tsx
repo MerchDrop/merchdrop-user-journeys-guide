@@ -34,18 +34,19 @@ export default function DesignerAuth() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      if (hasRole('designer')) {
-        navigate('/designer/dashboard');
-      } else {
-        navigate('/');
-      }
+    console.log('DesignerAuth: user present?', !!user, 'loading roles?', loading);
+    if (!user) return;
+    if (loading) return; // wait until roles are loaded
+
+    if (hasRole('designer') || hasRole('admin')) {
+      navigate('/designer/dashboard');
     }
-  }, [user, hasRole, navigate]);
+    // If not designer/admin, stay on this page to allow signup or show message
+  }, [user, loading, hasRole, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
