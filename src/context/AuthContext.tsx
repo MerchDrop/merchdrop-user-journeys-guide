@@ -448,28 +448,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Helper functions for role checking
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
-    // Don't return false immediately if loading - wait for the actual role data
-    if (!user) {
-      console.log('AuthContext: hasRole - no user');
-      return false;
-    }
-    
-    // If still loading but we have some roles, check them
-    if (loading && userRoles.length === 0) {
-      console.log('AuthContext: hasRole - still loading and no roles yet');
-      return false;
-    }
-    
+    // During auth loading, report no access without logging
+    if (loading) return false;
+    // If no user yet, quietly return false
+    if (!user) return false;
+
     // Admin users should have access to everything (check this first)
     if (role !== 'admin' && userRoles.some(userRole => userRole.role === 'admin')) {
-      console.log(`AuthContext: User is admin, granting ${role} access`);
       return true;
     }
-    
-    const result = userRoles.some(userRole => userRole.role === role);
-    console.log(`AuthContext: hasRole(${role}) = ${result}, userRoles:`, userRoles);
-    
-    return result;
+
+    return userRoles.some(userRole => userRole.role === role);
   };
 
   // Get the primary role for the user (highest priority role)
