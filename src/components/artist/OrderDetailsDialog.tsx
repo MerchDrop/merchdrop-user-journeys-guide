@@ -35,6 +35,7 @@ import {
   Copy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Order {
   id: string;
