@@ -1,14 +1,26 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast';
+import { 
+  signUpSchema, 
+  signInSchema, 
+  roleAssignmentSchema, 
+  profileUpdateSchema,
+  SignUpInput, 
+  SignInInput, 
+  RoleAssignmentInput, 
+  ProfileUpdateInput 
+} from '@/lib/auth-schemas';
+import { useAuthValidation } from '@/hooks/useAuthValidation';
 
+// Types
 interface Profile {
   id: string;
+  email: string | null;
   display_name: string | null;
   first_name: string | null;
   last_name: string | null;
-  email: string | null;
   phone: string | null;
   avatar_url: string | null;
   bio: string | null;
@@ -36,112 +48,29 @@ interface AuthContextType {
   isAdmin: boolean;
   isArtist: boolean;
   isDesigner: boolean;
-  signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
-  signUpArtist: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (input: SignUpInput) => Promise<{ error: any }>;
+  signUpArtist: (input: SignUpInput) => Promise<{ error: any }>;
+  signIn: (input: SignInInput) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
-  assignRole: (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => Promise<{ error: any }>;
+  updateProfile: (updates: ProfileUpdateInput) => Promise<{ error: any }>;
+  assignRole: (input: RoleAssignmentInput) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // State
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
-  const ensureUserSetup = async (userId: string, userType: string = 'user') => {
-    try {
-      console.log('AuthContext: Starting ensureUserSetup for user:', userId, 'type:', userType);
-      
-      // Check if user still exists in auth before proceeding
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser || currentUser.id !== userId) {
-        console.log('AuthContext: User not authenticated or user ID mismatch, skipping setup');
-        return;
-      }
-      
-      // Create profile directly (no RPC needed)
-      console.log('AuthContext: Creating/updating profile');
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: userId,
-          email: currentUser.email,
-          display_name: currentUser.email || currentUser.user_metadata?.display_name
-        });
-      
-      if (profileError) {
-        console.error('AuthContext: Profile creation error:', profileError);
-      } else {
-        console.log('AuthContext: Profile created/updated successfully');
-      }
-      
-      // Check if user already has a role
-      const { data: existingRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
-      
-      if (rolesError) {
-        console.warn('AuthContext: Could not fetch existing roles, skipping role insert:', rolesError);
-      } else {
-        // Create user role if none exists
-        if (!existingRoles || existingRoles.length === 0) {
-          const allowedInitialRoles = ['user', 'artist', 'designer'] as const;
-          const roleToInsert = allowedInitialRoles.includes(userType as any) ? userType : 'user';
-          console.log('AuthContext: Creating initial user role:', roleToInsert);
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert([{ user_id: userId, role: roleToInsert as any }]);
-          
-          if (roleError) {
-            console.error('AuthContext: Role creation error:', roleError);
-          } else {
-            console.log('AuthContext: Role created successfully');
-          }
-        } else {
-          console.log('AuthContext: User already has roles:', existingRoles);
-        }
-      }
+  // Validation hook
+  const { validate } = useAuthValidation();
 
-      // Fetch updated profile and roles in parallel
-      const [profileResult, rolesResult] = await Promise.all([
-        fetchProfile(userId),
-        fetchUserRoles(userId)
-      ]);
-      
-      console.log('AuthContext: Setup complete for user:', userId);
-      return { profileResult, rolesResult };
-    } catch (error) {
-      console.error('AuthContext: Error ensuring user setup:', error);
-      // Don't throw auth errors, just fetch existing data
-      console.log('AuthContext: Attempting to fetch existing profile and roles');
-      const [profileResult, rolesResult] = await Promise.all([
-        fetchProfile(userId),
-        fetchUserRoles(userId)
-      ]);
-      return { profileResult, rolesResult };
-    }
-  };
-
-  const fetchProfile = async (userId: string) => {
+  // Core data fetching functions
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -150,19 +79,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
-        return;
+        console.error('AuthContext: Error fetching profile:', error);
+        return null;
       }
 
-      setProfile(data);
+      return data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('AuthContext: Error fetching profile:', error);
+      return null;
     }
   };
 
-  const fetchUserRoles = async (userId: string) => {
+  const fetchUserRoles = async (userId: string): Promise<UserRole[]> => {
     try {
-      console.log('AuthContext: Fetching roles for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
@@ -170,27 +99,106 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('AuthContext: Error fetching user roles:', error);
-        return;
+        return [];
       }
 
-      console.log('AuthContext: Roles fetched:', data);
-      setUserRoles(data || []);
+      return data || [];
     } catch (error) {
-      console.error('AuthContext: Error fetching user roles:', error);
+      console.error('AuthContext: Error fetching user roles:', error);  
+      return [];
     }
   };
 
+  // User setup function using new secure RPC
+  const setupUserProfile = async (userId: string, userType: 'user' | 'artist' | 'designer' = 'user') => {
+    try {
+      console.log('AuthContext: Setting up user profile for:', userId, 'type:', userType);
+      
+      // Use the new secure RPC function
+      const { data: setupResult, error: rpcError } = await supabase.rpc(
+        'setup_user_profile',
+        { 
+          _display_name: null,
+          _user_type: userType 
+        }
+      );
+
+      if (rpcError) {
+        console.error('AuthContext: Profile setup RPC error:', rpcError);
+        // Fall back to manual setup if RPC fails
+        return await manualUserSetup(userId, userType);
+      }
+
+      console.log('AuthContext: Profile setup result:', setupResult);
+      return true;
+    } catch (error) {
+      console.error('AuthContext: Error in setupUserProfile:', error);
+      return await manualUserSetup(userId, userType);
+    }
+  };
+
+  // Fallback manual setup
+  const manualUserSetup = async (userId: string, userType: 'user' | 'artist' | 'designer') => {
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) return false;
+
+      // Create profile
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          email: currentUser.email,
+          display_name: currentUser.email
+        });
+
+      // Check if user has roles before creating
+      const { data: existingRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (!existingRoles || existingRoles.length === 0) {
+        await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: userType });
+      }
+
+      return true;
+    } catch (error) {
+      console.error('AuthContext: Manual setup error:', error);
+      return false;
+    }
+  };
+
+  // Load user data
+  const loadUserData = async (userId: string) => {
+    try {
+      const [profileData, rolesData] = await Promise.all([
+        fetchProfile(userId),
+        fetchUserRoles(userId)
+      ]);
+
+      setProfile(profileData);
+      setUserRoles(rolesData);
+      
+      console.log('AuthContext: User data loaded - Profile:', !!profileData, 'Roles:', rolesData.length);
+    } catch (error) {
+      console.error('AuthContext: Error loading user data:', error);
+    }
+  };
+
+  // Auth state listener
   useEffect(() => {
     let isMounted = true;
-    
-    // Set up auth state listener
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('AuthContext: Auth state change:', event, session?.user?.id);
         
         if (!isMounted) return;
-        
-        // Handle different auth events
+
+        // Handle sign out
         if (event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);
@@ -199,25 +207,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setLoading(false);
           return;
         }
-        
-        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+
+        // Handle sign in and token refresh
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
           setSession(session);
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            const userType = session.user.user_metadata?.user_type || 'user';
-            // Defer Supabase calls to avoid deadlocks inside the auth callback
-            setTimeout(() => {
-              ensureUserSetup(session.user!.id, userType)
-                .catch((error) => {
-                  console.error('AuthContext: ensureUserSetup error:', error);
-                })
-                .finally(() => {
-                  if (isMounted) {
-                    setLoading(false);
-                  }
-                });
-            }, 0);
+            // Defer data loading to avoid auth state deadlocks
+            setTimeout(async () => {
+              if (!isMounted) return;
+              
+              try {
+                const userType = session.user.user_metadata?.user_type || 'user';
+                await setupUserProfile(session.user.id, userType);
+                await loadUserData(session.user.id);
+              } catch (error) {
+                console.error('AuthContext: Error in deferred setup:', error);
+              } finally {
+                if (isMounted) {
+                  setLoading(false);
+                }
+              }
+            }, 100);
           } else {
             setProfile(null);
             setUserRoles([]);
@@ -227,28 +239,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    // Check for existing session on mount
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       
-      console.log('AuthContext: Initial session check:', session?.user?.id);
-      
-      // Only process if we don't already have a session (to avoid duplicate calls)
-      if (!user && session?.user) {
+      if (session?.user) {
         setSession(session);
         setUser(session.user);
         
-        const userType = session.user.user_metadata?.user_type || 'user';
-        ensureUserSetup(session.user.id, userType)
-          .catch((error) => {
-            console.error('AuthContext: Failed to ensure user setup on mount:', error);
-          })
-          .finally(() => {
+        setTimeout(async () => {
+          if (!isMounted) return;
+          
+          try {
+            const userType = session.user.user_metadata?.user_type || 'user';
+            await setupUserProfile(session.user.id, userType);
+            await loadUserData(session.user.id);
+          } catch (error) {
+            console.error('AuthContext: Error in initial setup:', error);
+          } finally {
             if (isMounted) {
               setLoading(false);
             }
-          });
-      } else if (!session) {
+          }
+        }, 100);
+      } else {
         setLoading(false);
       }
     });
@@ -259,16 +273,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, metadata = {}) => {
+  // Authentication functions with validation
+  const signUp = async (input: SignUpInput) => {
+    const validation = validate(signUpSchema, input);
+    if (!validation.isValid) {
+      return { error: { message: 'Invalid input data', details: validation.errors } };
+    }
+
     try {
       const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: (validation.data as SignUpInput).email,
+        password: (validation.data as SignUpInput).password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: { ...metadata, user_type: 'user' }
+          data: { 
+            display_name: (validation.data as SignUpInput).displayName,
+            user_type: 'user' 
+          }
         }
       });
 
@@ -288,7 +311,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error };
     } catch (error: any) {
       toast({
-        title: "Sign Up Error",
+        title: "Sign Up Error", 
         description: error.message,
         variant: "destructive",
       });
@@ -296,16 +319,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signUpArtist = async (email: string, password: string, metadata = {}) => {
+  const signUpArtist = async (input: SignUpInput) => {
+    const validation = validate(signUpSchema, input);
+    if (!validation.isValid) {
+      return { error: { message: 'Invalid input data', details: validation.errors } };
+    }
+
     try {
       const redirectUrl = `${window.location.origin}/email-confirmation`;
       
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: (validation.data as SignUpInput).email,
+        password: (validation.data as SignUpInput).password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: { ...metadata, user_type: 'artist' }
+          data: { 
+            display_name: (validation.data as SignUpInput).displayName,
+            user_type: 'artist' 
+          }
         }
       });
 
@@ -333,11 +364,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (input: SignInInput) => {
+    const validation = validate(signInSchema, input);
+    if (!validation.isValid) {
+      return { error: { message: 'Invalid input data', details: validation.errors } };
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: (validation.data as SignInInput).email,
+        password: (validation.data as SignInInput).password,
       });
 
       if (error) {
@@ -382,15 +418,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const updateProfile = async (updates: ProfileUpdateInput) => {
     if (!user) {
       return { error: { message: 'No user logged in' } };
+    }
+
+    const validation = validate(profileUpdateSchema, updates);
+    if (!validation.isValid) {
+      return { error: { message: 'Invalid input data', details: validation.errors } };
     }
 
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(validation.data as ProfileUpdateInput)
         .eq('id', user.id);
 
       if (error) {
@@ -400,8 +441,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           variant: "destructive",
         });
       } else {
-        // Refresh profile data
-        await fetchProfile(user.id);
+        await loadUserData(user.id);
         toast({
           title: "Profile Updated",
           description: "Your profile has been updated successfully.",
@@ -419,13 +459,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const assignRole = async (userId: string, role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
+  const assignRole = async (input: RoleAssignmentInput) => {
+    const validation = validate(roleAssignmentSchema, input);
+    if (!validation.isValid) {
+      return { error: { message: 'Invalid input data', details: validation.errors } };
+    }
+
     try {
       const { error } = await supabase
         .from('user_roles')
         .upsert({ 
-          user_id: userId, 
-          role: role 
+          user_id: (validation.data as RoleAssignmentInput).userId, 
+          role: (validation.data as RoleAssignmentInput).role 
         }, { 
           onConflict: 'user_id,role' 
         });
@@ -439,11 +484,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         toast({
           title: "Role Assigned",
-          description: `${role} role has been assigned successfully.`,
+          description: `${(validation.data as RoleAssignmentInput).role} role has been assigned successfully.`,
         });
+        
         // Refresh roles if it's the current user
-        if (userId === user?.id) {
-          await fetchUserRoles(userId);
+        if ((validation.data as RoleAssignmentInput).userId === user?.id) {
+          await loadUserData(user.id);
         }
       }
 
@@ -460,12 +506,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Helper functions for role checking
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
-    // During auth loading, report no access without logging
-    if (loading) return false;
-    // If no user yet, quietly return false
-    if (!user) return false;
+    if (loading || !user) return false;
 
-    // Admin users should have access to everything (check this first)
+    // Admin users should have access to everything (except other admin checks)
     if (role !== 'admin' && userRoles.some(userRole => userRole.role === 'admin')) {
       return true;
     }
@@ -473,12 +516,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return userRoles.some(userRole => userRole.role === role);
   };
 
-  // Get the primary role for the user (highest priority role)
   const getPrimaryRole = (): 'admin' | 'moderator' | 'artist' | 'user' | 'designer' | null => {
     if (!userRoles || userRoles.length === 0) return null;
     
     // Role priority order (admin > moderator > artist > designer > user)
-    const priorities: Record<string, number> = { admin: 1, moderator: 2, artist: 3, designer: 4, user: 5 };
+    const priorities: Record<string, number> = { 
+      admin: 1, 
+      moderator: 2, 
+      artist: 3, 
+      designer: 4, 
+      user: 5 
+    };
     
     return userRoles
       .sort((a, b) => (priorities[a.role] || 999) - (priorities[b.role] || 999))[0]?.role || null;
@@ -507,9 +555,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     assignRole,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

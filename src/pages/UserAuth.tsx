@@ -64,7 +64,11 @@ const UserAuth = () => {
           display_name: `${formData.firstName} ${formData.lastName}`.trim()
         };
 
-        const { error } = await signUp(formData.email, formData.password, metadata);
+        const { error } = await signUp({
+          email: formData.email,
+          password: formData.password,
+          displayName: `${formData.firstName} ${formData.lastName}`.trim()
+        });
         
         if (error) {
           toast.error(error.message || "Failed to create account");
@@ -79,7 +83,10 @@ const UserAuth = () => {
           });
         }
       } else {
-        const { error } = await signIn(formData.email, formData.password);
+        const { error } = await signIn({
+          email: formData.email,
+          password: formData.password
+        });
         
         if (error) {
           toast.error(error.message || "Failed to sign in");

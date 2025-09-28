@@ -128,7 +128,11 @@ const ArtistAuth = () => {
           display_name: `${formData.firstName} ${formData.lastName}`.trim()
         };
 
-        const { error } = await signUpArtist(formData.email, formData.password, metadata);
+        const { error } = await signUpArtist({
+          email: formData.email,
+          password: formData.password,
+          displayName: `${formData.firstName} ${formData.lastName}`.trim()
+        });
         
         if (error) {
           toast.error(error.message || "Failed to create artist account");
@@ -143,7 +147,10 @@ const ArtistAuth = () => {
           });
         }
       } else {
-        const { error } = await signIn(formData.email, formData.password);
+        const { error } = await signIn({
+          email: formData.email,
+          password: formData.password
+        });
         
         if (error) {
           toast.error(error.message || "Failed to sign in");

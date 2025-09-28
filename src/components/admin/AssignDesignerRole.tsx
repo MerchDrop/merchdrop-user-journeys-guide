@@ -15,8 +15,11 @@ export const AssignDesignerRole = () => {
     }
 
     try {
-      // First assign the role
-      const { error: roleError } = await assignRole(user.id, 'designer');
+      // First assign the role using the new API
+      const { error: roleError } = await assignRole({
+        userId: user.id,
+        role: 'designer'
+      });
       
       if (roleError) {
         throw roleError;

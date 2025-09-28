@@ -41,7 +41,10 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(formData.email, formData.password);
+      const { error } = await signIn({
+        email: formData.email,
+        password: formData.password
+      });
       
       if (error) {
         toast.error(error.message || "Failed to sign in");

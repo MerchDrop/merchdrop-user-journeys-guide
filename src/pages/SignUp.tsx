@@ -61,7 +61,11 @@ const SignUp = () => {
         display_name: `${formData.firstName} ${formData.lastName}`.trim()
       };
 
-      const { error } = await signUp(formData.email, formData.password, metadata);
+      const { error } = await signUp({
+        email: formData.email,
+        password: formData.password,
+        displayName: `${formData.firstName} ${formData.lastName}`.trim()
+      });
       
       if (error) {
         toast.error(error.message || "Failed to create account");

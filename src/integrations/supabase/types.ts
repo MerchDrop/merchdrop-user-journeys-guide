@@ -787,6 +787,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      setup_user_profile: {
+        Args: {
+          _display_name?: string
+          _user_type?: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "artist" | "user" | "designer"

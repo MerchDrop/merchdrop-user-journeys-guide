@@ -57,7 +57,11 @@ export default function Auth() {
           display_name: formData.displayName || `${formData.firstName} ${formData.lastName}`.trim()
         };
 
-        const { error } = await signUp(formData.email, formData.password, metadata);
+        const { error } = await signUp({
+          email: formData.email,
+          password: formData.password,
+          displayName: formData.displayName || `${formData.firstName} ${formData.lastName}`.trim()
+        });
         
         if (!error) {
           // Reset form after successful signup
@@ -71,7 +75,10 @@ export default function Auth() {
           });
         }
       } else {
-        const { error } = await signIn(formData.email, formData.password);
+        const { error } = await signIn({
+          email: formData.email,
+          password: formData.password
+        });
         
         if (!error) {
           const from = location.state?.from?.pathname || '/';

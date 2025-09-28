@@ -159,10 +159,35 @@ export default function Profile() {
         display_name: personalInfo.display_name,
         first_name: personalInfo.first_name,
         last_name: personalInfo.last_name,
-        email: personalInfo.email,
-        phone: personalInfo.phone,
         bio: personalInfo.bio,
         website_url: personalInfo.website_url,
+      });
+      
+      if (error) {
+        console.error('Profile update error:', error);
+        toast({
+          title: "Update Failed",
+          description: error.message || "Failed to update profile",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Profile Updated",
+          description: "Your personal information has been updated successfully.",
+        });
+        console.log('Profile updated successfully');
+        setIsEditingPersonal(false);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Update Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
       });
       
       if (error) {
