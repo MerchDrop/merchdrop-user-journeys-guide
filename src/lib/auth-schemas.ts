@@ -9,11 +9,8 @@ export const signUpSchema = z.object({
     .max(255, { message: "Email must be less than 255 characters" }),
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .max(128, { message: "Password must be less than 128 characters" })
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-      message: "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    }),
+    .min(6, { message: "Password must be at least 6 characters" })
+    .max(128, { message: "Password must be less than 128 characters" }),
   displayName: z
     .string()
     .trim()

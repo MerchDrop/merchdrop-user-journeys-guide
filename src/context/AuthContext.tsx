@@ -546,7 +546,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper functions for role checking
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
-    if (loading || !user) return false;
+    // Return false during loading or when no user
+    if (loading || !user || !userRoles || userRoles.length === 0) return false;
 
     // Admin users should have access to everything (except other admin checks)
     if (role !== 'admin' && userRoles.some(userRole => userRole.role === 'admin')) {
@@ -568,7 +569,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user: 5 
     };
     
-    return userRoles
+    // Clone array before sorting to avoid mutating state
+    return [...userRoles]
       .sort((a, b) => (priorities[a.role] || 999) - (priorities[b.role] || 999))[0]?.role || null;
   };
 

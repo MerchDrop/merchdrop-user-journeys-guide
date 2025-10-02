@@ -14,10 +14,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
   },
-  global: {
-    headers: {
-      'Accept-Profile': 'api',
-      'Content-Profile': 'api'
-    }
+  db: {
+    schema: 'public'
   }
 });
