@@ -273,13 +273,13 @@ export default function ArtistProducts() {
 
       {/* Product Form Dialog */}
       <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
-        <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] !top-[10%] !translate-y-0 overflow-hidden p-0">
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? 'Edit Product' : 'Create New Product'}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          <div className="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">
             <ProductForm
               editProduct={editingProduct}
               onSuccess={handleFormSuccess}
