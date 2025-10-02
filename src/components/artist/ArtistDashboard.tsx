@@ -476,23 +476,28 @@ export const ArtistDashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
-            <Button onClick={() => navigate('/dashboard/products')}>
+            <Button onClick={() => navigate('/artist/products')}>
               <Plus className="h-4 w-4 mr-2" />
               Add New Product
             </Button>
             <Button 
               variant="outline"
-              onClick={() => artistProfile?.artist_slug && navigate(`/artist/${artistProfile.artist_slug}`)}
+              onClick={() => {
+                if (artistProfile?.artist_slug) {
+                  navigate(`/artist/${artistProfile.artist_slug}`);
+                }
+              }}
+              disabled={!artistProfile?.artist_slug}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               View Store
             </Button>
             <Button 
               variant="outline"
-              onClick={() => navigate('/dashboard/analytics')}
+              onClick={() => navigate('/artist/analytics')}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics Report
+              Full Analytics
             </Button>
             <Button 
               variant="outline"
