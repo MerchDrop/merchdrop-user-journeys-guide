@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 import { 
   DollarSign, 
   Package, 
@@ -17,6 +18,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useOrders } from '@/hooks/useOrdersQuery';
 import { useProducts } from '@/hooks/useProductsQuery';
 import { supabase } from '@/integrations/supabase/client';
+import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
 
 interface AdminStats {
   totalRevenue: number;
@@ -29,6 +31,9 @@ interface AdminStats {
 }
 
 export default function AdminOverview() {
+  const navigate = useNavigate();
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orderDialogOpen, setOrderDialogOpen] = useState(false);
   const [stats, setStats] = useState<AdminStats>({
     totalRevenue: 0,
     totalOrders: 0,
@@ -221,7 +226,11 @@ export default function AdminOverview() {
                     {stats.pendingArtists} artist{stats.pendingArtists !== 1 ? 's' : ''} waiting for approval
                   </p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/admin/artists')}
+                >
                   Review Artists
                 </Button>
               </div>
@@ -249,7 +258,20 @@ export default function AdminOverview() {
               <div className="space-y-4">
                 {stats.recentOrders.length > 0 ? (
                   stats.recentOrders.map((order, index) => (
-                    <div key={order.order_number} className="flex items-center justify-between p-3 rounded-lg border">
+                    <div 
+                      key={order.order_number} 
+                      className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => {
+                        setSelectedOrder({
+                          ...order,
+                          customer_name: order.profiles?.display_name || 'N/A',
+                          customer_email: order.profiles?.email || 'N/A',
+                          product_title: order.order_items?.[0]?.products?.title || 'N/A',
+                          quantity: order.order_items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0
+                        });
+                        setOrderDialogOpen(true);
+                      }}
+                    >
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">#{order.order_number}</span>
@@ -321,6 +343,12 @@ export default function AdminOverview() {
           </Card>
         </motion.div>
       </div>
+      
+      <OrderDetailsDialog 
+        order={selectedOrder}
+        open={orderDialogOpen}
+        onOpenChange={setOrderDialogOpen}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +10,7 @@ import SalesChart from '@/components/dashboard/SalesChart';
 import ProductPerformance from '@/components/dashboard/ProductPerformance';
 import RecentOrders from '@/components/dashboard/RecentOrders';
 import PayoutsList from '@/components/dashboard/PayoutsList';
+import { CalendarDialog } from '@/components/dialogs/CalendarDialog';
 import { useCurrency } from '@/context/CurrencyContext';
 import { 
   DollarSign, 
@@ -18,7 +19,10 @@ import {
   Users,
   TrendingUp,
   Calendar,
-  Star
+  Star,
+  Plus,
+  BarChart3,
+  User
 } from 'lucide-react';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
@@ -30,8 +34,10 @@ const goals: any[] = [];
 
 export default function Dashboard() {
   const { user, isArtist, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [loading, setLoading] = useState(true);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Empty data for new users - they start with a clean slate
   const kpiData = [
@@ -85,9 +91,44 @@ export default function Dashboard() {
               Here's what's happening with your art business today.
             </p>
           </div>
-          <Button>
+          <Button onClick={() => setCalendarOpen(true)}>
             <Calendar className="h-4 w-4 mr-2" />
             View Calendar
+          </Button>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Button 
+            className="h-20 flex flex-col items-center justify-center gap-2"
+            onClick={() => navigate('/dashboard/products')}
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add Product</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col items-center justify-center gap-2"
+            onClick={() => navigate('/dashboard/orders')}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            <span>View Orders</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col items-center justify-center gap-2"
+            onClick={() => navigate('/dashboard/analytics')}
+          >
+            <BarChart3 className="h-5 w-5" />
+            <span>Analytics</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col items-center justify-center gap-2"
+            onClick={() => navigate('/dashboard/profile')}
+          >
+            <User className="h-5 w-5" />
+            <span>Profile</span>
           </Button>
         </div>
 
@@ -191,6 +232,8 @@ export default function Dashboard() {
           <PayoutsList payouts={payouts} loading={loading} />
         </div>
       </div>
+      
+      <CalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
     </>
   );
 }

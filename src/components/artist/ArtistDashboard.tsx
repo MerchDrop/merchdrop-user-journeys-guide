@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
+import { CalendarDialog } from '@/components/dialogs/CalendarDialog';
 import { 
   TrendingUp, 
   Package, 
@@ -16,7 +18,10 @@ import {
   Star,
   Calendar,
   Clock,
-  Target
+  Target,
+  Plus,
+  ExternalLink,
+  BarChart3
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -74,8 +79,10 @@ export const ArtistDashboard: React.FC = () => {
   const [productPerformance, setProductPerformance] = useState<ProductPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [artistProfile, setArtistProfile] = useState<any>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
@@ -469,25 +476,36 @@ export const ArtistDashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
-            <Button>
-              <Package className="h-4 w-4 mr-2" />
+            <Button onClick={() => navigate('/dashboard/products')}>
+              <Plus className="h-4 w-4 mr-2" />
               Add New Product
             </Button>
-            <Button variant="outline">
-              <Eye className="h-4 w-4 mr-2" />
+            <Button 
+              variant="outline"
+              onClick={() => artistProfile?.artist_slug && navigate(`/artist/${artistProfile.artist_slug}`)}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
               View Store
             </Button>
-            <Button variant="outline">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/dashboard/analytics')}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
               Analytics Report
             </Button>
-            <Button variant="outline">
-              <Users className="h-4 w-4 mr-2" />
-              Customer Reviews
+            <Button 
+              variant="outline"
+              onClick={() => setCalendarOpen(true)}
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              View Calendar
             </Button>
           </div>
         </CardContent>
       </Card>
+      
+      <CalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
     </div>
   );
 };

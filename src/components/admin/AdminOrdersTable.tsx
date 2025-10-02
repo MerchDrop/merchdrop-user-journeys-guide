@@ -36,6 +36,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { OrderStatusDialog } from './OrderStatusDialog';
 import { OrderTrackingBadge } from './OrderTrackingBadge';
+import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export function AdminOrdersTable() {
@@ -45,6 +46,7 @@ export function AdminOrdersTable() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -88,6 +90,17 @@ export function AdminOrdersTable() {
   const openStatusDialog = (order: any) => {
     setSelectedOrder(order);
     setDialogOpen(true);
+  };
+
+  const openDetailsDialog = (order: any) => {
+    setSelectedOrder({
+      ...order,
+      customer_name: order.profiles?.display_name || 'Unknown Customer',
+      customer_email: order.profiles?.email || 'N/A',
+      product_title: order.order_items?.[0]?.products?.title || 'N/A',
+      quantity: order.order_items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0
+    });
+    setDetailsDialogOpen(true);
   };
 
   const filteredOrders = orders.filter(order => {
@@ -228,7 +241,10 @@ export function AdminOrdersTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="cursor-pointer">
+                        <DropdownMenuItem 
+                          onClick={() => openDetailsDialog(order)}
+                          className="cursor-pointer"
+                        >
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
@@ -254,6 +270,13 @@ export function AdminOrdersTable() {
         onOpenChange={setDialogOpen}
         order={selectedOrder}
         onUpdateStatus={handleStatusUpdate}
+      />
+      
+      <OrderDetailsDialog
+        order={selectedOrder}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        onStatusUpdate={handleStatusUpdate}
       />
     </Card>
   );
