@@ -476,7 +476,7 @@ export const ArtistDashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
-            <Button onClick={() => navigate('/artist/products')}>
+            <Button onClick={() => navigate('/dashboard/products')}>
               <Plus className="h-4 w-4 mr-2" />
               Add New Product
             </Button>
@@ -494,7 +494,7 @@ export const ArtistDashboard: React.FC = () => {
             </Button>
             <Button 
               variant="outline"
-              onClick={() => navigate('/artist/analytics')}
+              onClick={() => navigate('/dashboard/analytics')}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               Full Analytics

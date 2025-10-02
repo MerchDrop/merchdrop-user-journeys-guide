@@ -113,6 +113,41 @@ export const DesignerDashboard = () => {
         ))}
       </div>
 
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Manage your designer activities</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            <Link to="/designer/designs">
+              <Button>
+                <FileImage className="h-4 w-4 mr-2" />
+                View My Designs
+              </Button>
+            </Link>
+            <Link to="/designer/payouts">
+              <Button variant="outline">
+                <DollarSign className="h-4 w-4 mr-2" />
+                View Payouts
+              </Button>
+            </Link>
+            <Link to="/designer/analytics">
+              <Button variant="outline">
+                <FileImage className="h-4 w-4 mr-2" />
+                Analytics
+              </Button>
+            </Link>
+            <Link to="/designer/settings">
+              <Button variant="outline">
+                Settings
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Recent Designs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
