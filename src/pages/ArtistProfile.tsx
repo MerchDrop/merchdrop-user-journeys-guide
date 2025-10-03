@@ -104,11 +104,12 @@ export default function ArtistProfile() {
     return () => clearTimeout(timer);
   }, [slug]);
 
-  const handleAddToCart = (item: any) => {
+  const handleAddToCart = (item: any, artistId?: string) => {
     addItem({
       id: item.id,
       name: item.name,
       artist: artistData.name,
+      artistId: artistId, // Pass artist ID if available
       price: item.basePrice, // Use base price for cart calculations
       image: item.image
     });

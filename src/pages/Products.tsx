@@ -17,6 +17,7 @@ type UiProduct = {
   id: string;
   name: string;
   artist?: string;
+  artistId?: string;
   price: number;
   originalPrice?: number;
   image: string;
@@ -84,6 +85,7 @@ export default function Products() {
         published_at, 
         status,
         tags,
+        artist_id,
         category:categories(name),
         artist_profiles(artist_name)
       `)
@@ -95,6 +97,7 @@ export default function Products() {
         id: p.id,
         name: p.title,
         artist: p.artist_profiles?.artist_name,
+        artistId: p.artist_id,
         price: (p.price_cents ?? 0) / 100,
         image: p.main_image_url || '/placeholder.svg',
         rating: Math.random() * 2 + 3, // Random rating between 3-5 for demo
@@ -337,6 +340,7 @@ export default function Products() {
                             id: product.id,
                             name: product.name,
                             artist: product.artist,
+                            artistId: product.artistId,
                             price: product.price,
                             image: product.image
                           }, 1);

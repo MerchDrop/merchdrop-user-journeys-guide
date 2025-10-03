@@ -125,6 +125,7 @@ export default function ProductDetail() {
           stock, 
           main_image_url,
           tags,
+          artist_id,
           category:categories(name, slug),
           artist_profiles(artist_name, artist_slug),
           product_images(url, sort_order)
@@ -154,6 +155,7 @@ export default function ProductDetail() {
           rating: (4.2 + Math.random() * 0.8).toFixed(1), // Demo rating
           reviews: Math.floor(Math.random() * 50) + 10, // Demo reviews
           artist: (data as any).artist_profiles?.artist_name,
+          artistId: (data as any).artist_id, // Extract artist_id for cart
           category: (data as any).category?.name,
           tags: (data as any).tags || [],
         };
@@ -178,6 +180,7 @@ export default function ProductDetail() {
       id: product.id,
       name: product.name,
       artist: product.artist,
+      artistId: product.artistId, // Pass artist ID from product data
       price: product.price,
       image: product.images[0],
       size: selectedSize || undefined,

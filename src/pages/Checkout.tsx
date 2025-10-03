@@ -64,7 +64,7 @@ export default function Checkout() {
           reference: reference.reference,
           items: items.map(item => ({
             productId: item.id,
-            artistId: null, // We don't have artist ID in cart context, will need to be looked up
+            artistId: item.artistId || null,
             quantity: item.quantity,
             price: item.price,
             size: item.size || null,
@@ -113,13 +113,13 @@ export default function Checkout() {
     });
   };
 
-  // Paystack configuration
+  // Paystack configuration - using environment variable for public key
   const paystackConfig = {
     reference: new Date().getTime().toString(),
     email: formData.email,
     amount: Math.round(total * 100), // Convert to kobo for NGN or cents for USD
     currency: currency,
-    publicKey: "pk_test_dcBcopgQ8gJyrVz0JzSCguKF", // Replace with your Paystack public key
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "pk_test_dcBcopgQ8gJyrVz0JzSCguKF",
   };
 
   const initializePayment = usePaystackPayment(paystackConfig);
