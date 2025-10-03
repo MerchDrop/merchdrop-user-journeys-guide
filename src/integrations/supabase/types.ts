@@ -466,6 +466,70 @@ export type Database = {
           },
         ]
       }
+      product_design_selections: {
+        Row: {
+          admin_feedback: string | null
+          artist_id: string
+          created_at: string | null
+          design_id: string
+          id: string
+          product_details: Json | null
+          product_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_feedback?: string | null
+          artist_id: string
+          created_at?: string | null
+          design_id: string
+          id?: string
+          product_details?: Json | null
+          product_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_feedback?: string | null
+          artist_id?: string
+          created_at?: string | null
+          design_id?: string
+          id?: string
+          product_details?: Json | null
+          product_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_design_selections_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artist_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_design_selections_design_id_fkey"
+            columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "designs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_design_selections_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           created_at: string
@@ -505,6 +569,7 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          design_id: string | null
           featured: boolean | null
           id: string
           main_image_url: string | null
@@ -525,6 +590,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          design_id?: string | null
           featured?: boolean | null
           id?: string
           main_image_url?: string | null
@@ -545,6 +611,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          design_id?: string | null
           featured?: boolean | null
           id?: string
           main_image_url?: string | null
@@ -572,6 +639,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_design_id_fkey"
+            columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "designs"
             referencedColumns: ["id"]
           },
         ]

@@ -28,6 +28,11 @@ const adminNavItems = [
     icon: Package,
   },
   {
+    title: 'Designs',
+    href: '/admin/designs',
+    icon: Package,
+  },
+  {
     title: 'Orders',
     href: '/admin/orders',
     icon: ShoppingCart,

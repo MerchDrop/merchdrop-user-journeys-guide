@@ -26,8 +26,10 @@ import ArtistSettings from '@/pages/artist/Settings';
 import ArtistProfilePage from '@/pages/artist/Profile';
 import ArtistOrders from '@/pages/artist/Orders';
 import ArtistPayouts from '@/pages/artist/Payouts';
+import ArtistDesigns from '@/pages/artist/Designs';
 import Admin from '@/pages/Admin';
 import AdminProducts from '@/pages/admin/Products';
+import AdminDesigns from '@/pages/admin/Designs';
 import AdminOrders from '@/pages/admin/Orders';
 import AdminUsers from '@/pages/admin/Users';
 import AdminArtists from '@/pages/admin/Artists';
@@ -99,6 +101,7 @@ function App() {
                   <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<CleanDashboard />} />
                     <Route path="products" element={<ArtistProducts />} />
+                    <Route path="designs" element={<ArtistDesigns />} />
                     <Route path="analytics" element={<ArtistAnalytics />} />
                     <Route path="settings" element={<ArtistSettings />} />
                     <Route path="orders" element={<ArtistOrders />} />
@@ -110,6 +113,7 @@ function App() {
                   <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<Admin />} />
                     <Route path="products" element={<AdminProducts />} />
+                    <Route path="designs" element={<AdminDesigns />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="artists" element={<AdminArtists />} />
                     <Route path="users" element={<AdminUsers />} />

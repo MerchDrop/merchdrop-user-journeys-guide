@@ -20,6 +20,7 @@ import { useAuth } from '@/context/AuthContext';
 const sidebarItems = [
   { name: 'Overview', href: '/dashboard', icon: Home },
   { name: 'My Products', href: '/dashboard/products', icon: Package },
+  { name: 'Browse Designs', href: '/dashboard/designs', icon: Package },
   { name: 'Orders', href: '/dashboard/orders', icon: BarChart3 },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Payouts', href: '/dashboard/payouts', icon: CreditCard },
