@@ -51,19 +51,19 @@ export const DesignUpload = () => {
     
     for (const file of files) {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${formData.artist_id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(`designs/${fileName}`, file);
+        .from('design-files')
+        .upload(fileName, file);
 
       if (uploadError) {
         throw uploadError;
       }
 
       const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(`designs/${fileName}`);
+        .from('design-files')
+        .getPublicUrl(fileName);
 
       uploadedUrls.push(data.publicUrl);
     }
