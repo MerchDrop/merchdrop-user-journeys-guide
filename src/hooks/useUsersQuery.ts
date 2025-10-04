@@ -22,6 +22,7 @@ export interface UserProfile {
   last_name?: string;
   avatar_url?: string;
   created_at: string;
+  account_status?: string;
   roles: string[];
   user_roles: UserRoleDetail[];
 }
@@ -180,17 +181,31 @@ export function useUsers() {
 
   const suspendUser = async (userId: string) => {
     try {
-      // Update all user roles to 'rejected' status
-      const { error } = await supabase
+      // Update profile account status
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ account_status: 'suspended' })
+        .eq('id', userId);
+      
+      if (profileError) throw profileError;
+
+      // Update all active roles to rejected
+      const { error: rolesError } = await supabase
         .from('user_roles')
         .update({ status: 'rejected' })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('status', 'active');
       
-      if (error) throw error;
+      if (rolesError) throw rolesError;
 
       // Update associated profiles
-      await supabase.from('artist_profiles').update({ status: 'declined' }).eq('user_id', userId);
-      await supabase.from('designer_profiles').update({ status: 'inactive' }).eq('user_id', userId);
+      await supabase.from('artist_profiles')
+        .update({ status: 'declined' })
+        .eq('user_id', userId);
+        
+      await supabase.from('designer_profiles')
+        .update({ status: 'inactive' })
+        .eq('user_id', userId);
 
       handleQuerySuccess('User suspended successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
@@ -201,17 +216,33 @@ export function useUsers() {
 
   const activateUser = async (userId: string) => {
     try {
-      // Update all user roles to 'active' status
-      const { error } = await supabase
+      // Update profile account status
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ account_status: 'active' })
+        .eq('id', userId);
+      
+      if (profileError) throw profileError;
+
+      // Update all pending/rejected roles to active
+      const { error: rolesError } = await supabase
         .from('user_roles')
         .update({ status: 'active' })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .in('status', ['pending', 'rejected']);
       
-      if (error) throw error;
+      if (rolesError) throw rolesError;
 
       // Update associated profiles
-      await supabase.from('artist_profiles').update({ status: 'approved' }).eq('user_id', userId);
-      await supabase.from('designer_profiles').update({ status: 'active' }).eq('user_id', userId);
+      await supabase.from('artist_profiles')
+        .update({ status: 'approved' })
+        .eq('user_id', userId)
+        .in('status', ['pending', 'declined']);
+        
+      await supabase.from('designer_profiles')
+        .update({ status: 'active' })
+        .eq('user_id', userId)
+        .in('status', ['pending', 'inactive']);
 
       handleQuerySuccess('User activated successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
