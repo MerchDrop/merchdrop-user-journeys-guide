@@ -17,21 +17,23 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CurrencySelector } from '@/components/ui/currency-selector';
 import { useAuth } from '@/context/AuthContext';
 import DashboardFooter from '@/components/layout/DashboardFooter';
+import { supabase } from '@/integrations/supabase/client';
 
-const sidebarItems = [
-  { name: 'Overview', href: '/dashboard', icon: Home },
-  { name: 'My Products', href: '/dashboard/products', icon: Package },
-  { name: 'Browse Designs', href: '/dashboard/designs', icon: Package },
-  { name: 'Orders', href: '/dashboard/orders', icon: BarChart3 },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-  { name: 'Payouts', href: '/dashboard/payouts', icon: CreditCard },
-  { name: 'Profile', href: '/dashboard/profile', icon: User },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+const sidebarItemsConfig = [
+  { name: 'Overview', href: '/dashboard', icon: Home, allowPending: true },
+  { name: 'My Products', href: '/dashboard/products', icon: Package, allowPending: false },
+  { name: 'Browse Designs', href: '/dashboard/designs', icon: Package, allowPending: false },
+  { name: 'Orders', href: '/dashboard/orders', icon: BarChart3, allowPending: false },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, allowPending: false },
+  { name: 'Payouts', href: '/dashboard/payouts', icon: CreditCard, allowPending: false },
+  { name: 'Profile', href: '/dashboard/profile', icon: User, allowPending: true },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings, allowPending: true },
 ];
 
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isArtist, isAdmin, loading, profile } = useAuth();
@@ -52,6 +54,23 @@ export default function DashboardLayout() {
     }
   }, [user, isArtist, isAdmin, loading, navigate]);
 
+  // Check artist status for pending approval
+  useEffect(() => {
+    const checkArtistStatus = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('artist_profiles')
+        .select('status')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      setIsPending(data?.status === 'pending');
+    };
+    
+    checkArtistStatus();
+  }, [user]);
+
   // Show loading spinner while checking authentication
   if (loading) {
     return (
@@ -65,6 +84,37 @@ export default function DashboardLayout() {
   if (!user || !(isArtist || isAdmin)) {
     return null;
   }
+
+  const renderNavLink = (item: typeof sidebarItemsConfig[0], isMobile = false) => {
+    const isActive = location.pathname === item.href;
+    const isDisabled = isPending && !item.allowPending;
+
+    return (
+      <NavLink
+        key={item.name}
+        to={isDisabled ? '#' : item.href}
+        onClick={(e) => {
+          if (isDisabled) {
+            e.preventDefault();
+          } else if (isMobile) {
+            setSidebarOpen(false);
+          }
+        }}
+        className={({ isActive: navIsActive }) =>
+          `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            isDisabled
+              ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+              : isActive || navIsActive
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+          }`
+        }
+      >
+        <item.icon className="mr-3 h-5 w-5" />
+        {item.name}
+      </NavLink>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -92,25 +142,7 @@ export default function DashboardLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {sidebarItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  className={({ isActive }) =>
-                    `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                    }`
-                  }
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </NavLink>
-              );
-            })}
+            {sidebarItemsConfig.map((item) => renderNavLink(item))}
           </nav>
 
           {/* User profile */}
@@ -162,26 +194,7 @@ export default function DashboardLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {sidebarItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  className={({ isActive }) =>
-                    `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                    }`
-                  }
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </NavLink>
-              );
-            })}
+            {sidebarItemsConfig.map((item) => renderNavLink(item, true))}
           </nav>
 
           {/* User profile */}

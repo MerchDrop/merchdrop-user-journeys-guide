@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,7 +21,8 @@ import {
   Target,
   Plus,
   ExternalLink,
-  BarChart3
+  BarChart3,
+  User as UserIcon
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -242,6 +243,84 @@ export const ArtistDashboard: React.FC = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Check if artist is pending approval
+  const isPending = artistProfile?.status === 'pending';
+
+  if (isPending) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+              <Clock className="h-5 w-5" />
+              Account Pending Approval
+            </CardTitle>
+            <CardDescription className="text-yellow-700 dark:text-yellow-300">
+              Your artist account is currently under review. This process typically takes up to 48 hours. 
+              You'll be notified via email once your account is approved.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-4">
+              While you wait, complete your profile to help speed up the approval process!
+            </p>
+            <Button onClick={() => navigate('/dashboard/profile')} className="gap-2">
+              <UserIcon className="h-4 w-4" />
+              Complete Your Profile
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Profile Stats - Read Only */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 opacity-60 pointer-events-none">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatPrice(stats.totalRevenue)}</div>
+              <p className="text-xs text-muted-foreground">Available after approval</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalOrders}</div>
+              <p className="text-xs text-muted-foreground">Available after approval</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Products</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalProducts}</div>
+              <p className="text-xs text-muted-foreground">Available after approval</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+              <p className="text-xs text-muted-foreground">Available after approval</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
