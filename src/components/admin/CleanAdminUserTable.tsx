@@ -224,6 +224,12 @@ export function CleanAdminUserTable() {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-2">
+                          {/* Account Status Badge */}
+                          {user.account_status && (
+                            <Badge variant={getStatusBadgeVariant(user.account_status)} className="w-fit">
+                              {user.account_status}
+                            </Badge>
+                          )}
                           {activeRoles.map((ur: any) => (
                             <div key={ur.id} className="flex items-center gap-2">
                               <Badge variant={getRoleBadgeVariant(ur.role)}>

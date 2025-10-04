@@ -113,39 +113,11 @@ export default function DesignerAuth() {
         }
 
         if (authData.user) {
-          // Assign designer role
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: authData.user.id,
-              role: 'designer'
-            });
-
-          if (roleError) {
-            console.error('Role assignment error:', roleError);
-          }
-
-          // Create designer profile
-          const { error: profileError } = await supabase
-            .from('designer_profiles')
-            .insert({
-              user_id: authData.user.id,
-              designer_name: formData.designerName,
-              bio: formData.bio || null
-            });
-
-          if (profileError) {
-            console.error('Designer profile creation error:', profileError);
-            const errorMsg = 'Failed to create designer profile. Please contact support.';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw profileError;
-          }
-
-          console.log('Designer profile and role created successfully for:', authData.user.email);
-
-          toast.success('Account created! Please check your email to confirm your account.');
-          navigate('/');
+          // Profile and role are automatically created by handle_new_user() trigger
+          console.log('Designer signup successful for:', authData.user.email);
+          
+          toast.success('Account created! Your account is pending approval. Please check your email to confirm your account, then complete your profile while waiting.');
+          navigate('/designer/dashboard');
         }
       } else {
         // Sign in

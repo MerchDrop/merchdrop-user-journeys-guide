@@ -24,6 +24,7 @@ const DesignerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const canAccess = isDesigner || isAdmin;
+  const [isPending, setIsPending] = React.useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !canAccess)) {
@@ -31,6 +32,23 @@ const DesignerLayout = () => {
       navigate('/designer-auth');
     }
   }, [user, loading, canAccess, navigate, isDesigner, isAdmin]);
+
+  useEffect(() => {
+    const checkDesignerStatus = async () => {
+      if (!user) return;
+      
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data } = await supabase
+        .from('designer_profiles')
+        .select('status')
+        .eq('user_id', user.id)
+        .single();
+      
+      setIsPending(data?.status === 'pending');
+    };
+    
+    checkDesignerStatus();
+  }, [user]);
 
   if (loading) {
     return (
@@ -45,14 +63,14 @@ const DesignerLayout = () => {
   }
 
   const sidebarItems = [
-    { name: 'Dashboard', href: '/designer/dashboard', icon: LayoutDashboard },
-    { name: 'Upload Design', href: '/designer/upload', icon: Upload },
-    { name: 'My Designs', href: '/designer/designs', icon: FolderOpen },
-    { name: 'All Artists', href: '/designer/artists', icon: Users },
-    { name: 'Analytics', href: '/designer/analytics', icon: TrendingUp },
-    { name: 'Payouts', href: '/designer/payouts', icon: CreditCard },
-    { name: 'Profile', href: '/designer/profile', icon: User },
-    { name: 'Settings', href: '/designer/settings', icon: Settings },
+    { name: 'Dashboard', href: '/designer/dashboard', icon: LayoutDashboard, allowPending: true },
+    { name: 'Upload Design', href: '/designer/upload', icon: Upload, allowPending: false },
+    { name: 'My Designs', href: '/designer/designs', icon: FolderOpen, allowPending: false },
+    { name: 'All Artists', href: '/designer/artists', icon: Users, allowPending: false },
+    { name: 'Analytics', href: '/designer/analytics', icon: TrendingUp, allowPending: false },
+    { name: 'Payouts', href: '/designer/payouts', icon: CreditCard, allowPending: false },
+    { name: 'Profile', href: '/designer/profile', icon: User, allowPending: true },
+    { name: 'Settings', href: '/designer/settings', icon: Settings, allowPending: true },
   ];
 
   const handleSignOut = async () => {
@@ -70,19 +88,27 @@ const DesignerLayout = () => {
       <nav className="flex-1 p-4 space-y-1">
         {sidebarItems.map((item) => {
           const isActive = location.pathname === item.href;
+          const isDisabled = isPending && !item.allowPending;
           return (
             <Link
               key={item.name}
-              to={item.href}
+              to={isDisabled ? '#' : item.href}
+              onClick={(e) => {
+                if (isDisabled) {
+                  e.preventDefault();
+                }
+              }}
               className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
+                isDisabled 
+                  ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+                  : isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               <item.icon className="h-4 w-4 mr-3" />
               {item.name}
-              {item.name === 'My Designs' && (
+              {item.name === 'My Designs' && !isDisabled && (
                 <Badge variant="secondary" className="ml-auto">
                   3
                 </Badge>
