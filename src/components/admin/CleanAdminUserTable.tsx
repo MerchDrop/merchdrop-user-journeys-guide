@@ -7,6 +7,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { UserDetailsDialog } from './UserDetailsDialog';
 import { 
   Card, 
   CardContent, 
@@ -35,9 +36,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, UserCheck, UserX, Loader2, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { MoreHorizontal, UserCheck, UserX, Loader2, Clock, CheckCircle2, XCircle, Eye } from 'lucide-react';
 import { useUsers } from '@/hooks/useUsersQuery';
 import { useRoleApproval } from '@/hooks/useRoleApproval';
+import { UserProfile } from '@/hooks/useUsersQuery';
 
 export function CleanAdminUserTable() {
   const { users, loading, updateUserRole, suspendUser, activateUser } = useUsers();
@@ -46,6 +48,8 @@ export function CleanAdminUserTable() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ id: string; role: 'admin' | 'artist' | 'designer' | 'moderator' | 'user' } | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState<UserProfile | null>(null);
 
   const handleApprove = async (userId: string, role: 'admin' | 'artist' | 'designer' | 'moderator' | 'user') => {
     try {
@@ -192,7 +196,14 @@ export function CleanAdminUserTable() {
                   const activeRoles = userRoles.filter((ur: any) => ur.status === 'active');
                   
                   return (
-                    <TableRow key={user.id}>
+                    <TableRow 
+                      key={user.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => {
+                        setSelectedUserForDetails(user);
+                        setDetailsDialogOpen(true);
+                      }}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
@@ -243,11 +254,26 @@ export function CleanAdminUserTable() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUserForDetails(user);
+                                setDetailsDialogOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="h-px p-0 bg-border" disabled />
                             {pendingRoles.length > 0 && (
                               <>
                                 {pendingRoles.map((ur: any) => (
@@ -330,6 +356,13 @@ export function CleanAdminUserTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Details Dialog */}
+      <UserDetailsDialog
+        user={selectedUserForDetails}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+      />
     </>
   );
 }
