@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/layout/Header';
 import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { toast as sonnerToast } from 'sonner';
+import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -48,14 +50,16 @@ export default function Auth() {
     try {
       if (isSignUp) {
         if (formData.password !== formData.confirmPassword) {
-          throw new Error('Passwords do not match');
+          sonnerToast.error('Passwords do not match');
+          setIsLoading(false);
+          return;
         }
 
-        const metadata = {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          display_name: formData.displayName || `${formData.firstName} ${formData.lastName}`.trim()
-        };
+        if (formData.password.length < 6) {
+          sonnerToast.error('Password must be at least 6 characters');
+          setIsLoading(false);
+          return;
+        }
 
         const { error } = await signUp({
           email: formData.email,
@@ -63,7 +67,17 @@ export default function Auth() {
           displayName: formData.displayName || `${formData.firstName} ${formData.lastName}`.trim()
         });
         
-        if (!error) {
+        if (error) {
+          const errorInfo = getAuthErrorMessage(error, 'signup');
+          
+          // Show role upgrade message for duplicate email
+          if (error.message?.toLowerCase().includes('already registered')) {
+            const upgradeMsg = getRoleUpgradeMessage('user');
+            sonnerToast.error(`${errorInfo.message}\n\n${upgradeMsg}`, { duration: 7000 });
+          } else {
+            sonnerToast.error(errorInfo.message);
+          }
+        } else {
           // Reset form after successful signup
           setFormData({
             email: '',
@@ -80,13 +94,18 @@ export default function Auth() {
           password: formData.password
         });
         
-        if (!error) {
+        if (error) {
+          const errorInfo = getAuthErrorMessage(error, 'signin');
+          sonnerToast.error(errorInfo.message);
+        } else {
           const from = location.state?.from?.pathname || '/';
           navigate(from, { replace: true });
         }
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      const errorInfo = getAuthErrorMessage(error, isSignUp ? 'signup' : 'signin');
+      sonnerToast.error(errorInfo.message);
     } finally {
       setIsLoading(false);
     }

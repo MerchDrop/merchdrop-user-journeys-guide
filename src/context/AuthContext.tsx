@@ -13,6 +13,7 @@ import {
   ProfileUpdateInput 
 } from '@/lib/auth-schemas';
 import { useAuthValidation } from '@/hooks/useAuthValidation';
+import { getAuthErrorMessage } from '@/lib/authErrorMessages';
 
 // Types
 interface Profile {
@@ -336,9 +337,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        const errorInfo = getAuthErrorMessage(error, 'signup');
         toast({
-          title: "Sign Up Error",
-          description: error.message,
+          title: errorInfo.title,
+          description: errorInfo.message,
           variant: "destructive",
         });
       } else {
@@ -381,9 +383,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        const errorInfo = getAuthErrorMessage(error, 'signup');
         toast({
-          title: "Artist Sign Up Error",
-          description: error.message,
+          title: errorInfo.title,
+          description: errorInfo.message,
           variant: "destructive",
         });
       } else {
@@ -417,9 +420,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        const errorInfo = getAuthErrorMessage(error, 'signin');
         toast({
-          title: "Sign In Error",
-          description: error.message,
+          title: errorInfo.title,
+          description: errorInfo.message,
           variant: "destructive",
         });
       }

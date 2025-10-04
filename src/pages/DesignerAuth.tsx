@@ -10,6 +10,7 @@ import { Header } from '@/components/layout/Header';
 import { SEOHelmet } from '@/components/SEO/SEOHelmet';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 
 interface FormData {
   email: string;
@@ -66,11 +67,19 @@ export default function DesignerAuth() {
         // Validate required fields for sign up
         if (!formData.firstName || !formData.lastName || !formData.designerName) {
           setError('Please fill in all required fields');
+          setIsLoading(false);
           return;
         }
 
         if (formData.password !== formData.confirmPassword) {
           setError('Passwords do not match');
+          setIsLoading(false);
+          return;
+        }
+
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters');
+          setIsLoading(false);
           return;
         }
 
@@ -89,7 +98,19 @@ export default function DesignerAuth() {
           }
         });
 
-        if (authError) throw authError;
+        if (authError) {
+          const errorInfo = getAuthErrorMessage(authError, 'signup');
+          setError(errorInfo.message);
+          
+          // Show role upgrade message for duplicate email
+          if (authError.message?.toLowerCase().includes('already registered')) {
+            const upgradeMsg = getRoleUpgradeMessage('designer');
+            toast.error(`${errorInfo.message}\n\n${upgradeMsg}`, { duration: 7000 });
+          } else {
+            toast.error(errorInfo.message);
+          }
+          throw authError;
+        }
 
         if (authData.user) {
           // Assign designer role
@@ -115,7 +136,9 @@ export default function DesignerAuth() {
 
           if (profileError) {
             console.error('Designer profile creation error:', profileError);
-            toast.error('Failed to create designer profile. Please contact support.');
+            const errorMsg = 'Failed to create designer profile. Please contact support.';
+            setError(errorMsg);
+            toast.error(errorMsg);
             throw profileError;
           }
 
@@ -131,15 +154,19 @@ export default function DesignerAuth() {
           password: formData.password
         });
 
-        if (error) throw error;
+        if (error) {
+          const errorInfo = getAuthErrorMessage(error, 'signin');
+          setError(errorInfo.message);
+          toast.error(errorInfo.message);
+          throw error;
+        }
         
         toast.success('Welcome back!');
         navigate('/designer/dashboard');
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
-      setError(error.message || 'An error occurred during authentication');
-      toast.error(error.message || 'Authentication failed');
+      console.error('Designer auth error:', error);
+      // Error already handled above
     } finally {
       setIsLoading(false);
     }

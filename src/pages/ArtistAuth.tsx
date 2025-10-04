@@ -10,6 +10,7 @@ import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 import merchdropLogo from "@/assets/merchdrop-logo.png";
 
 const ArtistAuth = () => {
@@ -122,12 +123,6 @@ const ArtistAuth = () => {
 
     try {
       if (isSignUp) {
-        const metadata = {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          display_name: `${formData.firstName} ${formData.lastName}`.trim()
-        };
-
         const { error } = await signUpArtist({
           email: formData.email,
           password: formData.password,
@@ -135,7 +130,16 @@ const ArtistAuth = () => {
         });
         
         if (error) {
-          toast.error(error.message || "Failed to create artist account");
+          console.error('Artist sign up error:', error);
+          const errorInfo = getAuthErrorMessage(error, 'signup');
+          
+          // Show role upgrade message for duplicate email
+          if (error.message?.toLowerCase().includes('already registered')) {
+            const upgradeMsg = getRoleUpgradeMessage('artist');
+            toast.error(`${errorInfo.message}\n\n${upgradeMsg}`, { duration: 7000 });
+          } else {
+            toast.error(errorInfo.message);
+          }
         } else {
           toast.success("Artist account created successfully! Please check your email to verify your account.");
           setFormData({
@@ -153,14 +157,18 @@ const ArtistAuth = () => {
         });
         
         if (error) {
-          toast.error(error.message || "Failed to sign in");
+          console.error('Artist sign in error:', error);
+          const errorInfo = getAuthErrorMessage(error, 'signin');
+          toast.error(errorInfo.message);
         } else {
           toast.success("Welcome back!");
           // Don't navigate here, let the useEffect handle it based on profile status
         }
       }
     } catch (error: any) {
-      toast.error(error.message || "An unexpected error occurred");
+      console.error('Artist auth error:', error);
+      const errorInfo = getAuthErrorMessage(error, isSignUp ? 'signup' : 'signin');
+      toast.error(errorInfo.message);
     } finally {
       setIsLoading(false);
     }
