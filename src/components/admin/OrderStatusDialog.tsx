@@ -62,7 +62,8 @@ export function OrderStatusDialog({ open, onOpenChange, order, onUpdateStatus }:
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="px-6 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="status">Order Status</Label>
             <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as Order['status'])}>
@@ -123,6 +124,7 @@ export function OrderStatusDialog({ open, onOpenChange, order, onUpdateStatus }:
             </Button>
           </div>
         </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

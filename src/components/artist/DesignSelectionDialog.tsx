@@ -92,7 +92,8 @@ export function DesignSelectionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="px-6 pb-6">
+          <div className="grid md:grid-cols-2 gap-4">
           <div>
             <img
               src={design.file_urls[0]}
@@ -161,6 +162,7 @@ export function DesignSelectionDialog({
               </Button>
             </DialogFooter>
           </form>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

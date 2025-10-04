@@ -63,7 +63,8 @@ export function CancelPayoutDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="px-6 pb-6">
+          <div className="space-y-4">
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
             <div className="flex items-center gap-3">
               <DollarSign className="h-8 w-8 text-orange-600" />
@@ -102,6 +103,7 @@ export function CancelPayoutDialog({
             >
               {isSubmitting ? "Cancelling..." : "Cancel Payout"}
             </Button>
+          </div>
           </div>
         </div>
       </DialogContent>

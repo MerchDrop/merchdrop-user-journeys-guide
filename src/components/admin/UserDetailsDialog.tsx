@@ -123,8 +123,9 @@ export function UserDetailsDialog({ user, open, onOpenChange }: UserDetailsDialo
             </div>
           </DialogHeader>
 
-          <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+          <div className="px-6 pb-6">
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="roles">Roles</TabsTrigger>
               <TabsTrigger value="extras">Profiles</TabsTrigger>
@@ -429,8 +430,9 @@ export function UserDetailsDialog({ user, open, onOpenChange }: UserDetailsDialo
                   </div>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          </div>
         </DialogContent>
       </Dialog>
 
