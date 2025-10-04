@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SocialLink {
   id: string;
@@ -140,18 +141,65 @@ export default function ProfileSettings() {
     setSocialLinks(prev => prev.filter(link => link.id !== id));
   };
 
-  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // For now, create a temporary URL for preview
-      // In a real implementation, you'd upload to Supabase Storage
-      const objectUrl = URL.createObjectURL(file);
-      handleProfileUpdate('avatar_url', objectUrl);
+    if (!file || !user) return;
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "File size must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      // Delete old avatar if exists
+      await supabase.storage.from('avatars').remove([fileName]);
+      
+      // Upload new avatar
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      handleProfileUpdate('avatar_url', data.publicUrl);
       
       toast({
-        title: "Avatar Updated",
-        description: "Avatar preview updated. Don't forget to save your changes.",
+        title: "Success",
+        description: "Avatar uploaded successfully. Don't forget to save your changes.",
       });
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload avatar. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
