@@ -115,7 +115,11 @@ export default function DesignerAuth() {
 
           if (profileError) {
             console.error('Designer profile creation error:', profileError);
+            toast.error('Failed to create designer profile. Please contact support.');
+            throw profileError;
           }
+
+          console.log('Designer profile and role created successfully for:', authData.user.email);
 
           toast.success('Account created! Please check your email to confirm your account.');
           navigate('/');

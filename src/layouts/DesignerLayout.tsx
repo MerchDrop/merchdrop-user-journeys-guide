@@ -26,9 +26,10 @@ const DesignerLayout = () => {
 
   useEffect(() => {
     if (!loading && (!user || !canAccess)) {
+      console.log('DesignerLayout: Access denied. User:', user?.email, 'isDesigner:', isDesigner, 'isAdmin:', isAdmin);
       navigate('/designer-auth');
     }
-  }, [user, loading, canAccess, navigate]);
+  }, [user, loading, canAccess, navigate, isDesigner, isAdmin]);
 
   if (loading) {
     return (
