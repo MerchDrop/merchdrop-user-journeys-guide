@@ -3,6 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { handleQueryError, handleQuerySuccess, createOptimisticUpdate } from '@/lib/queryUtils';
 
+export interface UserRoleDetail {
+  id: string;
+  role: string;
+  status: string;
+  requested_role?: string;
+  approved_by?: string;
+  approved_at?: string;
+  rejection_reason?: string;
+  created_at: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -12,7 +23,7 @@ export interface UserProfile {
   avatar_url?: string;
   created_at: string;
   roles: string[];
-  user_roles?: Array<{ role: string }>;
+  user_roles: UserRoleDetail[];
 }
 
 // Fetch users with their roles
@@ -26,21 +37,30 @@ async function fetchUsers(): Promise<UserProfile[]> {
 
   const { data: userRoles, error: rolesError } = await supabase
     .from('user_roles')
-    .select('user_id, role');
+    .select('id, user_id, role, status, requested_role, approved_by, approved_at, rejection_reason, created_at');
 
   if (rolesError) throw rolesError;
 
-  // Group roles by user_id
-  const rolesByUser = userRoles.reduce((acc, { user_id, role }) => {
-    if (!acc[user_id]) acc[user_id] = [];
-    acc[user_id].push(role);
+  // Group roles by user_id with full metadata
+  const rolesByUser = userRoles.reduce((acc, roleData) => {
+    if (!acc[roleData.user_id]) acc[roleData.user_id] = [];
+    acc[roleData.user_id].push({
+      id: roleData.id,
+      role: roleData.role,
+      status: roleData.status,
+      requested_role: roleData.requested_role,
+      approved_by: roleData.approved_by,
+      approved_at: roleData.approved_at,
+      rejection_reason: roleData.rejection_reason,
+      created_at: roleData.created_at
+    });
     return acc;
-  }, {} as Record<string, string[]>);
+  }, {} as Record<string, UserRoleDetail[]>);
 
   return profiles.map(profile => ({
     ...profile,
-    roles: rolesByUser[profile.id] || ['user'],
-    user_roles: (rolesByUser[profile.id] || ['user']).map(role => ({ role }))
+    roles: rolesByUser[profile.id]?.map(r => r.role) || ['user'],
+    user_roles: rolesByUser[profile.id] || []
   }));
 }
 
@@ -152,17 +172,52 @@ export function useUpdateUserRoleMutation() {
 export function useUsers() {
   const { data: users = [], isLoading: loading, error } = useUsersQuery();
   const updateUserRoleMutation = useUpdateUserRoleMutation();
+  const queryClient = useQueryClient();
 
   const updateUserRole = (userId: string, newRole: string) => {
     return updateUserRoleMutation.mutateAsync({ userId, newRole });
   };
 
-  const suspendUser = (userId: string) => {
-    handleQueryError(null, 'User suspension functionality not implemented yet');
+  const suspendUser = async (userId: string) => {
+    try {
+      // Update all user roles to 'rejected' status
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ status: 'rejected' })
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+
+      // Update associated profiles
+      await supabase.from('artist_profiles').update({ status: 'declined' }).eq('user_id', userId);
+      await supabase.from('designer_profiles').update({ status: 'inactive' }).eq('user_id', userId);
+
+      handleQuerySuccess('User suspended successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    } catch (error) {
+      handleQueryError(error, 'Failed to suspend user');
+    }
   };
 
-  const activateUser = (userId: string) => {
-    handleQueryError(null, 'User activation functionality not implemented yet');
+  const activateUser = async (userId: string) => {
+    try {
+      // Update all user roles to 'active' status
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ status: 'active' })
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+
+      // Update associated profiles
+      await supabase.from('artist_profiles').update({ status: 'approved' }).eq('user_id', userId);
+      await supabase.from('designer_profiles').update({ status: 'active' }).eq('user_id', userId);
+
+      handleQuerySuccess('User activated successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    } catch (error) {
+      handleQueryError(error, 'Failed to activate user');
+    }
   };
 
   return {
