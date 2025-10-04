@@ -861,6 +861,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      repair_missing_designer_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       setup_user_profile: {
         Args: {
           _display_name?: string
