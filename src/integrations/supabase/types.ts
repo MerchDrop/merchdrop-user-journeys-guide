@@ -754,21 +754,36 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           id: string
+          rejection_reason: string | null
+          requested_role: Database["public"]["Enums"]["app_role"] | null
           role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["role_status"] | null
           user_id: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           id?: string
+          rejection_reason?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           role: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["role_status"] | null
           user_id: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           id?: string
+          rejection_reason?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["role_status"] | null
           user_id?: string
         }
         Relationships: []
@@ -807,6 +822,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_role_request: {
+        Args: {
+          _admin_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: Json
+      }
       calculate_product_rating: {
         Args: { product_uuid: string }
         Returns: {
@@ -834,6 +857,13 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_pending_roles: {
+        Args: { _user_id: string }
+        Returns: {
+          requested_at: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -857,6 +887,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      reject_role_request: {
+        Args: {
+          _admin_id: string
+          _reason?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: Json
+      }
       repair_missing_artist_profiles: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -875,6 +914,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "artist" | "user" | "designer"
+      role_status: "active" | "pending" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1003,6 +1043,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "artist", "user", "designer"],
+      role_status: ["active", "pending", "rejected"],
     },
   },
 } as const

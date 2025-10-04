@@ -63,6 +63,7 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Contact from '@/pages/Contact';
 import About from '@/pages/About';
+import PendingApproval from '@/pages/PendingApproval';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import DesignerLayout from '@/layouts/DesignerLayout';
@@ -148,6 +149,7 @@ function App() {
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/pending-approval" element={<PendingApproval />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
