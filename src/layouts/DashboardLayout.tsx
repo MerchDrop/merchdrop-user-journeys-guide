@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CurrencySelector } from '@/components/ui/currency-selector';
 import { useAuth } from '@/context/AuthContext';
+import DashboardFooter from '@/components/layout/DashboardFooter';
 
 const sidebarItems = [
   { name: 'Overview', href: '/dashboard', icon: Home },
@@ -206,7 +207,7 @@ export default function DashboardLayout() {
       </motion.div>
 
       {/* Main content */}
-      <div className="lg:ml-64">
+      <div className="lg:ml-64 flex flex-col min-h-screen">
         {/* Top header */}
         <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
           <div className="flex items-center space-x-4">
@@ -238,9 +239,11 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="flex-1 p-6">
           <Outlet />
         </main>
+
+        <DashboardFooter />
       </div>
     </div>
   );

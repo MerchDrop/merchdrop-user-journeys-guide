@@ -17,6 +17,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import DashboardFooter from '@/components/layout/DashboardFooter';
 
 const DesignerLayout = () => {
   const { user, loading, isDesigner, isAdmin, signOut, profile } = useAuth();
@@ -174,6 +175,8 @@ const DesignerLayout = () => {
         <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
+
+        <DashboardFooter />
       </div>
     </div>
   );

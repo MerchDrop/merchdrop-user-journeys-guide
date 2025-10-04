@@ -3,8 +3,8 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { 
+import DashboardFooter from '@/components/layout/DashboardFooter';
+import {
   LayoutDashboard, 
   Package, 
   Users, 
@@ -116,13 +116,13 @@ export default function AdminLayout() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1">
-          <main className="p-6">
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1 p-6">
             <Outlet />
           </main>
+          <DashboardFooter />
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
