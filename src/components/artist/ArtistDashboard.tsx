@@ -172,7 +172,7 @@ export const ArtistDashboard: React.FC = () => {
         totalSales,
         totalRevenue: totalRevenue / 100, // Convert from cents
         monthlyRevenue: monthlyRevenue / 100,
-        averageRating: 4.2 + Math.random() * 0.8, // Demo rating
+        averageRating: 0,
         totalOrders,
         pendingOrders,
       });
@@ -212,12 +212,12 @@ export const ArtistDashboard: React.FC = () => {
       }
       setSalesData(salesDataArray);
 
-      // Product performance data (simplified for demo)
+      // Product performance data
       const performanceData = products?.slice(0, 5).map(product => ({
         name: `Product ${product.id.slice(0, 8)}`,
-        sales: Math.floor(Math.random() * 50) + 5,
-        revenue: (Math.random() * 1000) + 100,
-        views: Math.floor(Math.random() * 500) + 50,
+        sales: 0,
+        revenue: 0,
+        views: 0,
       })) || [];
       setProductPerformance(performanceData);
 

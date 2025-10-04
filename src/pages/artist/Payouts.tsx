@@ -33,38 +33,7 @@ interface Payout {
   reference?: string;
 }
 
-const mockPayouts: Payout[] = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    amount: 1250.00,
-    status: "pending",
-    method: "bank_transfer",
-  },
-  {
-    id: "2", 
-    date: "2024-01-01",
-    amount: 890.50,
-    status: "completed",
-    method: "bank_transfer",
-    reference: "TXN-2024-001"
-  },
-  {
-    id: "3",
-    date: "2023-12-15", 
-    amount: 650.75,
-    status: "completed",
-    method: "paypal",
-    reference: "TXN-2023-045"
-  },
-  {
-    id: "4",
-    date: "2023-12-01",
-    amount: 1100.25,
-    status: "processing",
-    method: "stripe"
-  }
-];
+const mockPayouts: Payout[] = [];
 
 const statusConfig = {
   pending: { 
@@ -102,7 +71,7 @@ export default function Payouts() {
   const pendingAmount = payouts
     .filter(p => p.status === 'pending')
     .reduce((sum, payout) => sum + payout.amount, 0);
-  const availableBalance = 2450.75; // Mock available balance
+  const availableBalance = 0;
 
   const handleViewDetails = (payout: Payout) => {
     setSelectedPayout(payout);
@@ -141,25 +110,25 @@ export default function Payouts() {
       title: "Total Earnings",
       value: formatPrice(totalEarnings),
       icon: DollarSign,
-      trend: "+12.5%"
+      trend: "0%"
     },
     {
       title: "Completed Payouts",
       value: completedPayouts.length.toString(),
       icon: CheckCircle,
-      trend: "+3"
+      trend: "0"
     },
     {
       title: "Pending Amount",
       value: formatPrice(pendingAmount),
       icon: Clock,
-      trend: formatPrice(pendingAmount)
+      trend: formatPrice(0)
     },
     {
       title: "Success Rate",
-      value: "98.5%",
+      value: "0%",
       icon: BarChart3,
-      trend: "+2.1%"
+      trend: "0%"
     }
   ];
 
