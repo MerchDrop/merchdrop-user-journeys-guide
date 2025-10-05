@@ -216,7 +216,7 @@ const ShopArtistDrops = () => {
             </p>
           </div>
           <Link 
-            to="/products" 
+            to="/shop" 
             className="hidden md:inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
           >
             View all drops
@@ -308,7 +308,7 @@ const ShopArtistDrops = () => {
           className="mt-6 flex justify-center md:hidden"
         >
           <Link 
-            to="/products"
+            to="/shop"
             className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
           >
             View all drops

@@ -269,7 +269,7 @@ export default function ProductDetail() {
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Link to="/" className="hover:text-foreground">Home</Link>
               <span>/</span>
-              <Link to="/products" className="hover:text-foreground">Products</Link>
+              <Link to="/shop" className="hover:text-foreground">Shop</Link>
               <span>/</span>
               <span className="text-foreground">{product.name}</span>
             </div>

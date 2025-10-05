@@ -46,7 +46,7 @@ const Header = ({
             <Link to="/creators" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               For Creators
             </Link>
-            <Link to="/products" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+            <Link to="/shop" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               Shop
             </Link>
           </div>
