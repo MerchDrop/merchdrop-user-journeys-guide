@@ -148,7 +148,7 @@ export default function Products() {
           {/* Page Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-black mb-4">
-              All <span className="bg-hero-gradient bg-clip-text text-transparent">Products</span>
+              All <span className="text-primary font-bold">Products</span>
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Discover unique artwork from talented artists around the world
