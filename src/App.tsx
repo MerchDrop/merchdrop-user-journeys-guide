@@ -11,7 +11,7 @@ import { useRealtimeSubscriptions } from '@/hooks/useRealtimeSubscriptions';
 import Auth from '@/pages/Auth';
 import AdminAuth from '@/pages/AdminAuth';
 import Home from '@/pages/Home';
-import { Navigate } from 'react-router-dom';
+import Products from '@/pages/Products';
 import Shop from '@/pages/Shop';
 import Artists from '@/pages/Artists';
 import Cart from '@/pages/Cart';
@@ -82,8 +82,6 @@ function App() {
               <div className="min-h-screen bg-background">
                 <Routes>
                   <Route path="/" element={<Shop />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/products" element={<Navigate to="/shop" replace />} />
                   <Route path="/creators" element={<Home />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/user-auth" element={<UserAuth />} />
@@ -91,6 +89,7 @@ function App() {
                   <Route path="/admin-auth" element={<AdminAuth />} />
                   <Route path="/designer-auth" element={<DesignerAuth />} />
                   <Route path="/email-confirmation" element={<EmailConfirmation />} />
+            <Route path="/products" element={<Products />} />
             
             <Route path="/artists" element={<Artists />} />
                   <Route path="/cart" element={<Cart />} />

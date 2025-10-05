@@ -151,7 +151,7 @@ export const Wishlist: React.FC<WishlistProps> = ({ isWidget = false, limit }) =
           <p className="text-muted-foreground mb-4">
             Start browsing and save items you love.
           </p>
-          <Link to="/shop">
+          <Link to="/products">
             <Button>Browse Products</Button>
           </Link>
         </CardContent>

@@ -182,7 +182,7 @@ const TrendingProducts = () => {
         {/* View All CTA */}
         <div className="text-center">
           <Button size="lg" className="btn-primary px-8 py-4 text-base" asChild>
-            <Link to="/shop">
+            <Link to="/products">
               View All Products
             </Link>
           </Button>

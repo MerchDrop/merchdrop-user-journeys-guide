@@ -54,7 +54,7 @@ const ShopHeroSection = () => {
             className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
             asChild
           >
-            <Link to="/shop">Shop Now</Link>
+            <Link to="/products">Shop Now</Link>
           </Button>
           <Button 
             variant="outline" 
@@ -148,7 +148,7 @@ const MerchCategories = () => {
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-semibold text-foreground">{category.name}</h3>
                 <Button variant="outline" asChild>
-                  <Link to={`/shop?category=${category.filter}`}>View All</Link>
+                  <Link to={`/products?category=${category.filter}`}>View All</Link>
                 </Button>
               </div>
               
