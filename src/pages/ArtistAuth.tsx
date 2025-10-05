@@ -28,7 +28,7 @@ const ArtistAuth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated as artist
   useEffect(() => {
     console.log('ArtistAuth: user:', user, 'loading:', loading, 'isArtist:', isArtist);
     
@@ -38,14 +38,10 @@ const ArtistAuth = () => {
       return;
     }
     
-    if (user) {
-      if (isArtist) {
-        console.log('ArtistAuth: User is artist, checking profile...');
-        checkArtistProfile();
-      } else {
-        console.log('ArtistAuth: User is not artist, redirecting to home');
-        navigate('/', { replace: true });
-      }
+    // Only redirect if user is already an artist
+    if (user && isArtist) {
+      console.log('ArtistAuth: User is artist, checking profile...');
+      checkArtistProfile();
     }
   }, [user, loading, isArtist, navigate]);
 
