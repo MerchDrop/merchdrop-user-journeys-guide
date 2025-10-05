@@ -9,6 +9,7 @@ import {
   Text,
   Section,
   Button,
+  Img,
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
@@ -26,6 +27,12 @@ export const UserConfirmationEmail = ({
     <Preview>Confirm your Merchdrop account and start shopping</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Img
+          src="https://fnipjjcqlpklyuaduwml.supabase.co/storage/v1/object/public/brand-assets/merchdrop-white-logo.png"
+          alt="Merchdrop"
+          width="150"
+          style={logo}
+        />
         <Heading style={h1}>Welcome to Merchdrop, {displayName}! 🛍️</Heading>
         
         <Text style={text}>
@@ -157,4 +164,9 @@ const footer = {
   lineHeight: '16px',
   padding: '0 48px',
   marginTop: '24px',
+};
+
+const logo = {
+  margin: '40px auto 0',
+  display: 'block',
 };
