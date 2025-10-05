@@ -145,6 +145,14 @@ const EmailConfirmation = () => {
                   {getRoleBasedButtonText()}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/login')} 
+                  className="w-full h-14 text-lg"
+                  size="lg"
+                >
+                  Sign In to Your Account
+                </Button>
                 <div className="grid grid-cols-2 gap-3">
                   <Button 
                     variant="outline" 
