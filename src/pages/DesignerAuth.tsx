@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/layout/Header';
 import { SEOHelmet } from '@/components/SEO/SEOHelmet';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 
@@ -35,7 +34,7 @@ export default function DesignerAuth() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user, hasRole, loading } = useAuth();
+  const { user, hasRole, loading, signUpDesigner, signIn } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,19 +82,11 @@ export default function DesignerAuth() {
           return;
         }
 
-        // Sign up the user first
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        // Sign up the designer
+        const { error: authError } = await signUpDesigner({
           email: formData.email,
           password: formData.password,
-          options: {
-            data: {
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-              display_name: formData.designerName,
-              user_type: 'designer'
-            },
-            emailRedirectTo: `${window.location.origin}/email-confirmation`
-          }
+          displayName: formData.designerName
         });
 
         if (authError) {
@@ -111,17 +102,9 @@ export default function DesignerAuth() {
           }
           throw authError;
         }
-
-        if (authData.user) {
-          // Profile and role are automatically created by handle_new_user() trigger
-          console.log('Designer signup successful for:', authData.user.email);
-          
-          toast.success('Account created! Your account is pending approval. Please check your email to confirm your account, then complete your profile while waiting.');
-          navigate('/designer/dashboard');
-        }
       } else {
         // Sign in
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await signIn({
           email: formData.email,
           password: formData.password
         });

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 const EmailConfirmation = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string>('');
+  const [userRole, setUserRole] = useState<'artist' | 'designer' | 'user'>('user');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -51,25 +52,26 @@ const EmailConfirmation = () => {
 
           console.log('EmailConfirmation: Session set successfully:', data.user?.id);
           
-          // Check if user is artist to determine redirect
+          // Check user role to determine next steps
           const { data: userRoles } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', data.user!.id);
 
           const isArtist = userRoles?.some(role => role.role === 'artist');
+          const isDesigner = userRoles?.some(role => role.role === 'designer');
+          
+          // Set user role for UI display
+          if (isArtist) {
+            setUserRole('artist');
+          } else if (isDesigner) {
+            setUserRole('designer');
+          } else {
+            setUserRole('user');
+          }
           
           setStatus('success');
           toast.success('Email confirmed successfully!');
-          
-          // Redirect after a short delay
-          setTimeout(() => {
-            if (isArtist) {
-              navigate('/onboarding', { replace: true });
-            } else {
-              navigate('/', { replace: true });
-            }
-          }, 2000);
         } else if (token && type) {
           // Handle token-based confirmation
           const { error } = await supabase.auth.verifyOtp({
@@ -100,7 +102,7 @@ const EmailConfirmation = () => {
     };
 
     handleEmailConfirmation();
-  }, [searchParams, navigate]);
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,12 +138,41 @@ const EmailConfirmation = () => {
               
               <CardDescription>
                 {status === 'loading' && 'Please wait while we confirm your email address...'}
-                {status === 'success' && 'Your email has been successfully confirmed. Redirecting you now...'}
+                {status === 'success' && getRoleBasedDescription()}
                 {status === 'error' && 'We encountered an issue confirming your email address.'}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
+              {status === 'success' && (
+                <>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                      <p className="text-sm text-muted-foreground">
+                        {getRoleBasedNextSteps()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Button 
+                        onClick={handlePrimaryAction} 
+                        className="w-full group"
+                      >
+                        {getRoleBasedButtonText()}
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => navigate('/')} 
+                        className="w-full"
+                      >
+                        Go to Home
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+              
               {status === 'error' && (
                 <>
                   {error && (
@@ -173,6 +204,53 @@ const EmailConfirmation = () => {
       </div>
     </div>
   );
+
+  function getRoleBasedDescription() {
+    switch (userRole) {
+      case 'artist':
+        return 'Your email has been confirmed! Complete your profile while we review your artist application.';
+      case 'designer':
+        return 'Your email has been confirmed! Complete your profile while we review your designer application.';
+      default:
+        return 'Your email has been confirmed! You can now start shopping for exclusive artist merchandise.';
+    }
+  }
+
+  function getRoleBasedNextSteps() {
+    switch (userRole) {
+      case 'artist':
+        return '✨ Next: Complete your artist profile with your bio, branding, and social links. Our team will review your application within 48 hours.';
+      case 'designer':
+        return '✨ Next: Complete your designer profile with your portfolio and bio. Our team will review your application within 48 hours.';
+      default:
+        return '🛍️ Start exploring unique merchandise from talented artists and add your favorites to your wishlist!';
+    }
+  }
+
+  function getRoleBasedButtonText() {
+    switch (userRole) {
+      case 'artist':
+        return 'Complete My Artist Profile';
+      case 'designer':
+        return 'Complete My Designer Profile';
+      default:
+        return 'Start Shopping';
+    }
+  }
+
+  function handlePrimaryAction() {
+    switch (userRole) {
+      case 'artist':
+        navigate('/dashboard/profile');
+        break;
+      case 'designer':
+        navigate('/designer/profile');
+        break;
+      default:
+        navigate('/shop');
+        break;
+    }
+  }
 };
 
 export default EmailConfirmation;

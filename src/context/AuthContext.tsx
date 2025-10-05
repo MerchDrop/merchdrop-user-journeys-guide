@@ -51,6 +51,7 @@ interface AuthContextType {
   isDesigner: boolean;
   signUp: (input: SignUpInput) => Promise<{ error: any }>;
   signUpArtist: (input: SignUpInput) => Promise<{ error: any }>;
+  signUpDesigner: (input: SignUpInput) => Promise<{ error: any }>;
   signIn: (input: SignInInput) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   updateProfile: (updates: ProfileUpdateInput) => Promise<{ error: any }>;
@@ -407,6 +408,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signUpDesigner = async (input: SignUpInput) => {
+    const validation = validate(signUpSchema, input);
+    if (!validation.isValid) {
+      return { error: { message: 'Invalid input data', details: validation.errors } };
+    }
+
+    try {
+      const redirectUrl = `${window.location.origin}/email-confirmation`;
+      
+      const { error } = await supabase.auth.signUp({
+        email: (validation.data as SignUpInput).email,
+        password: (validation.data as SignUpInput).password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: { 
+            display_name: (validation.data as SignUpInput).displayName,
+            user_type: 'designer' 
+          }
+        }
+      });
+
+      if (error) {
+        const errorInfo = getAuthErrorMessage(error, 'signup');
+        toast({
+          title: errorInfo.title,
+          description: errorInfo.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link to complete your designer registration.",
+        });
+      }
+
+      return { error };
+    } catch (error: any) {
+      toast({
+        title: "Designer Sign Up Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   const signIn = async (input: SignInInput) => {
     const validation = validate(signInSchema, input);
     if (!validation.isValid) {
@@ -602,6 +649,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isDesigner,
     signUp,
     signUpArtist,
+    signUpDesigner,
     signIn,
     signOut,
     updateProfile,
