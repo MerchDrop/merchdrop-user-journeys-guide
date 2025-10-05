@@ -90,6 +90,7 @@ function App() {
                   <Route path="/designer-auth" element={<DesignerAuth />} />
                   <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/shop" element={<Products />} />
             
             <Route path="/artists" element={<Artists />} />
                   <Route path="/cart" element={<Cart />} />
