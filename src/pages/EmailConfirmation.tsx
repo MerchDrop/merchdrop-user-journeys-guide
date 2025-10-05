@@ -109,97 +109,148 @@ const EmailConfirmation = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-md mx-auto">
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                {status === 'loading' && (
-                  <div className="bg-primary/10">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <div className="max-w-2xl mx-auto">
+          {status === 'success' && (
+            <div className="space-y-8 animate-fade-in-up">
+              {/* Success Icon */}
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-success/20 rounded-full blur-xl animate-pulse"></div>
+                  <div className="relative bg-success rounded-full p-6">
+                    <CheckCircle className="w-16 h-16 text-success-foreground" strokeWidth={2.5} />
                   </div>
-                )}
-                {status === 'success' && (
-                  <div className="bg-success/10">
-                    <CheckCircle className="w-8 h-8 text-success" />
-                  </div>
-                )}
-                {status === 'error' && (
-                  <div className="bg-destructive/10">
-                    <XCircle className="w-8 h-8 text-destructive" />
-                  </div>
-                )}
+                </div>
               </div>
-              
-              <CardTitle className="text-2xl font-bold">
-                {status === 'loading' && 'Confirming Email'}
-                {status === 'success' && 'Email Confirmed!'}
-                {status === 'error' && 'Confirmation Failed'}
-              </CardTitle>
-              
-              <CardDescription>
-                {status === 'loading' && 'Please wait while we confirm your email address...'}
-                {status === 'success' && getRoleBasedDescription()}
-                {status === 'error' && 'We encountered an issue confirming your email address.'}
-              </CardDescription>
-            </CardHeader>
 
-            <CardContent className="space-y-4">
-              {status === 'success' && (
-                <>
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-                      <p className="text-sm text-muted-foreground">
+              {/* Success Message */}
+              <div className="text-center space-y-3">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                  Confirmation Successful!
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-md mx-auto">
+                  {getRoleBasedDescription()}
+                </p>
+              </div>
+
+              {/* Next Steps Card */}
+              <Card className="border-success/20 bg-card shadow-design-card">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-success/10 rounded-full p-3 shrink-0">
+                      <ArrowRight className="w-5 h-5 text-success" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="font-semibold text-lg">What's Next?</h3>
+                      <p className="text-muted-foreground">
                         {getRoleBasedNextSteps()}
                       </p>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Button 
-                        onClick={handlePrimaryAction} 
-                        className="w-full group"
-                      >
-                        {getRoleBasedButtonText()}
-                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => navigate('/')} 
-                        className="w-full"
-                      >
-                        Go to Home
-                      </Button>
-                    </div>
                   </div>
-                </>
-              )}
-              
-              {status === 'error' && (
-                <>
-                  {error && (
-                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                      {error}
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    <Button onClick={() => navigate('/artist-auth')} className="w-full">
-                      Back to Sign In
-                    </Button>
-                    <Button variant="outline" onClick={() => navigate('/')} className="w-full">
-                      Go to Home
-                    </Button>
-                  </div>
-                </>
-              )}
-              
-              {status === 'loading' && (
-                <div className="flex justify-center">
-                  <div className="animate-pulse text-sm text-muted-foreground">
-                    This may take a few moments...
+                </CardContent>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button 
+                  onClick={handlePrimaryAction} 
+                  className="w-full h-12 text-base group"
+                  size="lg"
+                >
+                  {getRoleBasedButtonText()}
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/')} 
+                  className="w-full h-12 text-base"
+                  size="lg"
+                >
+                  Go to Home
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {status === 'loading' && (
+            <div className="space-y-8 animate-fade-in-up text-center">
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+                  <div className="relative bg-primary/10 rounded-full p-6">
+                    <Loader2 className="w-16 h-16 text-primary animate-spin" />
                   </div>
                 </div>
+              </div>
+              
+              <div className="space-y-3">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                  Confirming Email
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Please wait while we confirm your email address...
+                </p>
+                <p className="text-sm text-muted-foreground animate-pulse">
+                  This may take a few moments
+                </p>
+              </div>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="space-y-8 animate-fade-in-up">
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-destructive/20 rounded-full blur-xl"></div>
+                  <div className="relative bg-destructive/10 rounded-full p-6">
+                    <XCircle className="w-16 h-16 text-destructive" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center space-y-3">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                  Confirmation Failed
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  We encountered an issue confirming your email address
+                </p>
+              </div>
+
+              {error && (
+                <Card className="border-destructive/20 bg-card shadow-design-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-destructive/10 rounded-full p-3 shrink-0">
+                        <XCircle className="w-5 h-5 text-destructive" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-lg">Error Details</h3>
+                        <p className="text-sm text-muted-foreground">{error}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
-            </CardContent>
-          </Card>
+
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => navigate('/artist-auth')} 
+                  className="w-full h-12 text-base"
+                  size="lg"
+                >
+                  Back to Sign In
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/')} 
+                  className="w-full h-12 text-base"
+                  size="lg"
+                >
+                  Go to Home
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
