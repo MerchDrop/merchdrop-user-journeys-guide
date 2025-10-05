@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import ScrollToTop from '@/components/ScrollToTop';
 import { AuthProvider } from '@/context/AuthContext';
@@ -82,6 +82,8 @@ function App() {
               <div className="min-h-screen bg-background">
                 <Routes>
                   <Route path="/" element={<Shop />} />
+                  <Route path="/shop" element={<Navigate to="/products" replace />} />
+                  <Route path="/products" element={<Shop />} />
                   <Route path="/creators" element={<Home />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/user-auth" element={<UserAuth />} />
