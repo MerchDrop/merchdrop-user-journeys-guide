@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 const EmailConfirmation = () => {
   const [userRole, setUserRole] = useState<'artist' | 'designer' | 'user'>('user');
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -18,6 +19,11 @@ const EmailConfirmation = () => {
     if (role && ['artist', 'designer', 'user'].includes(role)) {
       setUserRole(role);
     }
+
+    // Check if user is signed in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsSignedIn(!!session);
+    });
   }, [searchParams]);
 
   return (
@@ -145,14 +151,16 @@ const EmailConfirmation = () => {
                   {getRoleBasedButtonText()}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/login')} 
-                  className="w-full h-14 text-lg"
-                  size="lg"
-                >
-                  Sign In to Your Account
-                </Button>
+                {!isSignedIn && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/login')} 
+                    className="w-full h-14 text-lg"
+                    size="lg"
+                  >
+                    Sign In to Your Account
+                  </Button>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <Button 
                     variant="outline" 
@@ -272,7 +280,7 @@ const EmailConfirmation = () => {
       case 'designer':
         return 'Complete your designer profile with your portfolio and bio. Our team will review your application and notify you via email.';
       default:
-        return 'Start exploring unique merchandise from talented artists, add items to your wishlist, and enjoy exclusive drops!';
+        return 'Unleash your creativity — start designing standout merch, team up with amazing artists, and watch your earnings grow with every sale!';
     }
   }
 
