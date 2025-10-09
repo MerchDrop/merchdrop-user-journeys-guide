@@ -193,7 +193,7 @@ const EmailConfirmation = () => {
     const badges = {
       artist: { label: 'Artist Account', icon: <Palette className="w-4 h-4" />, color: 'from-purple-500 to-pink-500' },
       designer: { label: 'Designer Account', icon: <Sparkles className="w-4 h-4" />, color: 'from-blue-500 to-cyan-500' },
-      user: { label: 'Shopper Account', icon: <ShoppingBag className="w-4 h-4" />, color: 'from-green-500 to-emerald-500' },
+      user: { label: 'Start Designing', icon: <ShoppingBag className="w-4 h-4" />, color: 'from-green-500 to-emerald-500' },
     };
 
     const badge = badges[userRole];
@@ -283,7 +283,7 @@ const EmailConfirmation = () => {
       case 'designer':
         return 'Complete My Designer Profile';
       default:
-        return 'Start Shopping Now';
+        return 'Start Designing';
     }
   }
 
@@ -296,7 +296,7 @@ const EmailConfirmation = () => {
         navigate('/designer/profile');
         break;
       default:
-        navigate('/shop');
+        navigate('/designer/dashboard');
         break;
     }
   }
