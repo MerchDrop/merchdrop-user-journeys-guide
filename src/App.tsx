@@ -33,6 +33,7 @@ import AdminDesigns from '@/pages/admin/Designs';
 import AdminOrders from '@/pages/admin/Orders';
 import AdminUsers from '@/pages/admin/Users';
 import AdminArtists from '@/pages/admin/Artists';
+import AdminDesigners from '@/pages/admin/Designers';
 import AdminSettingsPage from '@/pages/admin/Settings';
 import AdminAnalytics from '@/pages/admin/Analytics';
 import HealthCheck from '@/pages/HealthCheck';
@@ -118,6 +119,7 @@ function App() {
                     <Route path="designs" element={<AdminDesigns />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="artists" element={<AdminArtists />} />
+                    <Route path="designers" element={<AdminDesigners />} />
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="analytics" element={<AdminAnalytics />} />
                     <Route path="settings" element={<AdminSettingsPage />} />

@@ -11,7 +11,8 @@ import {
   ShoppingCart,
   Settings,
   BarChart3,
-  UserCheck
+  UserCheck,
+  Palette
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,11 @@ const adminNavItems = [
     title: 'Artists',
     href: '/admin/artists',
     icon: Users,
+  },
+  {
+    title: 'Designers',
+    href: '/admin/designers',
+    icon: Palette,
   },
   {
     title: 'Users',
