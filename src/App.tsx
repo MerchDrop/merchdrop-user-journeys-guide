@@ -39,6 +39,8 @@ import AdminAnalytics from '@/pages/admin/Analytics';
 import HealthCheck from '@/pages/HealthCheck';
 import SignUp from '@/pages/SignUp';
 import Login from '@/pages/Login';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 import UserAuth from '@/pages/UserAuth';
 import ArtistAuth from '@/pages/ArtistAuth';
 import ArtistOnboarding from '@/pages/ArtistOnboarding';
@@ -89,6 +91,8 @@ function App() {
                   <Route path="/artist-auth" element={<ArtistAuth />} />
                   <Route path="/admin-auth" element={<AdminAuth />} />
                   <Route path="/designer-auth" element={<DesignerAuth />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/products" element={<Products />} />
             <Route path="/shop" element={<Products />} />

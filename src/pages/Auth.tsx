@@ -256,8 +256,8 @@ export default function Auth() {
 
                 {!isSignUp && (
                   <div className="flex justify-end">
-                    <Button variant="link" className="px-0 text-sm text-muted-foreground">
-                      Forgot password?
+                    <Button variant="link" asChild className="px-0 text-sm text-muted-foreground">
+                      <Link to="/forgot-password">Forgot password?</Link>
                     </Button>
                   </div>
                 )}

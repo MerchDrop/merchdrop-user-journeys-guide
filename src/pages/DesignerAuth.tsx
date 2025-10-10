@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -233,6 +233,14 @@ export default function DesignerAuth() {
                     placeholder="Confirm your password"
                     required
                   />
+                  </div>
+                )}
+
+              {!isSignUp && (
+                <div className="flex justify-end">
+                  <Button variant="link" asChild className="px-0 text-sm text-muted-foreground">
+                    <Link to="/forgot-password">Forgot password?</Link>
+                  </Button>
                 </div>
               )}
 

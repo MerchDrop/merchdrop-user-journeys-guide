@@ -291,6 +291,14 @@ const ArtistAuth = () => {
                   </div>
                 )}
 
+                {!isSignUp && (
+                  <div className="flex justify-end">
+                    <Button variant="link" asChild className="px-0 text-sm text-muted-foreground">
+                      <Link to="/forgot-password">Forgot password?</Link>
+                    </Button>
+                  </div>
+                )}
+
                 <Button type="submit" variant="hero" size="lg" className="w-full" disabled={isLoading}>
                   {isLoading ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
