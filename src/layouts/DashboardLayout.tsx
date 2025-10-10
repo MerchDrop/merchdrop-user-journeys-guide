@@ -138,13 +138,19 @@ export default function DashboardLayout() {
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-64 lg:bg-card lg:border-r lg:border-border">
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-            <Link to="/" className="flex items-center">
+          <div className="flex flex-col h-16 px-6 border-b border-border">
+            <Link to="/" className="flex items-center py-4">
               <img 
                 src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
                 alt="MerchDrop" 
                 className="h-6 w-auto"
               />
+            </Link>
+            <Link 
+              to="/" 
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors pb-2"
+            >
+              ← Back to Home
             </Link>
           </div>
 
@@ -183,21 +189,29 @@ export default function DashboardLayout() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-            <Link to="/" className="flex items-center">
-              <img 
-                src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
-                alt="MerchDrop" 
-                className="h-6 w-auto"
-              />
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(false)}
+          <div className="flex flex-col h-16 px-6 border-b border-border">
+            <div className="flex items-center justify-between py-4">
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+                  alt="MerchDrop" 
+                  className="h-6 w-auto"
+                />
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <Link 
+              to="/" 
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors pb-2"
             >
-              <X className="h-5 w-5" />
-            </Button>
+              ← Back to Home
+            </Link>
           </div>
 
           {/* Navigation */}

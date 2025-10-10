@@ -83,6 +83,12 @@ const DesignerLayout = () => {
       <div className="p-6 border-b">
         <h2 className="text-xl font-bold text-primary">Designer Portal</h2>
         <p className="text-sm text-muted-foreground">MergeDrop</p>
+        <Link 
+          to="/" 
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-2 inline-block"
+        >
+          ← Back to Home
+        </Link>
       </div>
       
       <nav className="flex-1 p-4 space-y-1">
