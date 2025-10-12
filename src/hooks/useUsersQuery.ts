@@ -27,7 +27,7 @@ export interface UserProfile {
   user_roles: UserRoleDetail[];
 }
 
-// Fetch users with their roles
+// Fetch users with their roles (excluding designers)
 async function fetchUsers(): Promise<UserProfile[]> {
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
@@ -58,11 +58,18 @@ async function fetchUsers(): Promise<UserProfile[]> {
     return acc;
   }, {} as Record<string, UserRoleDetail[]>);
 
-  return profiles.map(profile => ({
-    ...profile,
-    roles: rolesByUser[profile.id]?.map(r => r.role) || ['user'],
-    user_roles: rolesByUser[profile.id] || []
-  }));
+  // Filter out users who have designer role (any status)
+  return profiles
+    .filter(profile => {
+      const userRolesList = rolesByUser[profile.id] || [];
+      const hasDesignerRole = userRolesList.some(r => r.role === 'designer');
+      return !hasDesignerRole;
+    })
+    .map(profile => ({
+      ...profile,
+      roles: rolesByUser[profile.id]?.map(r => r.role) || ['user'],
+      user_roles: rolesByUser[profile.id] || []
+    }));
 }
 
 // Update user role
