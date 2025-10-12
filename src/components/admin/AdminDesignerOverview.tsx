@@ -16,6 +16,7 @@ import {
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/context/CurrencyContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import {
   Table,
   TableBody,
@@ -107,6 +108,20 @@ export function AdminDesignerOverview() {
 
   const handleApproveDesigner = async (designerId: string, userId: string) => {
     try {
+      // Get designer info
+      const { data: designerProfile } = await supabase
+        .from('designer_profiles')
+        .select('designer_name')
+        .eq('id', designerId)
+        .single();
+
+      // Get user email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
       // Update designer profile status
       await supabase
         .from('designer_profiles')
@@ -120,14 +135,46 @@ export function AdminDesignerOverview() {
         .eq('user_id', userId)
         .eq('role', 'designer');
 
+      // Send approval email
+      if (profile?.email && designerProfile?.designer_name) {
+        await supabase.functions.invoke('send-designer-approval-email', {
+          body: {
+            email: profile.email,
+            displayName: designerProfile.designer_name,
+            status: 'approved'
+          }
+        });
+      }
+
+      toast.success('Designer approved successfully', {
+        description: 'An approval email has been sent to the designer.'
+      });
+
       fetchDesignerStats();
     } catch (error) {
       console.error('Error approving designer:', error);
+      toast.error('Failed to approve designer', {
+        description: 'Please try again later.'
+      });
     }
   };
 
-  const handleRejectDesigner = async (designerId: string, userId: string) => {
+  const handleRejectDesigner = async (designerId: string, userId: string, reason?: string) => {
     try {
+      // Get designer info
+      const { data: designerProfile } = await supabase
+        .from('designer_profiles')
+        .select('designer_name')
+        .eq('id', designerId)
+        .single();
+
+      // Get user email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
       // Update designer profile status
       await supabase
         .from('designer_profiles')
@@ -137,13 +184,32 @@ export function AdminDesignerOverview() {
       // Update user role status
       await supabase
         .from('user_roles')
-        .update({ status: 'rejected' })
+        .update({ status: 'rejected', rejection_reason: reason })
         .eq('user_id', userId)
         .eq('role', 'designer');
+
+      // Send rejection email
+      if (profile?.email && designerProfile?.designer_name) {
+        await supabase.functions.invoke('send-designer-approval-email', {
+          body: {
+            email: profile.email,
+            displayName: designerProfile.designer_name,
+            status: 'rejected',
+            reason
+          }
+        });
+      }
+
+      toast.success('Designer application rejected', {
+        description: 'A notification email has been sent to the designer.'
+      });
 
       fetchDesignerStats();
     } catch (error) {
       console.error('Error rejecting designer:', error);
+      toast.error('Failed to reject designer', {
+        description: 'Please try again later.'
+      });
     }
   };
 
