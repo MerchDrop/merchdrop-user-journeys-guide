@@ -86,12 +86,10 @@ export default function DesignerAuth() {
           toast.error(errorInfo.title, { description: errorInfo.message });
           throw authError;
         } else {
-          // Store email in sessionStorage for OTP verification
-          sessionStorage.setItem('verification_email', formData.email);
           toast.success("Designer account created!", { 
             description: "Please check your email to verify. Your application is pending admin approval." 
           });
-          navigate('/email-confirmation?method=otp&role=designer');
+          navigate('/email-confirmation?role=designer');
         }
       } else {
         // Sign in
