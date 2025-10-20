@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
+import { useRoleRedirect } from '@/hooks/useRoleRedirect';
 import { Header } from '@/components/layout/Header';
 import { SEOHelmet } from '@/components/SEO/SEOHelmet';
 import { toast } from 'sonner';
@@ -82,15 +83,13 @@ export default function DesignerAuth() {
         if (authError) {
           const errorInfo = getAuthErrorMessage(authError, 'signup');
           setError(errorInfo.message);
-          
-          // Show role upgrade message for duplicate email
-          if (authError.message?.toLowerCase().includes('already registered')) {
-            const upgradeMsg = getRoleUpgradeMessage('designer');
-            toast.error(`${errorInfo.message}\n\n${upgradeMsg}`, { duration: 7000 });
-          } else {
-            toast.error(errorInfo.message);
-          }
+          toast.error(errorInfo.title, { description: errorInfo.message });
           throw authError;
+        } else {
+          toast.success("Designer account created!", { 
+            description: "Please check your email to verify. Your application is pending admin approval." 
+          });
+          navigate('/email-confirmation?role=designer');
         }
       } else {
         // Sign in
@@ -102,12 +101,12 @@ export default function DesignerAuth() {
         if (error) {
           const errorInfo = getAuthErrorMessage(error, 'signin');
           setError(errorInfo.message);
-          toast.error(errorInfo.message);
+          toast.error(errorInfo.title, { description: errorInfo.message });
           throw error;
         }
         
         toast.success('Welcome back!');
-        navigate('/designer/dashboard');
+        // useRoleRedirect hook will handle navigation
       }
     } catch (error: any) {
       console.error('Designer auth error:', error);

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { toast } from "sonner";
 import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 import merchdropLogo from "@/assets/merchdrop-logo.png";
@@ -26,45 +26,21 @@ const ArtistAuth = () => {
 
   const { signUpArtist, signIn } = useAuth();
   const navigate = useNavigate();
-  const { user, loading } = useRoleRedirect({ skipRedirect: true });
+  
+  // Use role redirect hook - will handle navigation for logged in artists
+  const { loading } = useRoleRedirect({ 
+    skipRedirect: true, // Let users access auth page if not logged in
+    defaultPath: '/dashboard' 
+  });
 
-  const checkArtistProfile = async () => {
-    if (!user) {
-      console.log('ArtistAuth: No user found in checkArtistProfile');
-      return;
-    }
-    
-    try {
-      console.log('ArtistAuth: Checking artist profile for user:', user.id);
-      
-      const { data: artistProfile, error } = await supabase
-        .from('artist_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('ArtistAuth: Error checking artist profile:', error);
-        toast.error('Failed to check artist profile: ' + error.message);
-        return;
-      }
-
-      console.log('ArtistAuth: Artist profile result:', artistProfile);
-
-      if (artistProfile) {
-        // If profile exists, always redirect to dashboard
-        // Artists should be able to access dashboard regardless of status
-        console.log('ArtistAuth: Artist profile exists, redirecting to dashboard');
-        navigate('/dashboard', { replace: true });
-      } else {
-        console.log('ArtistAuth: No artist profile found, redirecting to onboarding');
-        navigate('/onboarding', { replace: true });
-      }
-    } catch (error) {
-      console.error('ArtistAuth: Error checking artist profile:', error);
-      toast.error('An error occurred while checking your profile.');
-    }
-  };
+  // Show loading while auth is initializing
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   // Show loading while auth is initializing
   if (loading) {
@@ -111,23 +87,12 @@ const ArtistAuth = () => {
         if (error) {
           console.error('Artist sign up error:', error);
           const errorInfo = getAuthErrorMessage(error, 'signup');
-          
-          // Show role upgrade message for duplicate email
-          if (error.message?.toLowerCase().includes('already registered')) {
-            const upgradeMsg = getRoleUpgradeMessage('artist');
-            toast.error(`${errorInfo.message}\n\n${upgradeMsg}`, { duration: 7000 });
-          } else {
-            toast.error(errorInfo.message);
-          }
+          toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
-          toast.success("Artist account created successfully! Please check your email to verify your account.");
-          setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            password: "",
-            confirmPassword: ""
+          toast.success("Artist account created!", { 
+            description: "Please check your email to verify. Your application is pending admin approval." 
           });
+          navigate('/email-confirmation?role=artist');
         }
       } else {
         const { error } = await signIn({
@@ -138,10 +103,10 @@ const ArtistAuth = () => {
         if (error) {
           console.error('Artist sign in error:', error);
           const errorInfo = getAuthErrorMessage(error, 'signin');
-          toast.error(errorInfo.message);
+          toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
           toast.success("Welcome back!");
-          // Don't navigate here, let the useEffect handle it based on profile status
+          // useRoleRedirect hook will handle navigation
         }
       }
     } catch (error: any) {

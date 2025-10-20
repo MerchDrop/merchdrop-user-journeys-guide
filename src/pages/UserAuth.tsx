@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
+import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { toast } from "sonner";
 import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 
@@ -61,23 +62,10 @@ const UserAuth = () => {
         if (error) {
           console.error('User sign up error:', error);
           const errorInfo = getAuthErrorMessage(error, 'signup');
-          
-          // Show role upgrade message for duplicate email
-          if (error.message?.toLowerCase().includes('already registered')) {
-            const upgradeMsg = getRoleUpgradeMessage('user');
-            toast.error(`${errorInfo.message}\n\n${upgradeMsg}`, { duration: 7000 });
-          } else {
-            toast.error(errorInfo.message);
-          }
+          toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
-          toast.success("Account created successfully! Please check your email to verify your account.");
-          setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            password: "",
-            confirmPassword: ""
-          });
+          toast.success("Account created!", { description: "Please check your email to verify your account." });
+          navigate('/email-confirmation');
         }
       } else {
         const { error } = await signIn({
@@ -88,10 +76,10 @@ const UserAuth = () => {
         if (error) {
           console.error('User sign in error:', error);
           const errorInfo = getAuthErrorMessage(error, 'signin');
-          toast.error(errorInfo.message);
+          toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
           toast.success("Welcome back!");
-          navigate('/', { replace: true });
+          // useRoleRedirect hook will handle navigation
         }
       }
     } catch (error: any) {
