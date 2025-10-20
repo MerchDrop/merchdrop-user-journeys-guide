@@ -310,17 +310,16 @@ const AdminSettings = () => {
               <div className="space-y-2">
                 <Label htmlFor="default-currency">Default Currency</Label>
                 <Select
-                  value={formData.default_currency || 'USD'}
+                  value={formData.default_currency || 'NGN'}
                   onValueChange={(value) => handleChange('default_currency', value)}
                 >
                   <SelectTrigger id="default-currency">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USD">USD - US Dollar</SelectItem>
-                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                    <SelectItem value="NGN">NGN - Nigerian Naira</SelectItem>
                     <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                    <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
+                    <SelectItem value="USD">USD - US Dollar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
