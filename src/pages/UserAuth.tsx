@@ -22,16 +22,9 @@ const UserAuth = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { signUp, signIn, user, loading } = useAuth();
+  const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (user && !loading) {
-      navigate('/', { replace: true });
-    }
-  }, [user, loading, navigate]);
+  const { user } = useRoleRedirect({ defaultPath: '/' });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

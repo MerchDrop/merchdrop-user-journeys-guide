@@ -35,7 +35,12 @@ interface UserRole {
   id: string;
   user_id: string;
   role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer';
+  status: 'active' | 'pending' | 'rejected';
   created_at: string;
+  approved_at?: string | null;
+  approved_by?: string | null;
+  requested_role?: string | null;
+  rejection_reason?: string | null;
 }
 
 interface AuthContextType {
@@ -595,33 +600,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Helper functions for role checking
+  // Helper functions for role checking - only check ACTIVE roles
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
-    // Return false during loading or when no user
     if (loading || !user || !userRoles || userRoles.length === 0) return false;
-
-    // Admin users should have access to everything (except other admin checks)
-    if (role !== 'admin' && userRoles.some(userRole => userRole.role === 'admin')) {
-      return true;
-    }
-
-    return userRoles.some(userRole => userRole.role === role);
+    return userRoles.some(userRole => userRole.role === role && userRole.status === 'active');
   };
 
   const getPrimaryRole = (): 'admin' | 'moderator' | 'artist' | 'user' | 'designer' | null => {
-    if (!userRoles || userRoles.length === 0) return null;
+    const activeRoles = userRoles.filter(r => r.status === 'active');
+    if (activeRoles.length === 0) return null;
     
-    // Role priority order (admin > moderator > artist > designer > user)
     const priorities: Record<string, number> = { 
-      admin: 1, 
-      moderator: 2, 
-      artist: 3, 
-      designer: 4, 
-      user: 5 
+      admin: 1, moderator: 2, designer: 3, artist: 4, user: 5 
     };
     
-    // Clone array before sorting to avoid mutating state
-    return [...userRoles]
+    return [...activeRoles]
       .sort((a, b) => (priorities[a.role] || 999) - (priorities[b.role] || 999))[0]?.role || null;
   };
 

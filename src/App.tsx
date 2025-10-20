@@ -8,7 +8,6 @@ import { CartProvider } from '@/context/CartContext';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthErrorBoundary } from '@/components/auth/AuthErrorBoundary';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtimeSubscriptions';
-import Auth from '@/pages/Auth';
 import AdminAuth from '@/pages/AdminAuth';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
@@ -37,8 +36,6 @@ import AdminDesigners from '@/pages/admin/Designers';
 import AdminSettingsPage from '@/pages/admin/Settings';
 import AdminAnalytics from '@/pages/admin/Analytics';
 import HealthCheck from '@/pages/HealthCheck';
-import SignUp from '@/pages/SignUp';
-import Login from '@/pages/Login';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import UserAuth from '@/pages/UserAuth';
@@ -86,11 +83,16 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Shop />} />
                   <Route path="/creators" element={<Home />} />
-                  <Route path="/auth" element={<Auth />} />
+                  {/* Main auth routes */}
                   <Route path="/user-auth" element={<UserAuth />} />
                   <Route path="/artist-auth" element={<ArtistAuth />} />
-                  <Route path="/admin-auth" element={<AdminAuth />} />
                   <Route path="/designer-auth" element={<DesignerAuth />} />
+                  <Route path="/admin-auth" element={<AdminAuth />} />
+                  {/* Legacy redirects */}
+                  <Route path="/auth" element={<UserAuth />} />
+                  <Route path="/signup" element={<UserAuth />} />
+                  <Route path="/login" element={<UserAuth />} />
+                  {/* Password management */}
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/email-confirmation" element={<EmailConfirmation />} />
@@ -142,8 +144,6 @@ function App() {
                   </Route>
                   
                   <Route path="/health" element={<HealthCheck />} />
-                  <Route path="/signup" element={<SignUp />} />
-                  <Route path="/login" element={<Login />} />
                   <Route path="/onboarding" element={<ArtistOnboarding />} />
                   <Route path="/create-merch" element={<MerchCreator />} />
                   <Route path="/order/:orderId" element={<OrderTracking />} />

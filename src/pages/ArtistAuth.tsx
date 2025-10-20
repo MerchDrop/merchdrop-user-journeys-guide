@@ -24,26 +24,9 @@ const ArtistAuth = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { signUpArtist, signIn, user, loading, isArtist } = useAuth();
+  const { signUpArtist, signIn } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Redirect if already authenticated as artist
-  useEffect(() => {
-    console.log('ArtistAuth: user:', user, 'loading:', loading, 'isArtist:', isArtist);
-    
-    // Wait for auth to fully initialize
-    if (loading) {
-      console.log('ArtistAuth: Still loading, waiting...');
-      return;
-    }
-    
-    // Only redirect if user is already an artist
-    if (user && isArtist) {
-      console.log('ArtistAuth: User is artist, checking profile...');
-      checkArtistProfile();
-    }
-  }, [user, loading, isArtist, navigate]);
+  const { user, loading } = useRoleRedirect({ skipRedirect: true });
 
   const checkArtistProfile = async () => {
     if (!user) {
