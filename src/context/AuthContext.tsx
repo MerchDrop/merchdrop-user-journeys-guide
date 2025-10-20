@@ -352,6 +352,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
       } else {
+        // Call custom email function with branded template
+        const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email: (validation.data as SignUpInput).email,
+            userType: 'user',
+            displayName: (validation.data as SignUpInput).displayName,
+            confirmationUrl: redirectUrl
+          }
+        });
+        
+        if (emailError) {
+          console.error('Error sending custom email:', emailError);
+        }
+
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration.",
@@ -398,6 +412,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
       } else {
+        // Call custom email function with branded artist template
+        const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email: (validation.data as SignUpInput).email,
+            userType: 'artist',
+            displayName: (validation.data as SignUpInput).displayName,
+            confirmationUrl: redirectUrl
+          }
+        });
+        
+        if (emailError) {
+          console.error('Error sending custom email:', emailError);
+        }
+
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your artist registration.",
@@ -444,6 +472,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
       } else {
+        // Call custom email function with branded designer template
+        const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email: (validation.data as SignUpInput).email,
+            userType: 'designer',
+            displayName: (validation.data as SignUpInput).displayName,
+            confirmationUrl: redirectUrl
+          }
+        });
+        
+        if (emailError) {
+          console.error('Error sending custom email:', emailError);
+        }
+
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your designer registration.",
