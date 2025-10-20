@@ -42,13 +42,61 @@ async function fetchUsers(): Promise<UserProfile[]> {
 
   if (rolesError) throw rolesError;
 
-  // Group roles by user_id with full metadata
+  // Fetch artist and designer profiles to reconcile status
+  const { data: artistProfiles } = await supabase
+    .from('artist_profiles')
+    .select('user_id, status');
+
+  const { data: designerProfiles } = await supabase
+    .from('designer_profiles')
+    .select('user_id, status');
+
+  // Create status maps for quick lookup
+  const artistStatusMap = (artistProfiles || []).reduce((acc, ap) => {
+    acc[ap.user_id] = ap.status;
+    return acc;
+  }, {} as Record<string, string>);
+
+  const designerStatusMap = (designerProfiles || []).reduce((acc, dp) => {
+    acc[dp.user_id] = dp.status;
+    return acc;
+  }, {} as Record<string, string>);
+
+  // Helper to reconcile status from profile tables
+  const getReconciledStatus = (userId: string, role: string, roleStatus: string): string => {
+    if (role === 'artist' && artistStatusMap[userId]) {
+      // Map artist_profiles status to user_roles status
+      const artistStatus = artistStatusMap[userId];
+      if (artistStatus === 'approved') return 'active';
+      if (artistStatus === 'declined') return 'rejected';
+      if (artistStatus === 'pending') return 'pending';
+    }
+    
+    if (role === 'designer' && designerStatusMap[userId]) {
+      // Map designer_profiles status to user_roles status
+      const designerStatus = designerStatusMap[userId];
+      if (designerStatus === 'active') return 'active';
+      if (designerStatus === 'inactive') return 'rejected';
+      if (designerStatus === 'pending') return 'pending';
+    }
+    
+    return roleStatus; // Use original status if no profile match
+  };
+
+  // Group roles by user_id with reconciled status
   const rolesByUser = userRoles.reduce((acc, roleData) => {
     if (!acc[roleData.user_id]) acc[roleData.user_id] = [];
+    
+    const reconciledStatus = getReconciledStatus(
+      roleData.user_id,
+      roleData.role,
+      roleData.status
+    );
+    
     acc[roleData.user_id].push({
       id: roleData.id,
       role: roleData.role,
-      status: roleData.status,
+      status: reconciledStatus,
       requested_role: roleData.requested_role,
       approved_by: roleData.approved_by,
       approved_at: roleData.approved_at,
