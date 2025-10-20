@@ -67,10 +67,7 @@ export function AdminDesignerOverview() {
       // Fetch all designer profiles
       const { data: designers, error: designersError } = await supabase
         .from('designer_profiles')
-        .select(`
-          *,
-          profiles(display_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (designersError) {
@@ -79,6 +76,20 @@ export function AdminDesignerOverview() {
       }
 
       console.log(`✅ Found ${designers?.length || 0} designer profiles`);
+
+      // Fetch profiles for these designers
+      const userIds = designers?.map(d => d.user_id) || [];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, display_name, email')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('❌ Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      console.log(`✅ Found ${profiles?.length || 0} profiles`);
 
       // Fetch designer roles to check status
       const { data: designerRoles, error: rolesError } = await supabase
@@ -95,9 +106,12 @@ export function AdminDesignerOverview() {
 
       // Combine data
       const designersWithStatus = designers?.map(designer => {
+        const profile = profiles?.find(p => p.id === designer.user_id);
         const role = designerRoles?.find(r => r.user_id === designer.user_id);
         return {
           ...designer,
+          display_name: profile?.display_name,
+          email: profile?.email,
           role_status: role?.status || 'active'
         };
       }) || [];
@@ -388,7 +402,7 @@ export function AdminDesignerOverview() {
                   {stats.pendingApplications.map((designer) => (
                     <TableRow key={designer.id}>
                       <TableCell className="font-medium">{designer.designer_name}</TableCell>
-                      <TableCell>{designer.profiles?.email}</TableCell>
+                      <TableCell>{designer.email}</TableCell>
                       <TableCell>{new Date(designer.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>{designer.total_designs || 0}</TableCell>
                       <TableCell>
@@ -452,7 +466,7 @@ export function AdminDesignerOverview() {
                 {stats.allDesigners.map((designer) => (
                   <TableRow key={designer.id}>
                     <TableCell className="font-medium">{designer.designer_name}</TableCell>
-                    <TableCell>{designer.profiles?.email}</TableCell>
+                    <TableCell>{designer.email}</TableCell>
                     <TableCell>
                       <Badge variant={designer.status === 'active' ? 'default' : 'secondary'}>
                         {designer.status}
