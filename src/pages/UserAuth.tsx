@@ -64,8 +64,10 @@ const UserAuth = () => {
           const errorInfo = getAuthErrorMessage(error, 'signup');
           toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
+          // Store email in sessionStorage for OTP verification
+          sessionStorage.setItem('verification_email', formData.email);
           toast.success("Account created!", { description: "Please check your email to verify your account." });
-          navigate('/email-confirmation');
+          navigate('/email-confirmation?method=otp&role=user');
         }
       } else {
         const { error } = await signIn({

@@ -2,16 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2, ArrowRight, Sparkles, Shield, Palette, ShoppingBag, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowRight, Sparkles, Shield, Palette, ShoppingBag, Clock, Mail } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
+import { OtpInput } from '@/components/auth/OtpInput';
+import { Separator } from '@/components/ui/separator';
 
 const EmailConfirmation = () => {
   const [userRole, setUserRole] = useState<'artist' | 'designer' | 'user'>('user');
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { verifyOtp, resendOtp } = useAuth();
+  
+  const [verificationMethod, setVerificationMethod] = useState<'magic-link' | 'otp'>('magic-link');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     // Determine user role from URL params or default to 'user'
@@ -20,11 +29,76 @@ const EmailConfirmation = () => {
       setUserRole(role);
     }
 
+    // Get method from URL params or sessionStorage
+    const method = searchParams.get('method') as 'magic-link' | 'otp' | null;
+    const tokenHash = searchParams.get('token_hash');
+    const type = searchParams.get('type');
+    
+    // Get stored email from sessionStorage
+    const storedEmail = sessionStorage.getItem('verification_email');
+    if (storedEmail) {
+      setUserEmail(storedEmail);
+    }
+
+    // If we have a token_hash, this is a magic link verification
+    if (tokenHash && type) {
+      setVerificationMethod('magic-link');
+      setVerificationComplete(true);
+      // Clear stored email after successful magic link verification
+      sessionStorage.removeItem('verification_email');
+    } else if (method === 'otp' && storedEmail) {
+      // If method is OTP and we have email, show OTP input
+      setVerificationMethod('otp');
+    } else if (storedEmail) {
+      // Default to OTP if we have email but no specific method
+      setVerificationMethod('otp');
+    } else {
+      // No email stored, assume magic link flow
+      setVerificationMethod('magic-link');
+      setVerificationComplete(true);
+    }
+
     // Check if user is signed in
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsSignedIn(!!session);
     });
   }, [searchParams]);
+
+  const handleVerifyOtp = async (token: string) => {
+    if (!userEmail) {
+      toast.error('Email not found', { description: 'Please sign up again' });
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const { error } = await verifyOtp(userEmail, token, 'signup');
+      
+      if (!error) {
+        setVerificationComplete(true);
+        sessionStorage.removeItem('verification_email');
+        toast.success('Email verified!', { description: 'Your account has been activated' });
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!userEmail) {
+      toast.error('Email not found', { description: 'Please sign up again' });
+      return;
+    }
+
+    await resendOtp(userEmail, 'signup');
+  };
+
+  const switchToMagicLink = () => {
+    toast.info('Check your email', { description: 'Click the magic link in your email to verify' });
+    setVerificationMethod('magic-link');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,6 +107,66 @@ const EmailConfirmation = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
           <div className="space-y-10 animate-fade-in-up">
+              {/* Show OTP Input if verification is not complete and method is OTP */}
+              {!verificationComplete && verificationMethod === 'otp' && userEmail && (
+                <Card className="border-primary/20 bg-card shadow-design-card">
+                  <CardContent className="p-8">
+                    <div className="flex justify-center mb-6">
+                      <div className="bg-primary/10 rounded-full p-4">
+                        <Mail className="w-12 h-12 text-primary" />
+                      </div>
+                    </div>
+                    
+                    <OtpInput
+                      email={userEmail}
+                      onVerify={handleVerifyOtp}
+                      onResend={handleResendOtp}
+                      isVerifying={isVerifying}
+                    />
+
+                    <Separator className="my-6" />
+
+                    <div className="text-center space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Prefer a magic link instead?
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={switchToMagicLink}
+                        className="w-full"
+                      >
+                        Use Magic Link
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Show magic link message if waiting for magic link */}
+              {!verificationComplete && verificationMethod === 'magic-link' && (
+                <Card className="border-primary/20 bg-card shadow-design-card">
+                  <CardContent className="p-8 text-center space-y-4">
+                    <div className="flex justify-center">
+                      <div className="bg-primary/10 rounded-full p-4">
+                        <Mail className="w-12 h-12 text-primary" />
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-semibold">Check Your Email</h3>
+                    <p className="text-muted-foreground">
+                      We've sent you a magic link to verify your email address.
+                      Click the link in the email to complete your registration.
+                    </p>
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-4">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Waiting for verification...</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Show success message after verification */}
+              {verificationComplete && (
+                <>
               {/* Celebratory Success Hero */}
               <div className="text-center space-y-6">
                 <div className="flex justify-center relative">
@@ -180,6 +314,8 @@ const EmailConfirmation = () => {
               </div>
 
               {/* Help text */}
+                </>
+              )}
           </div>
         </div>
       </div>

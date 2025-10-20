@@ -61,6 +61,8 @@ interface AuthContextType {
   signOut: () => Promise<{ error: any }>;
   updateProfile: (updates: ProfileUpdateInput) => Promise<{ error: any }>;
   assignRole: (input: RoleAssignmentInput) => Promise<{ error: any }>;
+  verifyOtp: (email: string, token: string, type?: 'signup' | 'recovery') => Promise<{ error: any; data?: any }>;
+  resendOtp: (email: string, type?: 'signup' | 'recovery') => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -600,6 +602,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const verifyOtp = async (email: string, token: string, type: 'signup' | 'recovery' = 'signup') => {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type,
+      });
+
+      if (error) {
+        const errorInfo = getAuthErrorMessage(error, 'signin');
+        toast({
+          title: errorInfo.title,
+          description: errorInfo.message,
+          variant: "destructive",
+        });
+        return { error, data: null };
+      }
+
+      toast({
+        title: "Email Verified",
+        description: "Your email has been verified successfully!",
+      });
+      return { data, error: null };
+    } catch (error: any) {
+      toast({
+        title: "Verification Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error, data: null };
+    }
+  };
+
+  const resendOtp = async (email: string, type: 'signup' | 'recovery' = 'signup') => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+
+      if (error) {
+        toast({
+          title: "Resend Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Resend Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   // Helper functions for role checking - only check ACTIVE roles
   const hasRole = (role: 'admin' | 'moderator' | 'artist' | 'user' | 'designer') => {
     if (loading || !user || !userRoles || userRoles.length === 0) return false;
@@ -647,6 +709,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     updateProfile,
     assignRole,
+    verifyOtp,
+    resendOtp,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

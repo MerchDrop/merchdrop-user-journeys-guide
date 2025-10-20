@@ -89,10 +89,12 @@ const ArtistAuth = () => {
           const errorInfo = getAuthErrorMessage(error, 'signup');
           toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
+          // Store email in sessionStorage for OTP verification
+          sessionStorage.setItem('verification_email', formData.email);
           toast.success("Artist account created!", { 
             description: "Please check your email to verify. Your application is pending admin approval." 
           });
-          navigate('/email-confirmation?role=artist');
+          navigate('/email-confirmation?method=otp&role=artist');
         }
       } else {
         const { error } = await signIn({
