@@ -282,8 +282,8 @@ export function CleanAdminUserTable() {
                             <DropdownMenuItem className="h-px p-0 bg-border" disabled />
                             {pendingRoles.length > 0 && (
                               <>
-                                {pendingRoles.map((ur: any) => (
-                                  <React.Fragment key={ur.id}>
+                                {pendingRoles.map((ur: any, index: number) => (
+                                  <div key={ur.id}>
                                     <DropdownMenuItem 
                                       onClick={() => handleApprove(user.id, ur.role)}
                                       disabled={approvalLoading}
@@ -298,7 +298,7 @@ export function CleanAdminUserTable() {
                                       <XCircle className="h-4 w-4 mr-2 text-red-600" />
                                       Reject {ur.role}
                                     </DropdownMenuItem>
-                                  </React.Fragment>
+                                  </div>
                                 ))}
                                 <DropdownMenuItem className="h-px p-0 bg-border" disabled />
                               </>
