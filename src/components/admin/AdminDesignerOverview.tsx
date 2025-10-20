@@ -11,7 +11,9 @@ import {
   MoreVertical,
   Eye,
   UserCheck,
-  UserX
+  UserX,
+  RefreshCw,
+  Inbox
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -51,14 +53,19 @@ export function AdminDesignerOverview() {
     allDesigners: []
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { formatPrice } = useCurrency();
 
   const fetchDesignerStats = async () => {
     try {
-      setLoading(true);
+      const isInitialLoad = loading;
+      if (!isInitialLoad) setRefreshing(true);
+      
+      console.log('🔄 Fetching designer stats...');
 
       // Fetch all designer profiles
-      const { data: designers } = await supabase
+      const { data: designers, error: designersError } = await supabase
         .from('designer_profiles')
         .select(`
           *,
@@ -66,11 +73,25 @@ export function AdminDesignerOverview() {
         `)
         .order('created_at', { ascending: false });
 
+      if (designersError) {
+        console.error('❌ Error fetching designers:', designersError);
+        throw designersError;
+      }
+
+      console.log(`✅ Found ${designers?.length || 0} designer profiles`);
+
       // Fetch designer roles to check status
-      const { data: designerRoles } = await supabase
+      const { data: designerRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, status')
         .eq('role', 'designer');
+
+      if (rolesError) {
+        console.error('❌ Error fetching user roles:', rolesError);
+        throw rolesError;
+      }
+
+      console.log(`✅ Found ${designerRoles?.length || 0} designer roles`);
 
       // Combine data
       const designersWithStatus = designers?.map(designer => {
@@ -87,6 +108,8 @@ export function AdminDesignerOverview() {
       const totalSales = designers?.reduce((sum, d) => sum + (d.total_earnings || 0), 0) || 0;
       const pendingApplications = designersWithStatus.filter(d => d.role_status === 'pending' || d.status === 'pending');
 
+      console.log(`📊 Stats - Total: ${totalDesigners}, Pending: ${pendingApproval}, Approved: ${approvedDesigners}`);
+
       setStats({
         totalDesigners,
         pendingApproval,
@@ -95,10 +118,15 @@ export function AdminDesignerOverview() {
         pendingApplications,
         allDesigners: designersWithStatus
       });
+      
+      setLastUpdated(new Date());
+      console.log('✅ Designer stats updated successfully');
     } catch (error) {
-      console.error('Error fetching designer stats:', error);
+      console.error('❌ Error fetching designer stats:', error);
+      toast.error('Failed to load designer statistics');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -275,9 +303,19 @@ export function AdminDesignerOverview() {
           <h1 className="text-3xl font-bold text-foreground">Designer Management</h1>
           <p className="text-muted-foreground mt-1">
             Manage designer profiles, approvals, and performance
+            {lastUpdated && (
+              <span className="ml-2 text-xs">
+                • Last updated: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
           </p>
         </div>
-        <Button onClick={fetchDesignerStats} variant="outline">
+        <Button 
+          onClick={fetchDesignerStats} 
+          variant="outline"
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh Data
         </Button>
       </div>
@@ -308,20 +346,34 @@ export function AdminDesignerOverview() {
       </div>
 
       {/* Pending Designer Applications */}
-      {stats.pendingApplications.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Pending Designer Applications ({stats.pendingApplications.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Pending Designer Applications
+              {stats.pendingApplications.length > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {stats.pendingApplications.length}
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.pendingApplications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Pending Applications</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  There are currently no designer applications awaiting review. 
+                  New applications will appear here when designers sign up.
+                </p>
+              </div>
+            ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -363,10 +415,10 @@ export function AdminDesignerOverview() {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* All Designers Table */}
       <motion.div
