@@ -280,6 +280,15 @@ const ArtistAuth = () => {
                 </Button>
               </div>
 
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Are you a designer?</p>
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/designer-auth">
+                    Join as a Designer
+                  </Link>
+                </Button>
+              </div>
+
               {isSignUp && (
                 <div className="text-center text-sm text-muted-foreground">
                   By signing up, you agree to our{" "}
