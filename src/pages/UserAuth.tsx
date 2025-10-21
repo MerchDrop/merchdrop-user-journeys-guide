@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -179,11 +180,10 @@ const UserAuth = () => {
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10" />
+                    <PasswordInput
                       id="password"
                       name="password"
-                      type="password"
                       placeholder={isSignUp ? "Create a password" : "Enter your password"}
                       value={formData.password}
                       onChange={handleInputChange}
@@ -197,11 +197,10 @@ const UserAuth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                      <Input
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10" />
+                      <PasswordInput
                         id="confirmPassword"
                         name="confirmPassword"
-                        type="password"
                         placeholder="Confirm your password"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}

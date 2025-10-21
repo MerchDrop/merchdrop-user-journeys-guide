@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Header } from '@/components/layout/Header';
 import { Lock, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -131,11 +131,10 @@ export default function ResetPassword() {
                 <div className="space-y-2">
                   <Label htmlFor="password">New Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                    <PasswordInput
                       id="password"
                       name="password"
-                      type="password"
                       placeholder="Enter new password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -152,11 +151,10 @@ export default function ResetPassword() {
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                    <PasswordInput
                       id="confirmPassword"
                       name="confirmPassword"
-                      type="password"
                       placeholder="Confirm new password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
