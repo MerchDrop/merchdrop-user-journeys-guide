@@ -142,7 +142,16 @@ export default function DesignerAuth() {
             <AlertDialogAction
               onClick={() => {
                 setShowSuccessDialog(false);
-                navigate('/email-confirmation?role=designer');
+                setIsSignUp(false);
+                setFormData({
+                  email: '',
+                  password: '',
+                  confirmPassword: '',
+                  firstName: '',
+                  lastName: '',
+                  designerName: '',
+                  bio: ''
+                });
               }}
               className="w-full sm:w-auto px-8"
             >
