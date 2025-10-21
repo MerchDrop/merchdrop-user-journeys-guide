@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ThumbsUp } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRoleRedirect } from '@/hooks/useRoleRedirect';
 import { Header } from '@/components/layout/Header';
@@ -35,6 +37,7 @@ export default function DesignerAuth() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const { signUpDesigner, signIn } = useAuth();
   const navigate = useNavigate();
   const { user } = useRoleRedirect({ skipRedirect: true });
@@ -86,10 +89,7 @@ export default function DesignerAuth() {
           toast.error(errorInfo.title, { description: errorInfo.message });
           throw authError;
         } else {
-          toast.success("Designer account created!", { 
-            description: "Please check your email to verify. Your application is pending admin approval." 
-          });
-          navigate('/email-confirmation?role=designer');
+          setShowSuccessDialog(true);
         }
       } else {
         // Sign in
@@ -123,6 +123,34 @@ export default function DesignerAuth() {
         description={`${isSignUp ? 'Join' : 'Sign in to'} the MergeDrop Designer Portal to upload designs and manage your portfolio`}
       />
       <Header />
+      
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-success/10 rounded-full p-6">
+                <ThumbsUp className="w-12 h-12 text-success" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-2xl">Welcome to MerchDrop!</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Thanks for joining MerchDrop! Kindly check your email for confirmation.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction
+              onClick={() => {
+                setShowSuccessDialog(false);
+                navigate('/email-confirmation?role=designer');
+              }}
+              className="w-full sm:w-auto px-8"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
