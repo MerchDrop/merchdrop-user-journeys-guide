@@ -200,10 +200,12 @@ const EmailConfirmation = () => {
     const badges = {
       artist: { label: 'Artist Account', icon: <Palette className="w-4 h-4" />, color: 'from-purple-500 to-pink-500' },
       designer: { label: 'Designer Account', icon: <Sparkles className="w-4 h-4" />, color: 'from-blue-500 to-cyan-500' },
-      user: { label: 'Start Designing', icon: <ShoppingBag className="w-4 h-4" />, color: 'from-green-500 to-emerald-500' },
+      user: null, // No badge for user role
     };
 
     const badge = badges[userRole];
+
+    if (!badge) return null;
 
     return (
       <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${badge.color} text-white font-semibold shadow-lg animate-fade-in-up delay-200`}>
@@ -256,7 +258,7 @@ const EmailConfirmation = () => {
           {
             icon: <ShoppingBag className="w-6 h-6 text-primary" />,
             title: 'Exclusive Merch',
-            description: 'Shop unique items from verified artists'
+            description: 'Design exclusive items for verified artists.'
           },
           {
             icon: <Shield className="w-6 h-6 text-primary" />,
@@ -265,8 +267,8 @@ const EmailConfirmation = () => {
           },
           {
             icon: <Sparkles className="w-6 h-6 text-primary" />,
-            title: 'Support Artists',
-            description: 'Every purchase directly supports creators'
+            title: 'Support Creatives',
+            description: 'Every purchase directly supports a diverse community of creators'
           }
         ];
     }
