@@ -744,9 +744,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .sort((a, b) => (priorities[a.role] || 999) - (priorities[b.role] || 999))[0]?.role || null;
   };
 
-  const isAdmin = hasRole('admin');
-  const isArtist = hasRole('artist');
-  const isDesigner = hasRole('designer');
+  const isAdmin = React.useMemo(() => hasRole('admin'), [user, userRoles, loading]);
+  const isArtist = React.useMemo(() => hasRole('artist'), [user, userRoles, loading]);
+  const isDesigner = React.useMemo(() => hasRole('designer'), [user, userRoles, loading]);
 
   // Debug logging for role checking
   React.useEffect(() => {
