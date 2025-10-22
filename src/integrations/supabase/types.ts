@@ -919,10 +919,7 @@ export type Database = {
           total_reviews: number
         }[]
       }
-      can_manage_user_roles: {
-        Args: { _user_id?: string }
-        Returns: boolean
-      }
+      can_manage_user_roles: { Args: { _user_id?: string }; Returns: boolean }
       can_self_assign_initial_role: {
         Args: { _user_id?: string }
         Returns: boolean
@@ -931,10 +928,7 @@ export type Database = {
         Args: { product_uuid: string; user_uuid: string }
         Returns: boolean
       }
-      generate_product_slug: {
-        Args: { title: string }
-        Returns: string
-      }
+      generate_product_slug: { Args: { title: string }; Returns: string }
       get_primary_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -953,22 +947,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_artist: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_designer: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
+      is_artist: { Args: never; Returns: boolean }
+      is_designer: { Args: never; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
       reject_role_request: {
         Args: {
           _admin_id: string
@@ -978,14 +960,8 @@ export type Database = {
         }
         Returns: Json
       }
-      repair_missing_artist_profiles: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      repair_missing_designer_roles: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      repair_missing_artist_profiles: { Args: never; Returns: Json }
+      repair_missing_designer_roles: { Args: never; Returns: Json }
       setup_user_profile: {
         Args: {
           _display_name?: string

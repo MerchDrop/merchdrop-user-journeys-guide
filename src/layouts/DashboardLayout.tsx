@@ -42,27 +42,12 @@ const sidebarItemsConfig = [
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [artistStatus, setArtistStatus] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isArtist, isAdmin, isSuperAdmin, loading, profile } = useAuth();
 
-  // Redirect non-authenticated users or non-artists (allow admins and super admins too)
-  useEffect(() => {
-    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin);
-    
-    if (!loading) {
-      const canAccess = !!user && (isArtist || isAdmin || isSuperAdmin);
-      if (!user) {
-        console.log('DashboardLayout: No user, redirecting to artist-auth');
-        navigate('/artist-auth', { replace: true });
-      } else if (!canAccess) {
-        console.log('DashboardLayout: User lacks access, redirecting to artist-auth');
-        navigate('/artist-auth', { replace: true });
-      }
-    }
-  }, [user, isArtist, isAdmin, isSuperAdmin, loading, navigate]);
-
-  // Check artist status for pending approval
+  // Check artist status for pending approval and access
   useEffect(() => {
     const checkArtistStatus = async () => {
       if (!user) return;
@@ -73,11 +58,29 @@ export default function DashboardLayout() {
         .eq('user_id', user.id)
         .maybeSingle();
       
+      setArtistStatus(data?.status || null);
       setIsPending(data?.status === 'pending');
     };
     
     checkArtistStatus();
   }, [user]);
+
+  // Redirect non-authenticated users or non-artists (allow admins and super admins too)
+  useEffect(() => {
+    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin, 'artistStatus:', artistStatus);
+    
+    if (!loading) {
+      // Allow access if user has active artist role OR approved artist profile (resilient to sync issues)
+      const canAccess = !!user && (isArtist || isAdmin || isSuperAdmin || artistStatus === 'approved');
+      if (!user) {
+        console.log('DashboardLayout: No user, redirecting to artist-auth');
+        navigate('/artist-auth', { replace: true });
+      } else if (!canAccess) {
+        console.log('DashboardLayout: User lacks access, redirecting to artist-auth');
+        navigate('/artist-auth', { replace: true });
+      }
+    }
+  }, [user, isArtist, isAdmin, isSuperAdmin, loading, artistStatus, navigate]);
 
   // Show loading spinner while checking authentication
   if (loading) {

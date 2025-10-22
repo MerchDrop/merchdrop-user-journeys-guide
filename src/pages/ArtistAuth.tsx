@@ -13,6 +13,7 @@ import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { toast } from "sonner";
 import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 import merchdropLogo from "@/assets/merchdrop-logo.png";
+import { supabase } from "@/integrations/supabase/client";
 
 const ArtistAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -36,17 +37,40 @@ const ArtistAuth = () => {
 
   // Redirect based on user role after successful auth
   useEffect(() => {
-    if (user && !loading) {
-      if (isSuperAdmin || isAdmin) {
-        navigate('/admin');
-      } else if (isDesigner) {
-        navigate('/designer/dashboard');
-      } else if (isArtist) {
-        navigate('/dashboard');
-      } else {
+    const checkRedirect = async () => {
+      if (user && !loading) {
+        if (isSuperAdmin || isAdmin) {
+          navigate('/admin');
+          return;
+        } 
+        
+        if (isDesigner) {
+          navigate('/designer/dashboard');
+          return;
+        } 
+        
+        if (isArtist) {
+          navigate('/dashboard');
+          return;
+        }
+        
+        // Check if artist profile is approved (resilient to role sync issues)
+        const { data: artistProfile } = await supabase
+          .from('artist_profiles')
+          .select('status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (artistProfile?.status === 'approved') {
+          navigate('/dashboard');
+          return;
+        }
+        
         navigate('/');
       }
-    }
+    };
+    
+    checkRedirect();
   }, [user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist, navigate]);
 
   // Show loading while auth is initializing

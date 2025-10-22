@@ -23,16 +23,10 @@ const DesignerLayout = () => {
   const { user, loading, isDesigner, isAdmin, isSuperAdmin, signOut, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const canAccess = isDesigner || isAdmin || isSuperAdmin;
   const [isPending, setIsPending] = React.useState(false);
-
-  useEffect(() => {
-    if (!loading && (!user || !canAccess)) {
-      console.log('DesignerLayout: Access denied. User:', user?.email, 'isDesigner:', isDesigner, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin);
-      navigate('/designer-auth');
-    }
-  }, [user, loading, canAccess, navigate, isDesigner, isAdmin, isSuperAdmin]);
-
+  const [designerStatus, setDesignerStatus] = React.useState<string | null>(null);
+  
+  // Check designer status and set pending flag
   useEffect(() => {
     const checkDesignerStatus = async () => {
       if (!user) return;
@@ -42,13 +36,24 @@ const DesignerLayout = () => {
         .from('designer_profiles')
         .select('status')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
+      setDesignerStatus(data?.status || null);
       setIsPending(data?.status === 'pending');
     };
     
     checkDesignerStatus();
   }, [user]);
+
+  // Allow access if user has active designer role OR active designer profile (resilient to sync issues)
+  const canAccess = isDesigner || isAdmin || isSuperAdmin || designerStatus === 'active';
+
+  useEffect(() => {
+    if (!loading && (!user || !canAccess)) {
+      console.log('DesignerLayout: Access denied. User:', user?.email, 'isDesigner:', isDesigner, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin, 'designerStatus:', designerStatus);
+      navigate('/designer-auth');
+    }
+  }, [user, loading, canAccess, navigate, isDesigner, isAdmin, isSuperAdmin, designerStatus]);
 
   if (loading) {
     return (

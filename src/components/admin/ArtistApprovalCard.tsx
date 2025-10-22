@@ -4,18 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Check, X, ExternalLink, Calendar, Loader2 } from 'lucide-react';
-import { usePendingArtists, useArtists } from '@/hooks/useArtistsQuery';
+import { usePendingArtists } from '@/hooks/useArtistsQuery';
+import { useRoleApproval } from '@/hooks/useRoleApproval';
 
 export const ArtistApprovalCard = () => {
   const { pendingArtists, loading } = usePendingArtists();
-  const { approveArtist, rejectArtist } = useArtists();
+  const { approveRole, rejectRole, loading: approvalLoading } = useRoleApproval();
 
   const handleApprove = async (artistId: string, artistName: string) => {
-    await approveArtist(artistId);
+    // Get user_id from artist profile
+    const artist = pendingArtists.find(a => a.id === artistId);
+    if (!artist?.user_id) return;
+    
+    await approveRole(artist.user_id, 'artist');
   };
 
   const handleReject = async (artistId: string, artistName: string) => {
-    await rejectArtist(artistId);
+    // Get user_id from artist profile
+    const artist = pendingArtists.find(a => a.id === artistId);
+    if (!artist?.user_id) return;
+    
+    await rejectRole(artist.user_id, 'artist', 'Application rejected by admin');
   };
 
   const formatDate = (dateString: string) => {
@@ -115,6 +124,7 @@ export const ArtistApprovalCard = () => {
                 variant="default"
                 onClick={() => handleApprove(artist.id, artist.artist_name)}
                 className="flex-1"
+                disabled={approvalLoading}
               >
                 <Check className="h-4 w-4 mr-2" />
                 Approve
@@ -123,6 +133,7 @@ export const ArtistApprovalCard = () => {
                 variant="destructive"
                 onClick={() => handleReject(artist.id, artist.artist_name)}
                 className="flex-1"
+                disabled={approvalLoading}
               >
                 <X className="h-4 w-4 mr-2" />
                 Reject
