@@ -81,7 +81,7 @@ export function CalendarDialog({ open, onOpenChange }: CalendarDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl top-[5%] translate-y-0 max-h-[90vh] overflow-auto">
+      <DialogContent className="max-w-4xl top-[5%] translate-y-0 max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
@@ -92,7 +92,7 @@ export function CalendarDialog({ open, onOpenChange }: CalendarDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 overflow-y-auto flex-1 p-6">
           {/* Calendar */}
           <div className="flex flex-col items-center">
             <Calendar
