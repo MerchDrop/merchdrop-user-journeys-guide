@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 const ArtistOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     displayName: '',
     bio: '',
@@ -40,6 +41,17 @@ const ArtistOnboarding = () => {
 
   const { user, isArtist, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Create and cleanup blob URL for profile picture preview
+  useEffect(() => {
+    if (formData.profilePicture) {
+      const url = URL.createObjectURL(formData.profilePicture);
+      setProfilePictureUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setProfilePictureUrl('');
+    }
+  }, [formData.profilePicture]);
 
   // Redirect if not authenticated or not an artist
   useEffect(() => {
@@ -313,7 +325,7 @@ const ArtistOnboarding = () => {
                     <div className="relative">
                       <Avatar className="w-32 h-32">
                         <AvatarImage 
-                          src={formData.profilePicture ? URL.createObjectURL(formData.profilePicture) : undefined} 
+                          src={profilePictureUrl || undefined} 
                         />
                         <AvatarFallback className="text-2xl">
                           <User className="w-16 h-16" />

@@ -39,12 +39,23 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [artistProfile, setArtistProfile] = useState<any>(null);
   
   const { user, isArtist } = useAuth();
   const { currency, convertPrice } = useCurrency();
   const { toast } = useToast();
+
+  // Create and cleanup blob URLs for image previews
+  useEffect(() => {
+    const previews = images.map(image => URL.createObjectURL(image));
+    setImagePreviews(previews);
+
+    return () => {
+      previews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [images]);
 
   const {
     register,
@@ -407,7 +418,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
                 {images.map((image, index) => (
                   <div key={index} className="relative">
                     <img
-                      src={URL.createObjectURL(image)}
+                      src={imagePreviews[index]}
                       alt={`Preview ${index + 1}`}
                       className="w-full h-24 object-cover rounded-lg"
                     />

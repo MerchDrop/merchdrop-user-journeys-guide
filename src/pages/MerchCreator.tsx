@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ import Header from '@/components/layout/Header';
 
 const MerchCreator = () => {
   const [selectedDesignPath, setSelectedDesignPath] = useState<string>('');
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
   const [productDetails, setProductDetails] = useState({
     name: '',
     description: '',
@@ -30,6 +31,17 @@ const MerchCreator = () => {
     uploadedFile: null as File | null,
     designBrief: ''
   });
+
+  // Create and cleanup blob URL for uploaded file preview
+  useEffect(() => {
+    if (productDetails.uploadedFile) {
+      const url = URL.createObjectURL(productDetails.uploadedFile);
+      setUploadedFileUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setUploadedFileUrl('');
+    }
+  }, [productDetails.uploadedFile]);
 
   const preUploadedDesigns = [
     {
@@ -170,7 +182,7 @@ const MerchCreator = () => {
                         {productDetails.uploadedFile ? (
                           <div className="space-y-4">
                             <div className="w-32 h-32 mx-auto bg-cover bg-center rounded-lg border"
-                                 style={{ backgroundImage: `url(${URL.createObjectURL(productDetails.uploadedFile)})` }}>
+                                 style={{ backgroundImage: `url(${uploadedFileUrl})` }}>
                             </div>
                             <p className="font-medium">{productDetails.uploadedFile.name}</p>
                             <Button variant="outline" onClick={() => setProductDetails(prev => ({ ...prev, uploadedFile: null }))}>
