@@ -66,7 +66,7 @@ const adminNavItems = [
 ];
 
 export default function AdminLayout() {
-  const { user, isAdmin, loading, profile } = useAuth();
+  const { user, isAdmin, isSuperAdmin, loading, profile } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -77,10 +77,10 @@ export default function AdminLayout() {
     );
   }
 
-  // Allow public access to admin dashboard for now
-  // if (!user || !isAdmin) {
-  //   return <Navigate to="/admin-auth" replace />;
-  // }
+  // Restrict access to admin and super admin only
+  if (!user || (!isAdmin && !isSuperAdmin)) {
+    return <Navigate to="/admin-auth" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

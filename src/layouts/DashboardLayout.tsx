@@ -44,14 +44,14 @@ export default function DashboardLayout() {
   const [isPending, setIsPending] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isArtist, isAdmin, loading, profile } = useAuth();
+  const { user, isArtist, isAdmin, isSuperAdmin, loading, profile } = useAuth();
 
-  // Redirect non-authenticated users or non-artists (allow admins too)
+  // Redirect non-authenticated users or non-artists (allow admins and super admins too)
   useEffect(() => {
-    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin);
+    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin);
     
     if (!loading) {
-      const canAccess = !!user && (isArtist || isAdmin);
+      const canAccess = !!user && (isArtist || isAdmin || isSuperAdmin);
       if (!user) {
         console.log('DashboardLayout: No user, redirecting to artist-auth');
         navigate('/artist-auth', { replace: true });
@@ -60,7 +60,7 @@ export default function DashboardLayout() {
         navigate('/artist-auth', { replace: true });
       }
     }
-  }, [user, isArtist, isAdmin, loading, navigate]);
+  }, [user, isArtist, isAdmin, isSuperAdmin, loading, navigate]);
 
   // Check artist status for pending approval
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function DashboardLayout() {
   }
 
   // Don't render dashboard if user is not authenticated or lacks access
-  if (!user || !(isArtist || isAdmin)) {
+  if (!user || !(isArtist || isAdmin || isSuperAdmin)) {
     return null;
   }
 

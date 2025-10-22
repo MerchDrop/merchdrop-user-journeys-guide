@@ -20,18 +20,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import DashboardFooter from '@/components/layout/DashboardFooter';
 
 const DesignerLayout = () => {
-  const { user, loading, isDesigner, isAdmin, signOut, profile } = useAuth();
+  const { user, loading, isDesigner, isAdmin, isSuperAdmin, signOut, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const canAccess = isDesigner || isAdmin;
+  const canAccess = isDesigner || isAdmin || isSuperAdmin;
   const [isPending, setIsPending] = React.useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !canAccess)) {
-      console.log('DesignerLayout: Access denied. User:', user?.email, 'isDesigner:', isDesigner, 'isAdmin:', isAdmin);
+      console.log('DesignerLayout: Access denied. User:', user?.email, 'isDesigner:', isDesigner, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin);
       navigate('/designer-auth');
     }
-  }, [user, loading, canAccess, navigate, isDesigner, isAdmin]);
+  }, [user, loading, canAccess, navigate, isDesigner, isAdmin, isSuperAdmin]);
 
   useEffect(() => {
     const checkDesignerStatus = async () => {

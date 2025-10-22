@@ -54,6 +54,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isArtist: boolean;
   isDesigner: boolean;
+  isSuperAdmin: boolean;
   signUp: (input: SignUpInput) => Promise<{ error: any }>;
   signUpArtist: (input: SignUpInput) => Promise<{ error: any }>;
   signUpDesigner: (input: SignUpInput) => Promise<{ error: any }>;
@@ -73,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Validation hook
@@ -116,6 +118,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('AuthContext: Error fetching user roles:', error);  
       return [];
+    }
+  };
+
+  const fetchSuperAdminStatus = async (): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('is_super_admin');
+
+      if (error) {
+        console.error('AuthContext: Error checking super admin status:', error);
+        return false;
+      }
+
+      console.log('AuthContext: Super admin status:', data);
+      return data || false;
+    } catch (error) {
+      console.error('AuthContext: Error checking super admin status:', error);
+      return false;
     }
   };
 
@@ -188,15 +207,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Load user data
   const loadUserData = async (userId: string) => {
     try {
-      const [profileData, rolesData] = await Promise.all([
+      const [profileData, rolesData, superAdminStatus] = await Promise.all([
         fetchProfile(userId),
-        fetchUserRoles(userId)
+        fetchUserRoles(userId),
+        fetchSuperAdminStatus()
       ]);
 
       setProfile(profileData);
       setUserRoles(rolesData);
+      setIsSuperAdmin(superAdminStatus);
       
-      console.log('AuthContext: User data loaded - Profile:', !!profileData, 'Roles:', rolesData.length, 'Role data:', rolesData);
+      console.log('AuthContext: User data loaded - Profile:', !!profileData, 'Roles:', rolesData.length, 'Role data:', rolesData, 'Super Admin:', superAdminStatus);
     } catch (error) {
       console.error('AuthContext: Error loading user data:', error);
     }
@@ -220,6 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setProfile(null);
           setUserRoles([]);
+          setIsSuperAdmin(false);
           setLoading(false);
           isSetupInProgress = false;
           isSetupComplete = false;
@@ -744,6 +766,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAdmin,
     isArtist,
     isDesigner,
+    isSuperAdmin,
     signUp,
     signUpArtist,
     signUpDesigner,
