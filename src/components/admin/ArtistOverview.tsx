@@ -7,6 +7,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 
 export function ArtistOverview() {
   const { artists, loading } = useArtists();
+  const { formatPrice } = useCurrency();
 
   if (loading) {
     return (
@@ -31,8 +32,6 @@ export function ArtistOverview() {
   const rejectedArtists = artists.filter(a => a.status === 'rejected').length;
   const totalSales = artists.reduce((sum, artist) => sum + artist.total_sales, 0);
   const totalEarnings = artists.reduce((sum, artist) => sum + artist.total_earnings, 0);
-
-  const { formatPrice } = useCurrency();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
