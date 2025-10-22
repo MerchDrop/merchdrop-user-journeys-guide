@@ -91,7 +91,7 @@ export default function AdminLayout() {
           <div className="p-6">
             <div className="flex items-center gap-3 mb-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={profile?.avatar_url} />
+                <AvatarImage src={profile?.avatar_url || undefined} />
                 <AvatarFallback>
                   {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'A'}
                 </AvatarFallback>

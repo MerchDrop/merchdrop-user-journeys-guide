@@ -132,7 +132,7 @@ const DesignerLayout = () => {
       <div className="p-4 border-t">
         <div className="flex items-center gap-3 mb-3">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.avatar_url} />
+            <AvatarImage src={profile?.avatar_url || undefined} />
             <AvatarFallback>
               {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'D'}
             </AvatarFallback>
@@ -183,7 +183,7 @@ const DesignerLayout = () => {
               <Bell className="h-4 w-4" />
             </Button>
             <Avatar className="h-8 w-8">
-              <AvatarImage src={profile?.avatar_url} />
+              <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback>
                 {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'D'}
               </AvatarFallback>
@@ -200,7 +200,7 @@ const DesignerLayout = () => {
               <Bell className="h-4 w-4" />
             </Button>
             <Avatar className="h-8 w-8">
-              <AvatarImage src={profile?.avatar_url} />
+              <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback>
                 {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'D'}
               </AvatarFallback>
