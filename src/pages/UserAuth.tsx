@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +24,29 @@ const UserAuth = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
   const navigate = useNavigate();
-  const { user } = useRoleRedirect({ defaultPath: '/' });
+  
+  // Use role redirect hook - skip redirect to allow manual control
+  useRoleRedirect({ 
+    skipRedirect: true,
+    defaultPath: '/' 
+  });
+
+  // Redirect based on user role after successful auth
+  useEffect(() => {
+    if (user && !loading) {
+      if (isSuperAdmin || isAdmin) {
+        navigate('/admin');
+      } else if (isDesigner) {
+        navigate('/designer/dashboard');
+      } else if (isArtist) {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

@@ -125,10 +125,10 @@ const Header = ({
                 </DropdownMenuContent>
               </DropdownMenu> : <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} asChild>
-                  
+                  <Link to="/user-auth">Sign In</Link>
                 </Button>
                 <Button variant="default" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
-                  <Link to="/artist-auth">Sign In</Link>
+                  <Link to="/artist-auth">Start Creating</Link>
                 </Button>
               </div>}
           </div>

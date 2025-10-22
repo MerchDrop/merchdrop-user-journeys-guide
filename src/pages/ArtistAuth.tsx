@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +25,29 @@ const ArtistAuth = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { signUpArtist, signIn } = useAuth();
+  const { signUpArtist, signIn, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
   const navigate = useNavigate();
   
-  // Use role redirect hook - will handle navigation for logged in artists
-  const { loading } = useRoleRedirect({ 
-    skipRedirect: true, // Let users access auth page if not logged in
+  // Use role redirect hook - skip redirect to allow manual control
+  useRoleRedirect({ 
+    skipRedirect: true,
     defaultPath: '/dashboard' 
   });
+
+  // Redirect based on user role after successful auth
+  useEffect(() => {
+    if (user && !loading) {
+      if (isSuperAdmin || isAdmin) {
+        navigate('/admin');
+      } else if (isDesigner) {
+        navigate('/designer/dashboard');
+      } else if (isArtist) {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist, navigate]);
 
   // Show loading while auth is initializing
   if (loading) {
