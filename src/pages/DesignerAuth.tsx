@@ -41,7 +41,7 @@ export default function DesignerAuth() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const { signUpDesigner, signIn } = useAuth();
   const navigate = useNavigate();
-  const { user } = useRoleRedirect({ skipRedirect: true });
+  const { user } = useRoleRedirect({ defaultPath: '/designer-auth' });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

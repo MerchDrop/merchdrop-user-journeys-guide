@@ -22,7 +22,9 @@ const Header = ({
     signOut,
     loading,
     isAdmin,
-    isArtist
+    isArtist,
+    isDesigner,
+    isSuperAdmin
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,6 +39,13 @@ const Header = ({
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const getDashboardLink = () => {
+    if (isSuperAdmin || isAdmin) return '/admin';
+    if (isDesigner) return '/designer/dashboard';
+    if (isArtist) return '/dashboard';
+    return '/dashboard';
   };
   return <header className={`${shouldBeTransparent ? 'absolute top-8 z-40 w-full bg-transparent border-transparent' : 'sticky top-0 z-40 w-full border-b border-gray-200 bg-white'}`}>
       <div className={`container mx-auto px-4 sm:px-6 lg:px-8 ${shouldBeTransparent ? 'my-4 bg-transparent text-white' : ''}`}>
@@ -91,7 +100,7 @@ const Header = ({
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center">
+                    <Link to={getDashboardLink()} className="flex items-center">
                       <User className="mr-2 h-4 w-4" />
                       Dashboard
                     </Link>
