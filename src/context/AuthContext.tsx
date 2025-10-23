@@ -412,7 +412,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const redirectUrl = `${window.location.origin}/email-confirmation`;
+      const redirectUrl = `${window.location.origin}/email-confirmation?role=artist`;
       
       const { error } = await supabase.auth.signUp({
         email: (validation.data as SignUpInput).email,
@@ -472,7 +472,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const redirectUrl = `${window.location.origin}/email-confirmation`;
+      const redirectUrl = `${window.location.origin}/email-confirmation?role=designer`;
       
       const { error } = await supabase.auth.signUp({
         email: (validation.data as SignUpInput).email,
