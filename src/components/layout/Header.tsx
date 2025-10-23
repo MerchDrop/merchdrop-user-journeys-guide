@@ -51,7 +51,7 @@ const Header = ({
       <div className={`container mx-auto px-4 sm:px-6 lg:px-8 ${shouldBeTransparent ? 'my-4 bg-transparent text-white' : ''}`}>
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}
-          <div className="flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-6">
             <Link to="/creators" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               For Creators
             </Link>
@@ -61,14 +61,14 @@ const Header = ({
           </div>
 
           {/* Centered Logo */}
-          <Link to="/" className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2">
+          <Link to="/" className="flex items-center space-x-2 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
             <img src="/Merchdrop.png" alt="MerchDrop" className={`h-12 w-auto ${shouldBeTransparent ? '' : 'invert'}`} />
           </Link>
 
           {/* Right Navigation */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
             {/* Search Bar - Desktop */}
-            <div className="hidden md:flex">
+            <div className="hidden lg:flex">
               <div className="relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${shouldBeTransparent ? 'text-white' : 'text-gray-400'}`} />
                 <input type="text" placeholder="Search..." className={`pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${shouldBeTransparent ? 'border-white/20 bg-white/10 text-white placeholder-white/70 focus:bg-white/20' : 'border-gray-200 bg-white focus:ring-black'}`} />
@@ -123,7 +123,7 @@ const Header = ({
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu> : <div className="flex items-center space-x-2">
+              </DropdownMenu> : <div className="hidden sm:flex items-center space-x-2">
                 <Button variant="ghost" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} asChild>
                   <Link to="/user-auth">Sign In</Link>
                 </Button>
@@ -134,13 +134,13 @@ const Header = ({
           </div>
 
           {/* Mobile menu button */}
-          <button className={`md:hidden p-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button className={`lg:hidden p-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && <div className="md:hidden py-4 border-t border-gray-200 animate-fade-in-up">
+        {isMenuOpen && <div className="lg:hidden py-4 border-t border-gray-200 animate-fade-in-up">
             <div className="flex flex-col space-y-4">
               {/* Mobile Search */}
               <div className="relative">
