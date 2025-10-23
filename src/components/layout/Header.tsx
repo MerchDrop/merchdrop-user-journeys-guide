@@ -61,7 +61,7 @@ const Header = ({
           </div>
 
           {/* Centered Logo */}
-          <Link to="/" className="flex items-center space-x-2 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
+          <Link to="/" className="flex items-center space-x-2 xl:absolute xl:left-1/2 xl:transform xl:-translate-x-1/2">
             <img src="/Merchdrop.png" alt="MerchDrop" className={`h-12 w-auto ${shouldBeTransparent ? '' : 'invert'}`} />
           </Link>
 
