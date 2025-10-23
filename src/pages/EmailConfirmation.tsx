@@ -299,10 +299,10 @@ const EmailConfirmation = () => {
   function handlePrimaryAction() {
     switch (userRole) {
       case 'artist':
-        navigate('/dashboard');
+        navigate('/dashboard/profile');
         break;
       case 'designer':
-        navigate('/designer/dashboard');
+        navigate('/designer/profile');
         break;
       default:
         navigate('/');
