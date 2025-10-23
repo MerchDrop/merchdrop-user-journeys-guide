@@ -45,8 +45,8 @@ const DesignerLayout = () => {
     checkDesignerStatus();
   }, [user]);
 
-  // Allow access if user has active designer role OR active designer profile (resilient to sync issues)
-  const canAccess = isDesigner || isAdmin || isSuperAdmin || designerStatus === 'active';
+  // Allow access if user has active designer role, active OR pending designer profile
+  const canAccess = isDesigner || isAdmin || isSuperAdmin || designerStatus === 'active' || designerStatus === 'pending';
 
   useEffect(() => {
     if (!loading && (!user || !canAccess)) {

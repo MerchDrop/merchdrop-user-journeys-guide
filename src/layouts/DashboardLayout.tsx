@@ -70,8 +70,8 @@ export default function DashboardLayout() {
     console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin, 'artistStatus:', artistStatus);
     
     if (!loading) {
-      // Allow access if user has active artist role OR approved artist profile (resilient to sync issues)
-      const canAccess = !!user && (isArtist || isAdmin || isSuperAdmin || artistStatus === 'approved');
+      // Allow access if user has active artist role, approved OR pending artist profile
+      const canAccess = !!user && (isArtist || isAdmin || isSuperAdmin || artistStatus === 'approved' || artistStatus === 'pending');
       if (!user) {
         console.log('DashboardLayout: No user, redirecting to artist-auth');
         navigate('/artist-auth', { replace: true });
@@ -92,7 +92,7 @@ export default function DashboardLayout() {
   }
 
   // Don't render dashboard if user is not authenticated or lacks access
-  if (!user || !(isArtist || isAdmin || isSuperAdmin)) {
+  if (!user || !(isArtist || isAdmin || isSuperAdmin || artistStatus === 'pending')) {
     return null;
   }
 
