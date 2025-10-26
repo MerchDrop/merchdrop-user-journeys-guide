@@ -6,7 +6,8 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Mail, Lock, User, ArrowLeft, ThumbsUp } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
@@ -25,6 +26,7 @@ const ArtistAuth = () => {
     confirmPassword: ""
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const { signUpArtist, signIn, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
   const navigate = useNavigate();
@@ -129,10 +131,7 @@ const ArtistAuth = () => {
           const errorInfo = getAuthErrorMessage(error, 'signup');
           toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
-          toast.success("Artist account created!", { 
-            description: "Please check your email to verify. Your application is pending admin approval." 
-          });
-          navigate('/email-confirmation?role=artist');
+          setShowSuccessDialog(true);
         }
       } else {
         const { error } = await signIn({
@@ -343,6 +342,40 @@ const ArtistAuth = () => {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-4">
+                <ThumbsUp className="h-12 w-12 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-2xl">Thanks for joining MerchDrop!</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Kindly check your email for confirmation.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction 
+              onClick={() => {
+                setShowSuccessDialog(false);
+                setIsSignUp(false);
+                setFormData({
+                  firstName: "",
+                  lastName: "",
+                  email: "",
+                  password: "",
+                  confirmPassword: ""
+                });
+              }}
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
