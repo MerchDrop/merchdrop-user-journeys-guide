@@ -24,7 +24,8 @@ const Header = ({
     isAdmin,
     isArtist,
     isDesigner,
-    isSuperAdmin
+    isSuperAdmin,
+    userRoles
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,10 +42,14 @@ const Header = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  // Check for pending roles
+  const hasPendingArtistRole = userRoles?.some(r => r.role === 'artist' && r.status === 'pending');
+  const hasPendingDesignerRole = userRoles?.some(r => r.role === 'designer' && r.status === 'pending');
+
   const getDashboardLink = () => {
     if (isSuperAdmin || isAdmin) return '/admin';
-    if (isDesigner) return '/designer/dashboard';
-    if (isArtist) return '/dashboard';
+    if (isDesigner || hasPendingDesignerRole) return '/designer/dashboard';
+    if (isArtist || hasPendingArtistRole) return '/dashboard';
     return '/dashboard';
   };
   return <header className={`${shouldBeTransparent ? 'absolute top-8 z-40 w-full bg-transparent border-transparent' : 'sticky top-0 z-40 w-full border-b border-gray-200 bg-white'}`}>
