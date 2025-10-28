@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,9 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ThumbsUp } from 'lucide-react';
+import { ThumbsUp, CheckCircle2, Clock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from "@/integrations/supabase/client";
 import { useRoleRedirect } from '@/hooks/useRoleRedirect';
 import { Header } from '@/components/layout/Header';
 import { SEOHelmet } from '@/components/SEO/SEOHelmet';
@@ -39,9 +40,34 @@ export default function DesignerAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const { signUpDesigner, signIn } = useAuth();
+  const [designerProfile, setDesignerProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const { signUpDesigner, signIn, signOut, user } = useAuth();
   const navigate = useNavigate();
-  const { user } = useRoleRedirect({ defaultPath: '/designer-auth' });
+  useRoleRedirect({ skipRedirect: true, defaultPath: '/designer-auth' });
+
+  // Fetch designer profile if user is signed in
+  useEffect(() => {
+    const fetchDesignerProfile = async () => {
+      if (user) {
+        setProfileLoading(true);
+        const { data, error } = await supabase
+          .from('designer_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!error && data) {
+          setDesignerProfile(data);
+        }
+        setProfileLoading(false);
+      } else {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchDesignerProfile();
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -162,7 +188,73 @@ export default function DesignerAuth() {
       </AlertDialog>
 
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
+        {/* Show status card if user is signed in and has designer profile */}
+        {user && designerProfile && !profileLoading ? (
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              {designerProfile.status === 'pending' ? (
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="rounded-full bg-amber-100 dark:bg-amber-900/20 p-6">
+                      <Clock className="h-16 w-16 text-amber-600 dark:text-amber-400 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold">Your Application is Pending</h2>
+                    <p className="text-muted-foreground">We're reviewing your designer application</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Our admin team will review your application within 48 hours. You'll receive an email once approved.
+                  </p>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => navigate('/designer/profile')}
+                      className="w-full"
+                      size="lg"
+                    >
+                      Complete My Profile
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Complete your profile to help speed up the review process
+                    </p>
+                  </div>
+                </div>
+              ) : designerProfile.status === 'active' ? (
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-6">
+                      <CheckCircle2 className="h-16 w-16 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold">You're All Set!</h2>
+                    <p className="text-muted-foreground">Your designer account is active</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    You already have access to your dashboard.
+                  </p>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => navigate('/designer/dashboard')}
+                      className="w-full"
+                      size="lg"
+                    >
+                      View Dashboard
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => signOut()}
+                      className="w-full"
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : !user && !profileLoading ? (
+          <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Designer Portal</CardTitle>
             <CardDescription>
@@ -295,6 +387,7 @@ export default function DesignerAuth() {
             </div>
           </CardContent>
         </Card>
+        ) : null}
       </div>
     </>
   );

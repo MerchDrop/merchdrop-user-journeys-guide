@@ -6,7 +6,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, ArrowLeft, ShoppingBag } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, ShoppingBag, UserCircle } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
@@ -24,29 +24,14 @@ const UserAuth = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { signUp, signIn, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
+  const { signUp, signIn, signOut, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
   const navigate = useNavigate();
   
-  // Use role redirect hook - skip redirect to allow manual control
+  // Use role redirect hook - skip redirect to show status for signed-in users
   useRoleRedirect({ 
     skipRedirect: true,
     defaultPath: '/' 
   });
-
-  // Redirect based on user role after successful auth
-  useEffect(() => {
-    if (user && !loading) {
-      if (isSuperAdmin || isAdmin) {
-        navigate('/admin');
-      } else if (isDesigner) {
-        navigate('/designer/dashboard');
-      } else if (isArtist) {
-        navigate('/dashboard');
-      } else {
-        navigate('/');
-      }
-    }
-  }, [user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -125,7 +110,43 @@ const UserAuth = () => {
             </Link>
           </Button>
 
-          <Card className="shadow-hero">
+          {/* Show status card if user is signed in */}
+          {user && !loading ? (
+            <Card className="shadow-hero">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="rounded-full bg-blue-100 dark:bg-blue-900/20 p-6">
+                      <UserCircle className="h-16 w-16 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold">You're Already Signed In!</h2>
+                    <p className="text-muted-foreground">You're currently signed in as</p>
+                    <p className="text-sm font-medium">{user.email}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => navigate('/')}
+                      className="w-full"
+                      size="lg"
+                      variant="hero"
+                    >
+                      Continue Shopping
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => signOut()}
+                      className="w-full"
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : !user && !loading ? (
+            <Card className="shadow-hero">
             <CardHeader className="text-center">
               <div className="flex items-center justify-center mb-4">
                 <ShoppingBag className="w-8 h-8 text-primary" />
@@ -286,6 +307,7 @@ const UserAuth = () => {
               )}
             </CardContent>
           </Card>
+          ) : null}
         </div>
       </div>
     </div>

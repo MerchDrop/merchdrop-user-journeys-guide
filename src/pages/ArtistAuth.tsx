@@ -7,14 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Mail, Lock, User, ArrowLeft, ThumbsUp } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, ThumbsUp, CheckCircle2, Clock } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getAuthErrorMessage, getRoleUpgradeMessage } from '@/lib/authErrorMessages';
 import merchdropLogo from "@/assets/merchdrop-logo.png";
-import { supabase } from "@/integrations/supabase/client";
 
 const ArtistAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -27,53 +27,40 @@ const ArtistAuth = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [artistProfile, setArtistProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
-  const { signUpArtist, signIn, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
+  const { signUpArtist, signIn, signOut, user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist } = useAuth();
   const navigate = useNavigate();
   
-  // Use role redirect hook - skip redirect to allow manual control
+  // Use role redirect hook - skip redirect to allow this page to handle pending artists
   useRoleRedirect({ 
     skipRedirect: true,
-    defaultPath: '/dashboard' 
+    defaultPath: '/artist-auth' 
   });
 
-  // Redirect based on user role after successful auth
+  // Fetch artist profile if user is signed in
   useEffect(() => {
-    const checkRedirect = async () => {
-      if (user && !loading) {
-        if (isSuperAdmin || isAdmin) {
-          navigate('/admin');
-          return;
-        } 
-        
-        if (isDesigner) {
-          navigate('/designer/dashboard');
-          return;
-        } 
-        
-        if (isArtist) {
-          navigate('/dashboard');
-          return;
-        }
-        
-        // Check if artist profile is approved (resilient to role sync issues)
-        const { data: artistProfile } = await supabase
+    const fetchArtistProfile = async () => {
+      if (user) {
+        setProfileLoading(true);
+        const { data, error } = await supabase
           .from('artist_profiles')
-          .select('status')
+          .select('*')
           .eq('user_id', user.id)
-          .maybeSingle();
+          .single();
         
-        if (artistProfile?.status === 'approved') {
-          navigate('/dashboard');
-          return;
+        if (!error && data) {
+          setArtistProfile(data);
         }
-        
-        navigate('/');
+        setProfileLoading(false);
+      } else {
+        setProfileLoading(false);
       }
     };
-    
-    checkRedirect();
-  }, [user, loading, isSuperAdmin, isAdmin, isDesigner, isArtist, navigate]);
+
+    fetchArtistProfile();
+  }, [user]);
 
   // Show loading while auth is initializing
   if (loading) {
@@ -170,11 +157,77 @@ const ArtistAuth = () => {
             </Link>
           </Button>
 
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <img src={merchdropLogo} alt="Merchdrop" className="w-8 h-8 object-contain" />
-              </div>
+          {/* Show status card if user is signed in and has artist profile */}
+          {user && artistProfile && !profileLoading ? (
+            <Card className="shadow-hero">
+              <CardContent className="pt-6">
+                {artistProfile.status === 'pending' ? (
+                  <div className="text-center space-y-6">
+                    <div className="flex justify-center">
+                      <div className="rounded-full bg-amber-100 dark:bg-amber-900/20 p-6">
+                        <Clock className="h-16 w-16 text-amber-600 dark:text-amber-400 animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-bold">Your Application is Pending</h2>
+                      <p className="text-muted-foreground">We're reviewing your artist application</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Our admin team will review your application within 48 hours. You'll receive an email once approved.
+                    </p>
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={() => navigate('/dashboard/profile')}
+                        className="w-full"
+                        size="lg"
+                      >
+                        Complete My Profile
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Complete your profile to help speed up the review process
+                      </p>
+                    </div>
+                  </div>
+                ) : artistProfile.status === 'approved' ? (
+                  <div className="text-center space-y-6">
+                    <div className="flex justify-center">
+                      <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-6">
+                        <CheckCircle2 className="h-16 w-16 text-green-600 dark:text-green-400" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-bold">You're All Set!</h2>
+                      <p className="text-muted-foreground">Your artist account is active</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      You already have access to your dashboard.
+                    </p>
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={() => navigate('/dashboard')}
+                        className="w-full"
+                        size="lg"
+                      >
+                        View Dashboard
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => signOut()}
+                        className="w-full"
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : !user && !profileLoading ? (
+            <Card className="shadow-lg">
+              <CardHeader className="text-center">
+                <div className="flex items-center justify-center mb-4">
+                  <img src={merchdropLogo} alt="Merchdrop" className="w-8 h-8 object-contain" />
+                </div>
               <CardTitle className="text-2xl font-bold">
                 {isSignUp ? "Start Your" : "Welcome"} <span className="text-accent">Creator Journey</span>
               </CardTitle>
@@ -340,6 +393,7 @@ const ArtistAuth = () => {
               )}
             </CardContent>
           </Card>
+          ) : null}
         </div>
       </div>
 
