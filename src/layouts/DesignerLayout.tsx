@@ -25,12 +25,17 @@ const DesignerLayout = () => {
   const location = useLocation();
   const [isPending, setIsPending] = React.useState(false);
   const [designerStatus, setDesignerStatus] = React.useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = React.useState(true);
   
   // Check designer status and set pending flag
   useEffect(() => {
     const checkDesignerStatus = async () => {
-      if (!user) return;
+      if (!user) {
+        setStatusLoading(false);
+        return;
+      }
       
+      setStatusLoading(true);
       const { supabase } = await import('@/integrations/supabase/client');
       const { data } = await supabase
         .from('designer_profiles')
@@ -40,6 +45,7 @@ const DesignerLayout = () => {
       
       setDesignerStatus(data?.status || null);
       setIsPending(data?.status === 'pending');
+      setStatusLoading(false);
     };
     
     checkDesignerStatus();
@@ -49,13 +55,13 @@ const DesignerLayout = () => {
   const canAccess = isDesigner || isAdmin || isSuperAdmin || designerStatus === 'active' || designerStatus === 'pending';
 
   useEffect(() => {
-    if (!loading && (!user || !canAccess)) {
+    if (!loading && !statusLoading && (!user || !canAccess)) {
       console.log('DesignerLayout: Access denied. User:', user?.email, 'isDesigner:', isDesigner, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin, 'designerStatus:', designerStatus);
       navigate('/designer-auth');
     }
-  }, [user, loading, canAccess, navigate, isDesigner, isAdmin, isSuperAdmin, designerStatus]);
+  }, [user, loading, statusLoading, canAccess, navigate, isDesigner, isAdmin, isSuperAdmin, designerStatus]);
 
-  if (loading) {
+  if (loading || statusLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
