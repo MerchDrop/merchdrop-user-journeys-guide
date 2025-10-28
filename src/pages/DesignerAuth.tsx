@@ -50,6 +50,7 @@ export default function DesignerAuth() {
   useEffect(() => {
     const fetchDesignerProfile = async () => {
       if (user) {
+        console.log('[DesignerAuth] Fetching designer profile for user:', user.id);
         setProfileLoading(true);
         const { data, error } = await supabase
           .from('designer_profiles')
@@ -58,7 +59,10 @@ export default function DesignerAuth() {
           .single();
         
         if (!error && data) {
+          console.log('[DesignerAuth] Designer profile found:', data);
           setDesignerProfile(data);
+        } else if (error) {
+          console.log('[DesignerAuth] No designer profile found or error:', error);
         }
         setProfileLoading(false);
       } else {
@@ -68,6 +72,13 @@ export default function DesignerAuth() {
 
     fetchDesignerProfile();
   }, [user]);
+
+  // Determine button text and action based on profile state
+  const getProfileButtonText = () => {
+    if (!designerProfile) return 'Set Up My Profile';
+    if (designerProfile.designer_name && designerProfile.bio) return 'View My Profile';
+    return 'Complete My Profile';
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -208,14 +219,19 @@ export default function DesignerAuth() {
                   </p>
                   <div className="space-y-3">
                     <Button 
-                      onClick={() => navigate('/designer/profile')}
+                      onClick={() => {
+                        console.log('[DesignerAuth] Navigating to profile page');
+                        navigate('/designer/profile');
+                      }}
                       className="w-full"
                       size="lg"
                     >
-                      Complete My Profile
+                      {getProfileButtonText()}
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Complete your profile to help speed up the review process
+                      {!designerProfile?.bio || !designerProfile?.designer_name
+                        ? 'Complete your profile to help speed up the review process'
+                        : 'Review and update your profile information'}
                     </p>
                   </div>
                 </div>

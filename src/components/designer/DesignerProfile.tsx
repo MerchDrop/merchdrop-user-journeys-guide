@@ -9,26 +9,43 @@ import { useDesigners } from '@/hooks/useDesignersQuery';
 import { useAuth } from '@/context/AuthContext';
 import { User, Mail, Calendar, Edit3 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { DesignerProfileCompletionBanner } from './DesignerProfileCompletionBanner';
 
 export const DesignerProfile = () => {
   const { user } = useAuth();
-  const { designerProfile, updateDesignerProfile, createDesignerProfile, loading } = useDesigners();
+  const { designerProfile, designs, updateDesignerProfile, createDesignerProfile, loading } = useDesigners();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     designer_name: designerProfile?.designer_name || '',
     bio: designerProfile?.bio || ''
   });
 
+  console.log('[DesignerProfile] Component loaded, profile:', designerProfile, 'designs:', designs);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (designerProfile) {
-      await updateDesignerProfile(formData);
-    } else {
-      await createDesignerProfile(formData.designer_name, formData.bio);
+    try {
+      console.log('[DesignerProfile] Saving profile:', formData);
+      if (designerProfile) {
+        await updateDesignerProfile(formData);
+        toast.success('Profile updated successfully', {
+          description: 'Your changes have been saved. This helps with approval!'
+        });
+      } else {
+        await createDesignerProfile(formData.designer_name, formData.bio);
+        toast.success('Profile created successfully', {
+          description: 'Your profile is now set up. Upload designs to complete your application!'
+        });
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Failed to save profile', {
+        description: 'Please try again or contact support if the issue persists.'
+      });
     }
-    
-    setIsEditing(false);
   };
 
   const handleCancel = () => {
@@ -55,12 +72,19 @@ export const DesignerProfile = () => {
 
   if (!designerProfile) {
     return (
-      <div className="p-6">
+      <div className="p-6 space-y-6 max-w-3xl mx-auto">
+        <DesignerProfileCompletionBanner 
+          status="pending"
+          designerName={formData.designer_name}
+          bio={formData.bio}
+          totalDesigns={0}
+        />
+        
         <Card>
           <CardHeader>
             <CardTitle>Create Your Designer Profile</CardTitle>
             <CardDescription>
-              Set up your profile to start uploading designs and collaborating with artists.
+              Set up your profile to start uploading designs. A complete profile helps speed up approval!
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -71,9 +95,12 @@ export const DesignerProfile = () => {
                   id="designer_name"
                   value={formData.designer_name}
                   onChange={(e) => setFormData({...formData, designer_name: e.target.value})}
-                  placeholder="Enter your designer name"
+                  placeholder="Your designer or brand name"
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  This is how you'll be displayed to artists and admins
+                </p>
               </div>
               
               <div className="space-y-2">
@@ -82,9 +109,12 @@ export const DesignerProfile = () => {
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                  placeholder="Tell us about yourself and your design style..."
+                  placeholder="Tell us about yourself and your design style (at least 20 characters recommended)"
                   rows={4}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {formData.bio.length} characters • A detailed bio helps with approval
+                </p>
               </div>
               
               <Button type="submit" className="w-full">
@@ -99,6 +129,13 @@ export const DesignerProfile = () => {
 
   return (
     <div className="p-6 space-y-6">
+      <DesignerProfileCompletionBanner 
+        status={designerProfile.status || 'pending'}
+        designerName={designerProfile.designer_name}
+        bio={designerProfile.bio}
+        totalDesigns={designs?.length || designerProfile.total_designs || 0}
+      />
+      
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Designer Profile</h1>
@@ -141,9 +178,12 @@ export const DesignerProfile = () => {
                       id="bio"
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                      placeholder="Tell us about yourself and your design style..."
+                      placeholder="Tell us about yourself and your design style (at least 20 characters recommended)"
                       rows={4}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      {formData.bio?.length || 0} characters • A detailed bio helps with approval
+                    </p>
                   </div>
                   
                   <div className="flex gap-2">
