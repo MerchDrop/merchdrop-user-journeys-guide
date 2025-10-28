@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDesigners } from '@/hooks/useDesignersQuery';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { User, Mail, Calendar, Edit3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ import { DesignerProfileCompletionBanner } from './DesignerProfileCompletionBann
 
 export const DesignerProfile = () => {
   const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const { designerProfile, designs, updateDesignerProfile, createDesignerProfile, loading } = useDesigners();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -262,7 +264,7 @@ export const DesignerProfile = () => {
                 <div className="flex justify-between pt-3 border-t">
                   <span className="text-muted-foreground">Total Earnings</span>
                   <span className="font-bold text-green-600">
-                    ${designerProfile.total_earnings.toFixed(2)}
+                    {formatPrice(designerProfile.total_earnings)}
                   </span>
                 </div>
               </div>
