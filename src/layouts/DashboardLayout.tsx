@@ -43,6 +43,7 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [artistStatus, setArtistStatus] = useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isArtist, isAdmin, isSuperAdmin, loading, profile } = useAuth();
@@ -50,8 +51,12 @@ export default function DashboardLayout() {
   // Check artist status for pending approval and access
   useEffect(() => {
     const checkArtistStatus = async () => {
-      if (!user) return;
+      if (!user) {
+        setStatusLoading(false);
+        return;
+      }
       
+      setStatusLoading(true);
       const { data } = await supabase
         .from('artist_profiles')
         .select('status')
@@ -60,6 +65,7 @@ export default function DashboardLayout() {
       
       setArtistStatus(data?.status || null);
       setIsPending(data?.status === 'pending');
+      setStatusLoading(false);
     };
     
     checkArtistStatus();
@@ -67,9 +73,9 @@ export default function DashboardLayout() {
 
   // Redirect non-authenticated users or non-artists (allow admins and super admins too)
   useEffect(() => {
-    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin, 'artistStatus:', artistStatus);
+    console.log('DashboardLayout: user:', user, 'loading:', loading, 'isArtist:', isArtist, 'isAdmin:', isAdmin, 'isSuperAdmin:', isSuperAdmin, 'artistStatus:', artistStatus, 'statusLoading:', statusLoading);
     
-    if (!loading) {
+    if (!loading && !statusLoading) {
       // Allow access if user has active artist role, approved OR pending artist profile
       const canAccess = !!user && (isArtist || isAdmin || isSuperAdmin || artistStatus === 'approved' || artistStatus === 'pending');
       if (!user) {
@@ -80,10 +86,10 @@ export default function DashboardLayout() {
         navigate('/artist-auth', { replace: true });
       }
     }
-  }, [user, isArtist, isAdmin, isSuperAdmin, loading, artistStatus, navigate]);
+  }, [user, isArtist, isAdmin, isSuperAdmin, loading, artistStatus, statusLoading, navigate]);
 
   // Show loading spinner while checking authentication
-  if (loading) {
+  if (loading || statusLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -92,7 +98,7 @@ export default function DashboardLayout() {
   }
 
   // Don't render dashboard if user is not authenticated or lacks access
-  if (!user || !(isArtist || isAdmin || isSuperAdmin || artistStatus === 'pending')) {
+  if (!user || (!(isArtist || isAdmin || isSuperAdmin || artistStatus === 'pending') && !statusLoading)) {
     return null;
   }
 
