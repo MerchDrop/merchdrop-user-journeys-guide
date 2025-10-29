@@ -55,20 +55,22 @@ const Header = ({
   return <header className={`${shouldBeTransparent ? 'absolute top-8 z-40 w-full bg-transparent border-transparent' : 'sticky top-0 z-40 w-full border-b border-gray-200 bg-white'}`}>
       <div className={`container mx-auto px-4 sm:px-6 lg:px-8 ${shouldBeTransparent ? 'my-4 bg-transparent text-white' : ''}`}>
         <div className="flex h-16 items-center justify-between">
-          {/* Left Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <Link to="/creators" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
-              For Creators
+          {/* Logo - Far Left */}
+          <div className="flex items-center space-x-6">
+            <Link to="/" className="flex items-center space-x-2">
+              <img src="/Merchdrop.png" alt="MerchDrop" className={`h-12 w-auto ${shouldBeTransparent ? '' : 'invert'}`} />
             </Link>
-            <Link to="/products" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
-              Shop
-            </Link>
-          </div>
 
-          {/* Centered Logo */}
-          <Link to="/" className="flex items-center space-x-2 xl:absolute xl:left-1/2 xl:transform xl:-translate-x-1/2">
-            <img src="/Merchdrop.png" alt="MerchDrop" className={`h-12 w-auto ${shouldBeTransparent ? '' : 'invert'}`} />
-          </Link>
+            {/* Left Navigation */}
+            <div className="hidden lg:flex items-center space-x-6">
+              <Link to="/creators" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+                For Creators
+              </Link>
+              <Link to="/products" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+                Shop
+              </Link>
+            </div>
+          </div>
 
           {/* Right Navigation */}
           <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
