@@ -4,17 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDesigners } from '@/hooks/useDesignersQuery';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrency } from '@/context/CurrencyContext';
-import { User, Mail, Calendar, Edit3 } from 'lucide-react';
+import { User, Mail, Calendar, Edit3, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { DesignerProfileCompletionBanner } from './DesignerProfileCompletionBanner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const DesignerProfile = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { formatPrice } = useCurrency();
   const { designerProfile, designs, updateDesignerProfile, createDesignerProfile, loading } = useDesigners();
   const [isEditing, setIsEditing] = useState(false);
@@ -56,6 +57,52 @@ export const DesignerProfile = () => {
       bio: designerProfile?.bio || ''
     });
     setIsEditing(false);
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      await supabase.storage.from('avatars').remove([fileName]);
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: data.publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+      
+      toast.success('Avatar uploaded successfully!');
+      
+      window.location.reload();
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast.error('Failed to upload avatar. Please try again.');
+    }
   };
 
   if (loading) {
@@ -198,11 +245,26 @@ export const DesignerProfile = () => {
               ) : (
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarFallback className="text-2xl">
-                        {designerProfile.designer_name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage src={profile?.avatar_url || undefined} />
+                        <AvatarFallback className="text-2xl">
+                          {designerProfile.designer_name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Label htmlFor="designer-avatar-upload" className="absolute -bottom-2 -right-2 cursor-pointer">
+                        <div className="bg-primary text-primary-foreground p-2 rounded-full hover:bg-primary/90 transition-colors">
+                          <Camera className="h-4 w-4" />
+                        </div>
+                      </Label>
+                      <Input
+                        id="designer-avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                    </div>
                     <div>
                       <h2 className="text-2xl font-bold">{designerProfile.designer_name}</h2>
                       <p className="text-muted-foreground flex items-center gap-1">

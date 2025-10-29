@@ -167,6 +167,32 @@ const ArtistOnboarding = () => {
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '-');
 
+      // Upload profile picture if provided
+      let avatarUrl = '';
+      if (formData.profilePicture) {
+        try {
+          const fileExt = formData.profilePicture.name.split('.').pop();
+          const fileName = `${user.id}/avatar.${fileExt}`;
+          
+          await supabase.storage.from('avatars').remove([fileName]);
+          
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, formData.profilePicture, { upsert: true });
+
+          if (uploadError) {
+            console.error('Avatar upload error:', uploadError);
+          } else {
+            const { data } = supabase.storage
+              .from('avatars')
+              .getPublicUrl(fileName);
+            avatarUrl = data.publicUrl;
+          }
+        } catch (error) {
+          console.error('Error uploading avatar:', error);
+        }
+      }
+
       // First check if artist profile already exists
       const { data: existingProfile, error: checkError } = await supabase
         .from('artist_profiles')
@@ -220,7 +246,8 @@ const ArtistOnboarding = () => {
         .update({
           bio: formData.bio,
           social_links: formData.socialLinks,
-          display_name: formData.displayName
+          display_name: formData.displayName,
+          ...(avatarUrl && { avatar_url: avatarUrl })
         })
         .eq('id', user.id);
 

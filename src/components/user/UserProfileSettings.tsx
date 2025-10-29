@@ -254,6 +254,67 @@ export default function UserProfileSettings() {
     }
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "File size must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      await supabase.storage.from('avatars').remove([fileName]);
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update profile in database using direct supabase call
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: data.publicUrl } as any)
+        .eq('id', user.id);
+      
+      toast({
+        title: "Success",
+        description: "Avatar uploaded successfully!",
+      });
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload avatar. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
@@ -289,10 +350,21 @@ export default function UserProfileSettings() {
                         {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <Button variant="outline" size="sm" type="button">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Change Photo
-                    </Button>
+                    <Label htmlFor="user-avatar-upload" className="cursor-pointer">
+                      <Button variant="outline" size="sm" type="button" asChild>
+                        <span>
+                          <Camera className="h-4 w-4 mr-2" />
+                          Change Photo
+                        </span>
+                      </Button>
+                    </Label>
+                    <Input
+                      id="user-avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                    />
                   </div>
 
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
