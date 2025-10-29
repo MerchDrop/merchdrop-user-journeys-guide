@@ -106,10 +106,18 @@ const Header = ({
                     <p className="text-[12px] text-muted-foreground">{profile?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  {(isAdmin || isArtist || isDesigner || hasPendingArtistRole || hasPendingDesignerRole) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={getDashboardLink()} className="flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
-                    <Link to={getDashboardLink()} className="flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      Dashboard
+                    <Link to="/user/profile" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Profile Settings
                     </Link>
                   </DropdownMenuItem>
                   {isArtist && <DropdownMenuItem asChild>

@@ -54,6 +54,7 @@ import EmailConfirmation from '@/pages/EmailConfirmation';
 import MerchCreator from '@/pages/MerchCreator';
 import OrderTracking from '@/pages/OrderTracking';
 import NotFound from '@/pages/NotFound';
+import UserProfile from '@/pages/user/Profile';
 import HowItWorksPage from '@/pages/HowItWorks';
 import Pricing from '@/pages/Pricing';
 import SuccessStories from '@/pages/SuccessStories';
@@ -142,6 +143,9 @@ function App() {
                     <Route path="profile" element={<DesignerProfilePage />} />
                     <Route path="settings" element={<DesignerSettings />} />
                   </Route>
+                  
+                  {/* User Profile Route - Available to all authenticated users */}
+                  <Route path="/user/profile" element={<UserProfile />} />
                   
                   <Route path="/health" element={<HealthCheck />} />
                   <Route path="/onboarding" element={<ArtistOnboarding />} />

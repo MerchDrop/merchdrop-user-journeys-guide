@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,44 +6,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { 
   User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Globe, 
-  Instagram, 
-  Music, 
   Camera,
   Bell,
   Shield,
-  Eye,
-  Save,
   Key,
-  Trash2
+  Trash2,
+  Save
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-interface ArtistProfile {
-  id: string;
-  artist_name: string;
-  artist_slug: string;
-  status: string;
-  commission_rate: number;
-  total_sales: number;
-  total_earnings: number;
-}
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface NotificationSettings {
   email_orders: boolean;
@@ -55,14 +40,12 @@ interface NotificationSettings {
   push_marketing: boolean;
 }
 
-export default function Profile() {
+export default function UserProfileSettings() {
   const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [artistProfile, setArtistProfile] = useState<ArtistProfile | null>(null);
   const [activeTab, setActiveTab] = useState('personal');
 
-  // Form states - Initialize with empty values first
   const [personalInfo, setPersonalInfo] = useState({
     display_name: '',
     first_name: '',
@@ -73,52 +56,14 @@ export default function Profile() {
     website_url: '',
   });
 
-  const [socialLinks, setSocialLinks] = useState({
-    instagram: '',
-    spotify: '',
-    tiktok: '',
-    twitter: '',
-    youtube: '',
-  });
-
-  // Update form data when profile loads
-  useEffect(() => {
-    if (profile) {
-      setPersonalInfo({
-        display_name: profile.display_name || '',
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        bio: profile.bio || '',
-        website_url: profile.website_url || '',
-      });
-
-      setSocialLinks({
-        instagram: profile.social_links?.instagram || '',
-        spotify: profile.social_links?.spotify || '',
-        tiktok: profile.social_links?.tiktok || '',
-        twitter: profile.social_links?.twitter || '',
-        youtube: profile.social_links?.youtube || '',
-      });
-    }
-  }, [profile]);
-
   const [notifications, setNotifications] = useState<NotificationSettings>({
     email_orders: true,
-    email_payouts: true,
+    email_payouts: false,
     email_marketing: false,
     push_orders: true,
-    push_payouts: true,
+    push_payouts: false,
     push_marketing: false,
   });
-
-  // Load notification settings
-  useEffect(() => {
-    if ((profile as any)?.notification_settings) {
-      setNotifications((profile as any).notification_settings as NotificationSettings);
-    }
-  }, [profile]);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -126,42 +71,31 @@ export default function Profile() {
     confirmPassword: '',
   });
 
-  // Fetch artist profile data
+  // Load profile data
   useEffect(() => {
-    const fetchArtistProfile = async () => {
-      if (!user) return;
+    if (profile) {
+      setPersonalInfo({
+        display_name: profile.display_name || '',
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        email: profile.email || '',
+        phone: (profile as any).phone || '',
+        bio: profile.bio || '',
+        website_url: profile.website_url || '',
+      });
 
-      try {
-        const { data, error } = await supabase
-          .from('artist_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching artist profile:', error);
-          return;
-        }
-
-        if (data) {
-          setArtistProfile(data);
-        }
-      } catch (error) {
-        console.error('Error fetching artist profile:', error);
+      // Load notification settings
+      if ((profile as any).notification_settings) {
+        setNotifications((profile as any).notification_settings as NotificationSettings);
       }
-    };
+    }
+  }, [profile]);
 
-    fetchArtistProfile();
-  }, [user]);
-
-  // Update personal info
   const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      console.log('Updating profile with data:', personalInfo);
-      
       const { error } = await updateProfile({
         display_name: personalInfo.display_name,
         first_name: personalInfo.first_name,
@@ -169,9 +103,16 @@ export default function Profile() {
         bio: personalInfo.bio,
         website_url: personalInfo.website_url,
       });
+
+      // Update phone separately if needed
+      if (personalInfo.phone) {
+        await supabase
+          .from('profiles')
+          .update({ phone: personalInfo.phone } as any)
+          .eq('id', user?.id);
+      }
       
       if (error) {
-        console.error('Profile update error:', error);
         toast({
           title: "Update Failed",
           description: error.message || "Failed to update profile",
@@ -182,7 +123,6 @@ export default function Profile() {
           title: "Profile Updated",
           description: "Your personal information has been updated successfully.",
         });
-        console.log('Profile updated successfully');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -196,79 +136,6 @@ export default function Profile() {
     }
   };
 
-  // Update social links
-  const handleSocialLinksSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      console.log('Updating social links with data:', socialLinks);
-      
-      const { error } = await updateProfile({
-        social_links: socialLinks
-      });
-      
-      if (error) {
-        console.error('Social links update error:', error);
-        toast({
-          title: "Update Failed",
-          description: error.message || "Failed to update social links",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Social Links Updated",
-          description: "Your social media links have been updated successfully.",
-        });
-        console.log('Social links updated successfully');
-      }
-    } catch (error: any) {
-      console.error('Error updating social links:', error);
-      toast({
-        title: "Update Failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Update artist profile
-  const handleArtistProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !artistProfile) return;
-
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase
-        .from('artist_profiles')
-        .update({
-          artist_name: personalInfo.display_name,
-        })
-        .eq('user_id', user.id);
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update artist profile: " + error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Artist Profile Updated",
-          description: "Your artist information has been updated successfully.",
-        });
-      }
-    } catch (error) {
-      console.error('Error updating artist profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Update password
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -321,13 +188,10 @@ export default function Profile() {
     }
   };
 
-  // Save notification preferences
   const handleNotificationsSubmit = async () => {
     setIsLoading(true);
 
     try {
-      console.log('Updating notification preferences:', notifications);
-      
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -336,7 +200,6 @@ export default function Profile() {
         .eq('id', user?.id);
 
       if (error) {
-        console.error('Notifications update error:', error);
         toast({
           title: "Update Failed",
           description: error.message || "Failed to update notification preferences",
@@ -347,7 +210,6 @@ export default function Profile() {
           title: "Preferences Updated",
           description: "Your notification preferences have been saved successfully.",
         });
-        console.log('Notification preferences updated successfully');
       }
     } catch (error: any) {
       console.error('Error updating notifications:', error);
@@ -361,23 +223,49 @@ export default function Profile() {
     }
   };
 
+  const handleAccountDeactivation = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ account_status: 'suspended' })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Account Deactivated",
+        description: "Your account has been deactivated. You will be signed out.",
+      });
+
+      // Sign out after deactivation
+      setTimeout(async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/';
+      }, 2000);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to deactivate account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Profile Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account settings and preferences
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Profile Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your account settings and preferences
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="personal">Personal</TabsTrigger>
-          <TabsTrigger value="artist">Artist Info</TabsTrigger>
-          <TabsTrigger value="social">Social Links</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
@@ -393,7 +281,6 @@ export default function Profile() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handlePersonalInfoSubmit} className="space-y-6">
-                {/* Profile Picture */}
                 <div className="flex flex-col md:flex-row items-start gap-6">
                   <div className="flex flex-col items-center space-y-4">
                     <Avatar className="w-24 h-24">
@@ -402,7 +289,7 @@ export default function Profile() {
                         {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" type="button">
                       <Camera className="h-4 w-4 mr-2" />
                       Change Photo
                     </Button>
@@ -422,16 +309,13 @@ export default function Profile() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">Email (Read-only)</Label>
                       <Input
                         id="email"
                         type="email"
                         value={personalInfo.email}
-                        onChange={(e) => setPersonalInfo(prev => ({
-                          ...prev,
-                          email: e.target.value
-                        }))}
-                        placeholder="your@email.com"
+                        disabled
+                        className="bg-muted"
                       />
                     </div>
                     <div className="space-y-2">
@@ -458,7 +342,7 @@ export default function Profile() {
                         placeholder="Last name"
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="phone">Phone</Label>
                       <Input
                         id="phone"
@@ -470,7 +354,7 @@ export default function Profile() {
                         placeholder="+1 (555) 123-4567"
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="website_url">Website</Label>
                       <Input
                         id="website_url"
@@ -511,164 +395,6 @@ export default function Profile() {
           </Card>
         </TabsContent>
 
-        {/* Artist Information */}
-        <TabsContent value="artist" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Music className="h-5 w-5" />
-                Artist Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {artistProfile && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Artist Name</Label>
-                      <Input
-                        value={artistProfile.artist_name}
-                        readOnly
-                        className="bg-muted"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Artist Slug</Label>
-                      <Input
-                        value={artistProfile.artist_slug}
-                        readOnly
-                        className="bg-muted"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Status</Label>
-                      <Input
-                        value={artistProfile.status}
-                        readOnly
-                        className="bg-muted capitalize"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Commission Rate</Label>
-                      <Input
-                        value={`${artistProfile.commission_rate}%`}
-                        readOnly
-                        className="bg-muted"
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label>Total Sales</Label>
-                      <div className="text-2xl font-bold text-primary">
-                        ${artistProfile.total_sales.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Total Earnings</Label>
-                      <div className="text-2xl font-bold text-green-600">
-                        ${artistProfile.total_earnings.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Social Links */}
-        <TabsContent value="social" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Social Media Links
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSocialLinksSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram" className="flex items-center gap-2">
-                      <Instagram className="h-4 w-4" />
-                      Instagram
-                    </Label>
-                    <Input
-                      id="instagram"
-                      value={socialLinks.instagram}
-                      onChange={(e) => setSocialLinks(prev => ({
-                        ...prev,
-                        instagram: e.target.value
-                      }))}
-                      placeholder="@yourusername"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="spotify" className="flex items-center gap-2">
-                      <Music className="h-4 w-4" />
-                      Spotify
-                    </Label>
-                    <Input
-                      id="spotify"
-                      value={socialLinks.spotify}
-                      onChange={(e) => setSocialLinks(prev => ({
-                        ...prev,
-                        spotify: e.target.value
-                      }))}
-                      placeholder="Your Spotify artist name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tiktok">TikTok</Label>
-                    <Input
-                      id="tiktok"
-                      value={socialLinks.tiktok}
-                      onChange={(e) => setSocialLinks(prev => ({
-                        ...prev,
-                        tiktok: e.target.value
-                      }))}
-                      placeholder="@yourusername"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter/X</Label>
-                    <Input
-                      id="twitter"
-                      value={socialLinks.twitter}
-                      onChange={(e) => setSocialLinks(prev => ({
-                        ...prev,
-                        twitter: e.target.value
-                      }))}
-                      placeholder="@yourusername"
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="youtube">YouTube</Label>
-                    <Input
-                      id="youtube"
-                      value={socialLinks.youtube}
-                      onChange={(e) => setSocialLinks(prev => ({
-                        ...prev,
-                        youtube: e.target.value
-                      }))}
-                      placeholder="Your YouTube channel name"
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? 'Saving...' : 'Save Social Links'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Security */}
         <TabsContent value="security" className="space-y-6">
           <Card>
@@ -678,7 +404,7 @@ export default function Profile() {
                 Security Settings
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="current_password">Current Password</Label>
@@ -719,27 +445,36 @@ export default function Profile() {
                     placeholder="Confirm new password"
                   />
                 </div>
-
                 <Button type="submit" disabled={isLoading}>
                   <Key className="h-4 w-4 mr-2" />
                   {isLoading ? 'Updating...' : 'Update Password'}
                 </Button>
               </form>
 
-              <Separator className="my-6" />
-
-              <div className="space-y-4">
-                <h4 className="font-medium">Account Actions</h4>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button variant="outline">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Download My Data
-                  </Button>
-                  <Button variant="destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
-                  </Button>
-                </div>
+              <div className="pt-6 border-t">
+                <h3 className="text-lg font-semibold mb-4">Danger Zone</h3>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deactivate Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action will deactivate your account. You will be signed out and won't be able to access your account until it's reactivated by an administrator.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleAccountDeactivation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Deactivate Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
@@ -756,14 +491,12 @@ export default function Profile() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h4 className="font-medium">Email Notifications</h4>
-                <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Email Notifications</h3>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Order Updates</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when you receive new orders
-                      </p>
+                      <p className="font-medium">Order Updates</p>
+                      <p className="text-sm text-muted-foreground">Receive updates about your orders</p>
                     </div>
                     <Switch
                       checked={notifications.email_orders}
@@ -775,25 +508,8 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Payout Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified about payout status updates
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notifications.email_payouts}
-                      onCheckedChange={(checked) => setNotifications(prev => ({
-                        ...prev,
-                        email_payouts: checked
-                      }))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Marketing Emails</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive tips, updates, and promotional content
-                      </p>
+                      <p className="font-medium">Marketing Emails</p>
+                      <p className="text-sm text-muted-foreground">Receive promotional emails and newsletters</p>
                     </div>
                     <Switch
                       checked={notifications.email_marketing}
@@ -806,17 +522,13 @@ export default function Profile() {
                 </div>
               </div>
 
-              <Separator />
-
               <div className="space-y-4">
-                <h4 className="font-medium">Push Notifications</h4>
-                <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Push Notifications</h3>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Order Updates</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Browser notifications for new orders
-                      </p>
+                      <p className="font-medium">Order Updates</p>
+                      <p className="text-sm text-muted-foreground">Get push notifications for order updates</p>
                     </div>
                     <Switch
                       checked={notifications.push_orders}
@@ -828,16 +540,14 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Payout Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Browser notifications for payout updates
-                      </p>
+                      <p className="font-medium">Promotional Notifications</p>
+                      <p className="text-sm text-muted-foreground">Get notified about special offers and deals</p>
                     </div>
                     <Switch
-                      checked={notifications.push_payouts}
+                      checked={notifications.push_marketing}
                       onCheckedChange={(checked) => setNotifications(prev => ({
                         ...prev,
-                        push_payouts: checked
+                        push_marketing: checked
                       }))}
                     />
                   </div>
@@ -846,7 +556,7 @@ export default function Profile() {
 
               <Button onClick={handleNotificationsSubmit} disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />
-                {isLoading ? 'Saving...' : 'Save Notification Preferences'}
+                {isLoading ? 'Saving...' : 'Save Preferences'}
               </Button>
             </CardContent>
           </Card>
