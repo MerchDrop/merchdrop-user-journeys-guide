@@ -109,7 +109,7 @@ export const ArtistDashboard: React.FC = () => {
       // Load products stats
       const { data: products } = await supabase
         .from('products')
-        .select('id, status, price_cents, created_at')
+        .select('id, title, status, price_cents, created_at')
         .eq('artist_id', profile.id);
 
       // Load orders stats
@@ -213,13 +213,42 @@ export const ArtistDashboard: React.FC = () => {
       }
       setSalesData(salesDataArray);
 
-      // Product performance data
-      const performanceData = products?.slice(0, 5).map(product => ({
-        name: `Product ${product.id.slice(0, 8)}`,
-        sales: 0,
-        revenue: 0,
-        views: 0,
-      })) || [];
+      // Product performance data - get actual product names and calculate sales
+      const { data: productsWithDetails } = await supabase
+        .from('products')
+        .select('id, title, price_cents')
+        .eq('artist_id', profile.id)
+        .eq('status', 'published')
+        .limit(5);
+
+      const performanceData = await Promise.all(
+        (productsWithDetails || []).map(async (product) => {
+          // Calculate sales and revenue for this product
+          const productOrders = orders?.filter(order => 
+            order.order_items.some(item => item.product_id === product.id)
+          ) || [];
+
+          const sales = productOrders.reduce((sum, order) => {
+            return sum + order.order_items
+              .filter(item => item.product_id === product.id)
+              .reduce((itemSum, item) => itemSum + item.quantity, 0);
+          }, 0);
+
+          const revenue = productOrders.reduce((sum, order) => {
+            return sum + order.order_items
+              .filter(item => item.product_id === product.id)
+              .reduce((itemSum, item) => itemSum + (item.unit_price * item.quantity), 0);
+          }, 0);
+
+          return {
+            name: product.title,
+            sales,
+            revenue: revenue / 100,
+            views: 0, // Views tracking not yet implemented
+          };
+        })
+      );
+      
       setProductPerformance(performanceData);
 
     } catch (error) {
@@ -466,85 +495,50 @@ export const ArtistDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Monthly Revenue Goal
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Insights</CardTitle>
+              <CardDescription>
+                Track your progress with real-time metrics
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-3">
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span>{Math.min(100, (stats.monthlyRevenue / 1000) * 100).toFixed(0)}%</span>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-blue-500" />
+                    <span className="font-medium">Monthly Revenue</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${Math.min(100, (stats.monthlyRevenue / 1000) * 100)}%` }}
-                    />
-                  </div>
-                  <div className="text-lg font-semibold">
-                    {formatPrice(stats.monthlyRevenue)} / {formatPrice(1000)}
-                  </div>
+                  <div className="text-2xl font-bold">{formatPrice(stats.monthlyRevenue)}</div>
+                  <p className="text-sm text-muted-foreground">
+                    Total: {formatPrice(stats.totalRevenue)}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Products Published
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Goal: 10 Products</span>
-                    <span>{Math.min(100, (stats.publishedProducts / 10) * 100).toFixed(0)}%</span>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-5 w-5 text-green-500" />
+                    <span className="font-medium">Published Products</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full" 
-                      style={{ width: `${Math.min(100, (stats.publishedProducts / 10) * 100)}%` }}
-                    />
-                  </div>
-                  <div className="text-lg font-semibold">
-                    {stats.publishedProducts} / 10
-                  </div>
+                  <div className="text-2xl font-bold">{stats.publishedProducts}</div>
+                  <p className="text-sm text-muted-foreground">
+                    {stats.totalProducts} total products
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Customer Satisfaction
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Goal: 4.5/5</span>
-                    <span>{Math.min(100, (stats.averageRating / 4.5) * 100).toFixed(0)}%</span>
+                  <div className="flex items-center gap-2">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                    <span className="font-medium">Average Rating</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-yellow-600 h-2 rounded-full" 
-                      style={{ width: `${Math.min(100, (stats.averageRating / 4.5) * 100)}%` }}
-                    />
-                  </div>
-                  <div className="text-lg font-semibold">
-                    {stats.averageRating.toFixed(1)} / 4.5
-                  </div>
+                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                  <p className="text-sm text-muted-foreground">
+                    From {stats.totalOrders} orders
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
