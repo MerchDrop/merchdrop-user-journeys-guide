@@ -161,7 +161,7 @@ const ArtistAuth = () => {
           {user && artistProfile && !profileLoading ? (
             <Card className="shadow-hero">
               <CardContent className="pt-6">
-                {artistProfile.status === 'pending' ? (
+                {artistProfile.status === 'pending' && !isSuperAdmin ? (
                   <div className="text-center space-y-6">
                     <div className="flex justify-center">
                       <div className="rounded-full bg-amber-100 dark:bg-amber-900/20 p-6">
@@ -188,7 +188,7 @@ const ArtistAuth = () => {
                       </p>
                     </div>
                   </div>
-                ) : artistProfile.status === 'approved' ? (
+                ) : artistProfile.status === 'approved' || isSuperAdmin ? (
                   <div className="text-center space-y-6">
                     <div className="flex justify-center">
                       <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-6">
@@ -197,10 +197,12 @@ const ArtistAuth = () => {
                     </div>
                     <div className="space-y-2">
                       <h2 className="text-2xl font-bold">You're All Set!</h2>
-                      <p className="text-muted-foreground">Your artist account is active</p>
+                      <p className="text-muted-foreground">
+                        {isSuperAdmin ? 'Super Admin Access' : 'Your artist account is active'}
+                      </p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      You already have access to your dashboard.
+                      You have access to your dashboard.
                     </p>
                     <div className="space-y-3">
                       <Button 
