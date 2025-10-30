@@ -63,17 +63,7 @@ const ArtistAuth = () => {
   }, [user]);
 
   // Show loading while auth is initializing
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // Show loading while auth is initializing
-  if (loading) {
-    console.log('ArtistAuth: Still loading...');
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
