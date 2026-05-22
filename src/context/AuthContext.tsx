@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, display_name, first_name, last_name, phone, avatar_url, bio, website_url, social_links, created_at, updated_at')
         .eq('id', userId)
         .maybeSingle();
 
@@ -108,15 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('*')
         .eq('user_id', userId);
 
-      if (error) {
-        console.error('AuthContext: Error fetching user roles:', error);
-        return [];
-      }
-
-      console.log('AuthContext: Fetched user roles:', data);
+      if (error) return [];
       return data || [];
-    } catch (error) {
-      console.error('AuthContext: Error fetching user roles:', error);  
+    } catch {
       return [];
     }
   };
@@ -124,59 +118,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchSuperAdminStatus = async (): Promise<boolean> => {
     try {
       const { data, error } = await supabase.rpc('is_super_admin');
-
-      if (error) {
-        console.error('AuthContext: Error checking super admin status:', error);
-        return false;
-      }
-
-      console.log('AuthContext: Super admin status:', data);
+      if (error) return false;
       return data || false;
-    } catch (error) {
-      console.error('AuthContext: Error checking super admin status:', error);
+    } catch {
       return false;
     }
   };
 
-  // User setup function using new secure RPC
+  // User setup function using secure RPC
   const setupUserProfile = async (userId: string, userType: 'user' | 'artist' | 'designer' = 'user') => {
     try {
-      console.log('AuthContext: Setting up user profile for:', userId, 'type:', userType);
-      
-      // Use the new secure RPC function
-      const { data: setupResult, error: rpcError } = await supabase.rpc(
+      const { error: rpcError } = await supabase.rpc(
         'setup_user_profile',
-        { 
+        {
           _display_name: null,
-          _user_type: userType 
+          _user_type: userType
         }
       );
 
       if (rpcError) {
-        console.error('AuthContext: Profile setup RPC error:', rpcError);
-        // Only fall back to manual setup for auth errors, not other errors
         if (rpcError.code === 'P0001' || rpcError.message?.includes('not authenticated')) {
-          console.log('AuthContext: Falling back to manual setup due to auth error');
-          return await manualUserSetup(userId, userType);
+          return await manualUserSetup(userId);
         }
         return false;
       }
 
-      console.log('AuthContext: Profile setup result:', setupResult);
       return true;
-    } catch (error) {
-      console.error('AuthContext: Error in setupUserProfile:', error);
-      return await manualUserSetup(userId, userType);
+    } catch {
+      return await manualUserSetup(userId);
     }
   };
 
-  // Fallback manual setup
-  const manualUserSetup = async (userId: string, userType: 'user' | 'artist' | 'designer') => {
+  // Fallback manual setup — always inserts 'user' role; artist/designer go through approval flow
+  const manualUserSetup = async (userId: string) => {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) return false;
 
-      // Create profile
       await supabase
         .from('profiles')
         .upsert({
@@ -185,7 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           display_name: currentUser.email
         });
 
-      // Check if user has roles before creating
       const { data: existingRoles } = await supabase
         .from('user_roles')
         .select('role')
@@ -194,12 +171,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!existingRoles || existingRoles.length === 0) {
         await supabase
           .from('user_roles')
-          .insert({ user_id: userId, role: userType });
+          .insert({ user_id: userId, role: 'user' });
       }
 
       return true;
-    } catch (error) {
-      console.error('AuthContext: Manual setup error:', error);
+    } catch {
       return false;
     }
   };
@@ -216,14 +192,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(profileData);
       setUserRoles(rolesData);
       setIsSuperAdmin(superAdminStatus);
-      
-      console.log('AuthContext: User data loaded - Profile:', !!profileData, 'Roles:', rolesData.length, 'Role data:', rolesData, 'Super Admin:', superAdminStatus);
-    } catch (error) {
-      console.error('AuthContext: Error loading user data:', error);
+    } catch {
+      // non-fatal — state remains at previous values
     }
   };
 
-  // Auth state listener
+  // Auth state listener — onAuthStateChange always fires INITIAL_SESSION on mount,
+  // so getSession() is not needed and would create a duplicate setup race.
   useEffect(() => {
     let isMounted = true;
     let isSetupInProgress = false;
@@ -231,11 +206,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('AuthContext: Auth state change:', event, session?.user?.id);
-        
         if (!isMounted) return;
 
-        // Handle sign out
         if (event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);
@@ -248,46 +220,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // Handle token refresh - only update session/user, no setup needed
         if (event === 'TOKEN_REFRESHED') {
           setSession(session);
           setUser(session?.user ?? null);
+          setLoading(false);
           return;
         }
 
-        // Handle sign in and initial session - full setup required
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           setSession(session);
           setUser(session?.user ?? null);
-          
+
           if (session?.user && !isSetupInProgress && !isSetupComplete) {
             isSetupInProgress = true;
-            
-            // Defer data loading to avoid auth state deadlocks and ensure auth context is ready
+
+            // Defer to avoid Supabase auth state deadlock
             setTimeout(async () => {
               if (!isMounted || !session?.user) {
                 isSetupInProgress = false;
                 return;
               }
-              
+
               try {
-                // Only run setup if we don't already have profile/roles
-                if (!profile || userRoles.length === 0) {
+                if (!isSetupComplete) {
                   const userType = session.user.user_metadata?.user_type || 'user';
                   await setupUserProfile(session.user.id, userType);
                 }
-                
+
                 await loadUserData(session.user.id);
                 isSetupComplete = true;
-              } catch (error) {
-                console.error('AuthContext: Error in deferred setup:', error);
               } finally {
                 if (isMounted) {
                   setLoading(false);
                   isSetupInProgress = false;
                 }
               }
-            }, 100); // Reduced delay since we're being more selective
+            }, 100);
           } else if (!session?.user) {
             setProfile(null);
             setUserRoles([]);
@@ -299,47 +267,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      
-      if (session?.user && !isSetupInProgress && !isSetupComplete) {
-        setSession(session);
-        setUser(session.user);
-        isSetupInProgress = true;
-        
-        setTimeout(async () => {
-          if (!isMounted || !session?.user) {
-            isSetupInProgress = false;
-            return;
-          }
-          
-          try {
-            // Only run setup if we don't already have profile/roles
-            if (!profile || userRoles.length === 0) {
-              const userType = session.user.user_metadata?.user_type || 'user';
-              await setupUserProfile(session.user.id, userType);
-            }
-            
-            await loadUserData(session.user.id);
-            isSetupComplete = true;
-          } catch (error) {
-            console.error('AuthContext: Error in initial setup:', error);
-          } finally {
-            if (isMounted) {
-              setLoading(false);
-              isSetupInProgress = false;
-            }
-          }
-        }, 100);
-      } else {
-        setLoading(false);
-      }
-    });
-
     return () => {
       isMounted = false;
-      isSetupInProgress = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -627,15 +556,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: { message: 'Invalid input data', details: validation.errors } };
     }
 
+    const { userId, role } = validation.data as RoleAssignmentInput;
+
     try {
-      const { error } = await supabase
-        .from('user_roles')
-        .upsert({ 
-          user_id: (validation.data as RoleAssignmentInput).userId, 
-          role: (validation.data as RoleAssignmentInput).role 
-        }, { 
-          onConflict: 'user_id,role' 
-        });
+      // Privileged roles must go through the approve_role_request RPC which enforces
+      // admin-only access via SECURITY DEFINER. Direct upsert is blocked by RLS for
+      // everything except the initial 'user' role.
+      const { error } = await supabase.rpc('approve_role_request', {
+        _user_id: userId,
+        _role: role,
+        _admin_id: user?.id,
+      });
 
       if (error) {
         toast({
@@ -646,11 +577,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         toast({
           title: "Role Assigned",
-          description: `${(validation.data as RoleAssignmentInput).role} role has been assigned successfully.`,
+          description: `${role} role has been assigned successfully.`,
         });
-        
-        // Refresh roles if it's the current user
-        if ((validation.data as RoleAssignmentInput).userId === user?.id) {
+
+        if (userId === user?.id) {
           await loadUserData(user.id);
         }
       }
@@ -702,7 +632,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resendOtp = async (email: string, type: 'signup' | 'recovery' = 'signup') => {
     try {
       const { error } = await supabase.auth.resend({
-        type: 'signup',
+        type,
         email,
       });
 
@@ -748,12 +678,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isArtist = React.useMemo(() => hasRole('artist'), [user, userRoles, loading]);
   const isDesigner = React.useMemo(() => hasRole('designer'), [user, userRoles, loading]);
 
-  // Debug logging for role checking
-  React.useEffect(() => {
-    if (user) {
-      console.log('AuthContext: Role check - userRoles:', userRoles, 'isAdmin:', isAdmin, 'isArtist:', isArtist);
-    }
-  }, [userRoles, isAdmin, isArtist, user]);
 
   const value: AuthContextType = {
     user,

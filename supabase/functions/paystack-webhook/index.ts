@@ -1,97 +1,65 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const JSON_HEADERS = { "Content-Type": "application/json" };
 
+// Webhook is server-to-server — no CORS headers needed.
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Reject browser preflight; Paystack never sends OPTIONS
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 405 });
   }
 
   try {
-    // Verify Paystack signature using Web Crypto API
     const paystackSignature = req.headers.get("x-paystack-signature");
     const body = await req.text();
-    
-    // Create HMAC using Web Crypto API
+
     const secret = Deno.env.get("PAYSTACK_SECRET_KEY") || "";
     const encoder = new TextEncoder();
-    const keyData = encoder.encode(secret);
-    const messageData = encoder.encode(body);
-    
     const key = await crypto.subtle.importKey(
       "raw",
-      keyData,
+      encoder.encode(secret),
       { name: "HMAC", hash: "SHA-512" },
       false,
       ["sign"]
     );
-    
-    const signature = await crypto.subtle.sign("HMAC", key, messageData);
+
+    const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
     const hash = Array.from(new Uint8Array(signature))
       .map(b => b.toString(16).padStart(2, "0"))
       .join("");
 
     if (hash !== paystackSignature) {
-      console.error("Invalid webhook signature");
       return new Response(
         JSON.stringify({ error: "Invalid signature" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 401, headers: JSON_HEADERS }
       );
     }
 
     const event = JSON.parse(body);
-    console.log("Paystack webhook event:", event.event, "Reference:", event.data?.reference);
 
-    // Create Supabase client
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    // Handle different event types
     switch (event.event) {
       case "charge.success": {
-        const reference = event.data.reference;
-        const amount = event.data.amount;
-        const status = event.data.status;
-
-        console.log(`Payment successful: ${reference}, Amount: ${amount}, Status: ${status}`);
-
-        // Update order status
-        const { data: order, error: orderError } = await supabase
+        const { error: orderError } = await supabase
           .from("orders")
           .update({
             payment_status: "paid",
             status: "confirmed",
             updated_at: new Date().toISOString(),
           })
-          .eq("payment_reference", reference)
-          .select()
-          .single();
+          .eq("payment_reference", event.data.reference);
 
-        if (orderError) {
-          console.error("Error updating order:", orderError);
-          throw new Error("Failed to update order");
-        }
-
-        console.log("Order updated successfully:", order.order_number);
+        if (orderError) throw new Error("Failed to update order");
         break;
       }
 
       case "charge.failed": {
-        const reference = event.data.reference;
-        console.log(`Payment failed: ${reference}`);
-
-        // Update order status to failed
         const { error: orderError } = await supabase
           .from("orders")
           .update({
@@ -99,20 +67,13 @@ serve(async (req) => {
             status: "cancelled",
             updated_at: new Date().toISOString(),
           })
-          .eq("payment_reference", reference);
+          .eq("payment_reference", event.data.reference);
 
-        if (orderError) {
-          console.error("Error updating failed order:", orderError);
-        }
+        if (orderError) console.error("Error updating failed order:", orderError);
         break;
       }
 
       case "refund.processed": {
-        const reference = event.data.reference;
-        const refundAmount = event.data.amount;
-        console.log(`Refund processed: ${reference}, Amount: ${refundAmount}`);
-
-        // Update order status
         const { error: orderError } = await supabase
           .from("orders")
           .update({
@@ -120,34 +81,27 @@ serve(async (req) => {
             status: "refunded",
             updated_at: new Date().toISOString(),
           })
-          .eq("payment_reference", reference);
+          .eq("payment_reference", event.data.reference);
 
-        if (orderError) {
-          console.error("Error updating refunded order:", orderError);
-        }
+        if (orderError) console.error("Error updating refunded order:", orderError);
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.event}`);
+        // Unknown event — acknowledge receipt without error
+        break;
     }
 
-    return new Response(
-      JSON.stringify({ received: true }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: JSON_HEADERS,
+    });
 
   } catch (error) {
     console.error("Webhook processing error:", error);
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
+      { status: 500, headers: JSON_HEADERS }
     );
   }
 });
