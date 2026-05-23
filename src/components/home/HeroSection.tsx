@@ -25,7 +25,7 @@ const activityItems = [
 ];
 
 const floatingBadges = [
-  { label: 'Artist', dot: 'bg-violet-500', pos: '-left-14 top-20' },
+  { label: 'Artist', dot: 'bg-gray-500', pos: '-left-14 top-20' },
   { label: 'Designer', dot: 'bg-blue-500', pos: '-right-14 top-32' },
   { label: 'Creator', dot: 'bg-green-500', pos: '-left-14 bottom-32' },
   { label: 'Brand', dot: 'bg-orange-500', pos: '-right-14 bottom-20' },
@@ -87,7 +87,7 @@ const DashboardMockup = () => (
             {chartBars.map((h, i) => (
               <motion.div
                 key={i}
-                className="flex-1 rounded-t bg-gradient-to-t from-violet-600 to-violet-400"
+                className="flex-1 rounded-t bg-gradient-to-t from-gray-600 to-gray-400"
                 initial={{ height: 0 }}
                 animate={{ height: `${h}%` }}
                 transition={{ duration: 1, delay: i * 0.08, ease: 'easeOut' }}
@@ -178,7 +178,7 @@ const HeroSection = () => {
           className="relative mx-auto max-w-5xl"
         >
           {/* Ambient glow behind the frame */}
-          <div className="absolute -inset-6 bg-gradient-to-r from-violet-500/15 via-indigo-500/10 to-purple-500/15 blur-3xl -z-10 rounded-3xl" />
+          <div className="absolute -inset-6 bg-gradient-to-r from-gray-400/15 via-gray-300/10 to-gray-400/15 blur-3xl -z-10 rounded-3xl" />
 
           {/* Floating role badges */}
           {floatingBadges.map(({ label, dot, pos }) => (
