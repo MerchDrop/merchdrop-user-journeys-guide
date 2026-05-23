@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Instagram, Youtube } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -46,29 +45,6 @@ const Footer = () => {
               </p>
             </form>
 
-            <div className="mt-6 flex items-center gap-3">
-              <a 
-                href="#" 
-                aria-label="Twitter" 
-                className="h-9 w-9 rounded-md border flex items-center justify-center border-border hover:bg-muted transition-colors"
-              >
-                <Twitter className="w-5 h-5" strokeWidth={1.5} />
-              </a>
-              <a 
-                href="#" 
-                aria-label="Instagram" 
-                className="h-9 w-9 rounded-md border flex items-center justify-center border-border hover:bg-muted transition-colors"
-              >
-                <Instagram className="w-5 h-5" strokeWidth={1.5} />
-              </a>
-              <a 
-                href="#" 
-                aria-label="YouTube" 
-                className="h-9 w-9 rounded-md border flex items-center justify-center border-border hover:bg-muted transition-colors"
-              >
-                <Youtube className="w-5 h-5" strokeWidth={1.5} />
-              </a>
-            </div>
           </div>
 
           {/* Link Columns */}
@@ -86,8 +62,6 @@ const Footer = () => {
             <h5 className="text-[13px] font-semibold tracking-tight text-foreground">Company</h5>
             <ul className="mt-3 space-y-2 text-[14px] text-muted-foreground">
               <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Press</a></li>
               <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -96,8 +70,6 @@ const Footer = () => {
             <h5 className="text-[13px] font-semibold tracking-tight text-foreground">Resources</h5>
             <ul className="mt-3 space-y-2 text-[14px] text-muted-foreground">
               <li><Link to="/support" className="hover:text-foreground transition-colors">Help Center</Link></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Guides</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">API</a></li>
               <li><Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
             </ul>
           </div>
@@ -107,8 +79,6 @@ const Footer = () => {
             <ul className="mt-3 space-y-2 text-[14px] text-muted-foreground">
               <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
               <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Cookies</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">DPA</a></li>
             </ul>
           </div>
         </div>
@@ -118,10 +88,6 @@ const Footer = () => {
             © {currentYear} MerchDrop, Inc. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Status</a>
-            <a href="#" className="hover:text-foreground transition-colors">Security</a>
-            <Link to="/admin-auth" className="hover:text-foreground transition-colors">Admin</Link>
-            <a href="#" className="hover:text-foreground transition-colors">Sitemap</a>
             <div className="hidden md:inline-block h-4 w-px bg-border"></div>
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>

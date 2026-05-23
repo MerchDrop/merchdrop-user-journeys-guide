@@ -18,7 +18,6 @@ import ArtistProfile from '@/pages/ArtistProfile';
 import ProductDetail from '@/pages/ProductDetail';
 import Checkout from '@/pages/Checkout';
 import CleanDashboard from '@/pages/CleanDashboard';
-import LiveDashboard from '@/pages/LiveDashboard';
 import ArtistProducts from '@/pages/artist/Products';
 import ArtistAnalytics from '@/pages/artist/Analytics';
 import ArtistSettings from '@/pages/artist/Settings';
@@ -98,15 +97,12 @@ function App() {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/products" element={<Products />} />
-            <Route path="/shop" element={<Products />} />
             
             <Route path="/artists" element={<Artists />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/artist/:slug" element={<ArtistProfile />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/live-dashboard" element={<LiveDashboard />} />
-                  
                   {/* Dashboard Routes - Protected for Artists */}
                   <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<CleanDashboard />} />

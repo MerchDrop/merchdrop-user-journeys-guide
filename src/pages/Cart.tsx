@@ -1,33 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Tag } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
   const { formatPrice } = useCurrency();
-  const [promoCode, setPromoCode] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
-
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === 'save10') {
-      setAppliedPromo('SAVE10');
-      setPromoCode('');
-    }
-  };
 
   const subtotal = getTotalPrice();
-  const promoDiscount = appliedPromo ? subtotal * 0.1 : 0;
   const shipping = subtotal > 100 ? 0 : 9.99;
-  const tax = (subtotal - promoDiscount) * 0.08;
-  const total = subtotal - promoDiscount + shipping + tax;
+  const tax = subtotal * 0.08;
+  const total = subtotal + shipping + tax;
 
   if (items.length === 0) {
     return (
@@ -160,44 +149,13 @@ export default function Cart() {
                 <CardContent className="p-6">
                   <h2 className="text-xl font-bold text-black mb-6">Order Summary</h2>
 
-                  {/* Promo Code */}
-                  <div className="mb-6">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Promo code"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button 
-                        variant="outline" 
-                        onClick={applyPromoCode}
-                        disabled={!promoCode}
-                      >
-                        <Tag className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {appliedPromo && (
-                      <p className="text-sm text-green-600 mt-2">
-                        Promo code "{appliedPromo}" applied!
-                      </p>
-                    )}
-                  </div>
-
                   {/* Order Breakdown */}
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Subtotal</span>
                       <span className="font-medium">{formatPrice(subtotal)}</span>
                     </div>
-                    
-                    {appliedPromo && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Discount ({appliedPromo})</span>
-                        <span>-{formatPrice(promoDiscount)}</span>
-                      </div>
-                    )}
-                    
+
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span className="font-medium">

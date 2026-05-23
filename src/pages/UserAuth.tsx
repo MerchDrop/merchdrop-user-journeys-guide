@@ -66,7 +66,6 @@ const UserAuth = () => {
         });
         
         if (error) {
-          console.error('User sign up error:', error);
           const errorInfo = getAuthErrorMessage(error, 'signup');
           toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
@@ -80,7 +79,6 @@ const UserAuth = () => {
         });
         
         if (error) {
-          console.error('User sign in error:', error);
           const errorInfo = getAuthErrorMessage(error, 'signin');
           toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
@@ -89,7 +87,6 @@ const UserAuth = () => {
         }
       }
     } catch (error: any) {
-      console.error('User auth error:', error);
       const errorInfo = getAuthErrorMessage(error, isSignUp ? 'signup' : 'signin');
       toast.error(errorInfo.message);
     } finally {

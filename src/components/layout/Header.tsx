@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -13,6 +13,8 @@ const Header = ({
   transparent?: boolean;
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
   const {
     getTotalItems
   } = useCart();
@@ -33,6 +35,14 @@ const Header = ({
   // Only show transparent header on main landing page
   const isMainLandingPage = location.pathname === '/';
   const shouldBeTransparent = transparent && isMainLandingPage;
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsMenuOpen(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -78,7 +88,14 @@ const Header = ({
             <div className="hidden lg:flex">
               <div className="relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${shouldBeTransparent ? 'text-white' : 'text-gray-400'}`} />
-                <input type="text" placeholder="Search..." className={`pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${shouldBeTransparent ? 'border-white/20 bg-white/10 text-white placeholder-white/70 focus:bg-white/20' : 'border-gray-200 bg-white focus:ring-black'}`} />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
+                  className={`pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${shouldBeTransparent ? 'border-white/20 bg-white/10 text-white placeholder-white/70 focus:bg-white/20' : 'border-gray-200 bg-white focus:ring-black'}`}
+                />
               </div>
             </div>
 
@@ -160,13 +177,21 @@ const Header = ({
               {/* Mobile Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input type="text" placeholder="Search artists, products..." className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black" />
+                <input
+                  ref={mobileSearchRef}
+                  type="text"
+                  placeholder="Search artists, products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                />
               </div>
               
               <Link to="/creators" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
                 For Creators
               </Link>
-              <Link to="/shop" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
+              <Link to="/products" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
                 Shop
               </Link>
             <Link to="/cart" className={`text-[14px] flex items-center transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
