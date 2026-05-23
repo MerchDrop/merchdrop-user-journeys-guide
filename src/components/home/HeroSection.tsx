@@ -1,215 +1,147 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Play, ArrowRight, Star, TrendingUp, Users, Sparkles, DollarSign, Package, Eye, Zap } from 'lucide-react';
+import { Play, ArrowRight, Star, TrendingUp, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import SearchBar from './SearchBar';
 import HeroBackground from './HeroBackground';
-import { useCurrency } from '@/context/CurrencyContext';
-// Live animated counter component
-const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 2000 }: { 
-  value: number; 
-  prefix?: string; 
-  suffix?: string; 
-  duration?: number; 
-}) => {
-  const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    let startTime: number;
-    let animationFrame: number;
+const chartBars = [38, 62, 48, 75, 88, 67, 52];
 
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      
-      setCount(Math.floor(progress * value));
-      
-      if (progress < 1) {
-        animationFrame = requestAnimationFrame(animate);
-      }
-    };
+const kpiCards = [
+  { label: 'Revenue', value: '₦125K', change: '+12%', color: 'text-green-500' },
+  { label: 'Orders', value: '1,342', change: '+8%', color: 'text-green-500' },
+  { label: 'Viewers', value: '847', change: '+24%', color: 'text-green-500' },
+  { label: 'Products', value: '28', change: '+3%', color: 'text-green-500' },
+];
 
-    animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [value, duration]);
+const navItems = ['Dashboard', 'Products', 'Orders', 'Analytics', 'Payouts', 'Settings'];
 
-  return <span>{prefix}{count.toLocaleString()}{suffix}</span>;
-};
+const activityItems = [
+  'New order from Adewale M.',
+  'T-shirt design approved',
+  'Payout of ₦45K processed',
+  '5-star review received',
+];
 
-// Interactive dashboard card component
-const DashboardCard = ({ title, value, prefix, suffix, icon: Icon, color, delay, onClick }: any) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [currentValue, setCurrentValue] = useState(value);
+const floatingBadges = [
+  { label: 'Artist', dot: 'bg-violet-500', pos: '-left-14 top-20' },
+  { label: 'Designer', dot: 'bg-blue-500', pos: '-right-14 top-32' },
+  { label: 'Creator', dot: 'bg-green-500', pos: '-left-14 bottom-32' },
+  { label: 'Brand', dot: 'bg-orange-500', pos: '-right-14 bottom-20' },
+];
 
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentValue(prev => prev + Math.floor(Math.random() * 5));
-    }, 3000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.6, delay, type: "spring", bounce: 0.3 }}
-      whileHover={{ 
-        scale: 1.05, 
-        y: -5,
-        transition: { duration: 0.2 }
-      }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      onClick={onClick}
-      className="cursor-pointer"
-    >
-      <Card className={`relative overflow-hidden border transition-all duration-300 ${
-        isHovered ? 'shadow-lg border-primary/30 bg-gradient-to-br from-background to-muted/20' : 'shadow-sm'
-      }`}>
-        <motion.div
-          className={`absolute inset-0 bg-gradient-to-r ${color} opacity-5`}
-          initial={{ x: '-100%' }}
-          animate={{ x: isHovered ? '0%' : '-100%' }}
-          transition={{ duration: 0.5 }}
-        />
-        
-        <CardContent className="p-6 relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <motion.div
-              animate={{ 
-                rotate: isHovered ? 360 : 0,
-                scale: isHovered ? 1.1 : 1
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              <Icon className={`h-8 w-8 transition-colors duration-300 ${
-                isHovered ? 'text-primary' : 'text-muted-foreground'
-              }`} />
-            </motion.div>
-            
-            <motion.div
-              className="w-2 h-2 bg-green-500 rounded-full"
-              animate={{ scale: [1, 1.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
+const DashboardMockup = () => (
+  <div className="flex h-full bg-gray-50 text-left select-none">
+    {/* Sidebar */}
+    <div className="w-40 bg-white border-r border-gray-100 flex-shrink-0 p-3">
+      <div className="flex items-center gap-2 pb-3 mb-3 border-b border-gray-100">
+        <img src="/Merchdrop.png" alt="" className="h-5 w-auto invert" />
+      </div>
+      <div className="space-y-0.5">
+        {navItems.map((item, i) => (
+          <div
+            key={item}
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-[10px] font-medium ${
+              i === 0 ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            <div className={`w-2.5 h-2.5 rounded-sm ${i === 0 ? 'bg-white/40' : 'bg-gray-300'}`} />
+            {item}
           </div>
-          
-          <motion.div 
-            className="text-3xl font-bold text-foreground mb-2"
-            initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: delay + 0.2 }}
-          >
-            <AnimatedCounter 
-              value={currentValue} 
-              prefix={prefix} 
-              suffix={suffix}
-              duration={1500}
-            />
-          </motion.div>
-          
-          <motion.p 
-            className="text-sm text-muted-foreground"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: delay + 0.4 }}
-          >
-            {title}
-          </motion.p>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+        ))}
+      </div>
+    </div>
+
+    {/* Main content */}
+    <div className="flex-1 p-4 overflow-hidden min-w-0">
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-[11px] font-semibold text-gray-800">Good morning ☀️</p>
+          <p className="text-[9px] text-gray-400">Here's your store at a glance</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-[9px] text-gray-400">Live</span>
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        {kpiCards.map((stat) => (
+          <div key={stat.label} className="bg-white rounded-lg p-2 border border-gray-100 shadow-sm">
+            <p className="text-[9px] text-gray-400 mb-0.5">{stat.label}</p>
+            <p className="text-[12px] font-bold text-gray-800">{stat.value}</p>
+            <p className={`text-[9px] font-medium ${stat.color}`}>{stat.change}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Chart + Activity */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Bar chart */}
+        <div className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
+          <p className="text-[9px] font-semibold text-gray-600 mb-2">Sales This Week</p>
+          <div className="flex items-end gap-1 h-16">
+            {chartBars.map((h, i) => (
+              <motion.div
+                key={i}
+                className="flex-1 rounded-t bg-gradient-to-t from-violet-600 to-violet-400"
+                initial={{ height: 0 }}
+                animate={{ height: `${h}%` }}
+                transition={{ duration: 1, delay: i * 0.08, ease: 'easeOut' }}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between mt-1">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+              <span key={i} className="flex-1 text-center text-[8px] text-gray-300">{d}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Activity feed */}
+        <div className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
+          <p className="text-[9px] font-semibold text-gray-600 mb-2">Recent Activity</p>
+          <div className="space-y-2">
+            {activityItems.map((item, i) => (
+              <div key={i} className="flex items-start gap-1.5">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-0.5 flex-shrink-0" />
+                <p className="text-[9px] text-gray-500 leading-tight truncate">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const HeroSection = () => {
-  const { formatPrice } = useCurrency();
-  const [currentTime, setCurrentTime] = useState(new Date());
-  
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, []);
-
-  const dashboardData = [
-    {
-      title: 'Total Revenue',
-      value: 125420,
-      prefix: '₦',
-      suffix: '',
-      icon: DollarSign,
-      color: 'from-green-500 to-green-600',
-      delay: 0
-    },
-    {
-      title: 'Active Orders',
-      value: 1342,
-      prefix: '',
-      suffix: '',
-      icon: Package,
-      color: 'from-blue-500 to-blue-600',
-      delay: 0.1
-    },
-    {
-      title: 'Live Viewers',
-      value: 847,
-      prefix: '',
-      suffix: '',
-      icon: Eye,
-      color: 'from-purple-500 to-purple-600',
-      delay: 0.2
-    },
-    {
-      title: 'Products Sold',
-      value: 2156,
-      prefix: '',
-      suffix: '',
-      icon: TrendingUp,
-      color: 'from-orange-500 to-orange-600',
-      delay: 0.3
-    }
-  ];
-
-  const handleCardClick = (title: string) => {
-    // Navigate to live dashboard or show more details
-    window.location.href = '/live-dashboard';
-  };
   return (
-    <section className="relative overflow-hidden bg-background text-foreground py-20 lg:py-32">
+    <section className="relative overflow-hidden bg-background text-foreground py-20 lg:py-28">
       <HeroBackground />
-      
-      {/* Main Content Container - centered and constrained width */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          
-          {/* Badge and Headline */}
-          <div className="mb-12">
-            <Badge variant="outline" className="mb-6 px-4 py-2">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Launch your merch line in minutes
-            </Badge>
-            
-            <h1 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight leading-tight">
-              Your Merch, Your Brand, 
-              <br />
-              <span className="text-accent">Your Revenue.</span>
-            </h1>
-            
-            <p className="text-[16px] lg:text-[18px] text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Create your online dashboard that sells custom swag, from t-shirts, to belts ,  Quality on-demand products, global shipping, and instant payouts.
-            </p>
-          </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Headline block */}
+        <div className="max-w-4xl mx-auto text-center mb-16">
+          <Badge variant="outline" className="mb-6 px-4 py-2">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Launch your merch line in minutes
+          </Badge>
+
+          <h1 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight leading-tight">
+            Your Merch, Your Brand,
+            <br />
+            <span className="text-accent">Your Revenue.</span>
+          </h1>
+
+          <p className="text-[16px] lg:text-[18px] text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+            Create your online dashboard that sells custom swag, from t-shirts to belts. Quality on-demand products, global shipping, and instant payouts.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
             <Button size="lg" className="btn-primary text-base px-8 py-4" asChild>
               <Link to="/artist-auth">
                 Start a drop
@@ -238,75 +170,61 @@ const HeroSection = () => {
           </div>
         </div>
 
-        <div className="mt-20 max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-center mb-8"
-          >
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
-                <Zap className="h-6 w-6 text-primary" />
-              </motion.div>
-              <h2 className="text-2xl font-bold text-foreground">Live Performance Dashboard</h2>
-            </div>
-            <p className="text-muted-foreground">
-              Real-time insights • Updated {currentTime.toLocaleTimeString()}
-            </p>
-          </motion.div>
+        {/* Dashboard preview — cascaded browser frame */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="relative mx-auto max-w-5xl"
+        >
+          {/* Ambient glow behind the frame */}
+          <div className="absolute -inset-6 bg-gradient-to-r from-violet-500/15 via-indigo-500/10 to-purple-500/15 blur-3xl -z-10 rounded-3xl" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {dashboardData.map((item, index) => (
-              <DashboardCard
-                key={item.title}
-                {...item}
-                onClick={() => handleCardClick(item.title)}
-              />
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="text-center"
-          >
+          {/* Floating role badges */}
+          {floatingBadges.map(({ label, dot, pos }) => (
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              key={label}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className={`absolute ${pos} z-20 hidden lg:flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full px-3 py-1.5 shadow-lg`}
             >
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => window.location.href = '/live-dashboard'}
-                className="group relative overflow-hidden"
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10"
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '0%' }}
-                  transition={{ duration: 0.3 }}
-                />
-                <span className="relative z-10 flex items-center">
-                  View Full Dashboard
-                  <motion.div
-                    className="ml-2"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.div>
-                </span>
-              </Button>
+              <div className={`w-2 h-2 rounded-full ${dot}`} />
+              <span className="text-xs font-medium text-gray-700">{label}</span>
             </motion.div>
-          </motion.div>
-        </div>
+          ))}
+
+          {/* Browser chrome + dashboard */}
+          <div
+            className="rounded-xl overflow-hidden border border-gray-200/80 shadow-[0_32px_80px_-12px_rgba(0,0,0,0.25)]"
+            style={{
+              transform: 'perspective(1400px) rotateX(6deg)',
+              transformOrigin: 'center top',
+            }}
+          >
+            {/* Browser title bar */}
+            <div className="bg-[#f0f0f0] border-b border-gray-200 px-4 py-2.5 flex items-center gap-3">
+              <div className="flex gap-1.5 flex-shrink-0">
+                <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="bg-white rounded border border-gray-200 px-4 py-1 text-[11px] text-gray-400 w-56 text-center">
+                  app.merchdrop.com/dashboard
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboard content */}
+            <div className="h-[360px] bg-gray-50 overflow-hidden">
+              <DashboardMockup />
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
 };
+
 export default HeroSection;
