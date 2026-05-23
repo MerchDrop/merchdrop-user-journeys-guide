@@ -1,10 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "";
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN");
+if (!ALLOWED_ORIGIN) {
+  console.error("ALLOWED_ORIGIN env var is not set — CORS will be misconfigured");
+}
+const corsOrigin = ALLOWED_ORIGIN ?? "null";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Origin": corsOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -139,7 +143,7 @@ serve(async (req) => {
       throw new Error("Failed to create order");
     }
 
-    const orderItems = (items || []).map((item: any) => ({
+    const orderItems = (Array.isArray(items) ? items : []).map((item: any) => ({
       order_id: order.id,
       product_id: item.productId,
       artist_id: item.artistId,

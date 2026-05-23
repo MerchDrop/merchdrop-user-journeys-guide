@@ -558,6 +558,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { userId, role } = validation.data as RoleAssignmentInput;
 
+    if (!user) {
+      return { error: { message: 'Not authenticated' } };
+    }
+
     try {
       // Privileged roles must go through the approve_role_request RPC which enforces
       // admin-only access via SECURITY DEFINER. Direct upsert is blocked by RLS for
