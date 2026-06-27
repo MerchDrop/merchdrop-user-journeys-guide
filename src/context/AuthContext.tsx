@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -296,6 +297,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        Sentry.captureException(error, { tags: { location: 'AuthContext.signUp' } });
         const errorInfo = getAuthErrorMessage(error, 'signup');
         toast({
           title: errorInfo.title,
@@ -356,6 +358,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        Sentry.captureException(error, { tags: { location: 'AuthContext.signUpArtist' } });
         const errorInfo = getAuthErrorMessage(error, 'signup');
         toast({
           title: errorInfo.title,
@@ -416,6 +419,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        Sentry.captureException(error, { tags: { location: 'AuthContext.signUpDesigner' } });
         const errorInfo = getAuthErrorMessage(error, 'signup');
         toast({
           title: errorInfo.title,
@@ -467,6 +471,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        Sentry.captureException(error, { tags: { location: 'AuthContext.signIn' } });
         const errorInfo = getAuthErrorMessage(error, 'signin');
         toast({
           title: errorInfo.title,
