@@ -46,7 +46,7 @@ export default function DashboardLayout() {
   const [statusLoading, setStatusLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isArtist, isAdmin, isSuperAdmin, loading, profile } = useAuth();
+  const { user, isArtist, isAdmin, isSuperAdmin, loading, profile, signOut } = useAuth();
 
   // Check artist status for pending approval and access
   useEffect(() => {
@@ -298,7 +298,7 @@ export default function DashboardLayout() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={async () => {
-                    await supabase.auth.signOut();
+                    await signOut();
                     navigate('/');
                   }}
                 >
