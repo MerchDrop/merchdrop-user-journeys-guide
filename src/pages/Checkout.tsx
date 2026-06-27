@@ -121,7 +121,7 @@ export default function Checkout() {
     email: formData.email,
     amount: Math.round(total * 100), // Convert to kobo for NGN or cents for USD
     currency: currency,
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "pk_test_dcBcopgQ8gJyrVz0JzSCguKF",
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
   };
 
   const initializePayment = usePaystackPayment(paystackConfig);
