@@ -28,7 +28,7 @@ interface NotificationSettings {
 }
 
 export default function DesignerSettings() {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -189,7 +189,7 @@ export default function DesignerSettings() {
       });
 
       setTimeout(async () => {
-        await supabase.auth.signOut();
+        await signOut();
         window.location.href = '/';
       }, 2000);
     } catch (error: any) {

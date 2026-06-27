@@ -41,7 +41,7 @@ interface NotificationSettings {
 }
 
 export default function UserProfileSettings() {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile, updateProfile, signOut } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
@@ -240,7 +240,7 @@ export default function UserProfileSettings() {
 
       // Sign out after deactivation
       setTimeout(async () => {
-        await supabase.auth.signOut();
+        await signOut();
         window.location.href = '/';
       }, 2000);
     } catch (error: any) {
