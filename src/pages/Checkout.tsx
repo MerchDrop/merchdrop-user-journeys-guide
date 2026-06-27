@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as Sentry from '@sentry/react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, Truck, Shield, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -94,6 +95,7 @@ export default function Checkout() {
         description: `Order ${data.orderNumber} has been confirmed.`,
       });
     } catch (error) {
+      Sentry.captureException(error, { tags: { location: 'checkout.handlePaystackSuccess' } });
       console.error('Payment processing error:', error);
       toast({
         title: "Payment Processing Failed",
