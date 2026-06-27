@@ -128,44 +128,46 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center mb-16">
           <Badge variant="outline" className="mb-6 px-4 py-2">
             <Sparkles className="h-4 w-4 mr-2" />
-            Launch your merch line in minutes
+            Exclusive limited drops from your favorite artists
           </Badge>
 
           <h1 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight leading-tight">
-            Your Merch, Your Brand,
+            Support the culture,
             <br />
-            <span className="text-accent">Your Revenue.</span>
+            <span className="text-accent">wear the creativity.</span>
           </h1>
 
           <p className="text-[16px] lg:text-[18px] text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Create your online dashboard that sells custom swag, from t-shirts to belts. Quality on-demand products, global shipping, and instant payouts.
+            Shop exclusive limited drops from your favorite artists and step into their world.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
             <Button size="lg" className="btn-primary text-base px-8 py-4" asChild>
-              <Link to="/artist-auth">
-                Start a drop
+              <Link to="/products">
+                Shop Drops
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="text-base px-8 py-4">
-              <Play className="mr-2 h-5 w-5" />
-              See how it works
+            <Button variant="outline" size="lg" className="text-base px-8 py-4" asChild>
+              <Link to="/products">
+                <Play className="mr-2 h-5 w-5" />
+                Browse Artists
+              </Link>
             </Button>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-[13px] text-muted-foreground">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              <span>10k+ creators already selling</span>
+              <span>10k+ fans already shopping</span>
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              <span>&#8358;2M+ revenue generated</span>
+              <span>&#8358;2M+ in drops sold</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4" />
-              <span>4.9/5 creator satisfaction</span>
+              <span>4.9/5 buyer satisfaction</span>
             </div>
           </div>
         </div>

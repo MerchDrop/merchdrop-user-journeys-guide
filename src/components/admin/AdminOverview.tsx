@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import NewsletterSubscribers from '@/components/admin/NewsletterSubscribers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -344,7 +345,9 @@ export default function AdminOverview() {
         </motion.div>
       </div>
       
-      <OrderDetailsDialog 
+      <NewsletterSubscribers />
+
+      <OrderDetailsDialog
         order={selectedOrder}
         open={orderDialogOpen}
         onOpenChange={setOrderDialogOpen}

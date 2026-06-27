@@ -111,8 +111,8 @@ export default function Privacy() {
               </CardHeader>
               <CardContent>
                 <p>
-                  If you have any questions about this Privacy Policy, please contact us at 
-                  privacy@merchdrop.com or through our support channels.
+                  If you have any questions about this Privacy Policy, please contact us at
+                  support@merchdrop.live or through our support channels.
                 </p>
               </CardContent>
             </Card>

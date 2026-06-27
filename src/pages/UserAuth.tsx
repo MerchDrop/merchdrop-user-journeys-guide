@@ -70,7 +70,7 @@ const UserAuth = () => {
           toast.error(errorInfo.title, { description: errorInfo.message });
         } else {
           toast.success("Account created!", { description: "Please check your email to verify your account." });
-          navigate('/email-confirmation?role=user');
+          navigate('/products');
         }
       } else {
         const { error } = await signIn({

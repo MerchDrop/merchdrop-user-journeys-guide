@@ -140,7 +140,7 @@ export default function Terms() {
               </CardHeader>
               <CardContent>
                 <p>
-                  Questions about the Terms of Service should be sent to us at legal@merchdrop.com.
+                  Questions about the Terms of Service should be sent to us at support@merchdrop.live.
                 </p>
               </CardContent>
             </Card>

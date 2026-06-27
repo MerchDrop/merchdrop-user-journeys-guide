@@ -73,8 +73,8 @@ const Header = ({
 
             {/* Left Navigation */}
             <div className="hidden lg:flex items-center space-x-6">
-              <Link to="/creators" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
-                For Creators
+              <Link to="/products" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+                New Drops
               </Link>
               <Link to="/products" className={`text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
                 Shop
@@ -107,6 +107,7 @@ const Header = ({
             </Link>
             <CurrencySelector className={shouldBeTransparent ? 'text-white border-white/20' : ''} />
             {user ? <DropdownMenu>
+
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className={`relative ${shouldBeTransparent ? 'text-white hover:bg-white/10' : 'text-black hover:bg-gray-100'}`}>
                     <Avatar className="h-8 w-8 border-2 border-white/20">
@@ -159,9 +160,6 @@ const Header = ({
                 <Button variant="ghost" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} asChild>
                   <Link to="/user-auth">Sign In</Link>
                 </Button>
-                <Button variant="default" size="sm" className={`text-[14px] ${shouldBeTransparent ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`} asChild>
-                  <Link to="/artist-auth">Start Creating</Link>
-                </Button>
               </div>}
           </div>
 
@@ -188,8 +186,8 @@ const Header = ({
                 />
               </div>
               
-              <Link to="/creators" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
-                For Creators
+              <Link to="/products" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
+                New Drops
               </Link>
               <Link to="/products" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
                 Shop
@@ -216,10 +214,7 @@ const Header = ({
                   </div>
                 </div> : <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                   <Button variant="ghost" className="text-[14px] text-black hover:text-gray-600" asChild>
-                    <Link to="/user-auth" onClick={() => setIsMenuOpen(false)}>Shop</Link>
-                  </Button>
-                  <Button variant="default" className="text-[14px] bg-black text-white hover:bg-gray-800" asChild>
-                    <Link to="/artist-auth" onClick={() => setIsMenuOpen(false)}>Start Creating</Link>
+                    <Link to="/user-auth" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
                   </Button>
                 </div>}
             </div>
