@@ -14,23 +14,29 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('HeroSection', () => {
   it('renders hero content correctly', () => {
     const { getByText } = renderWithRouter(<HeroSection />);
-    
-    expect(getByText('Discover Unique Art')).toBeInTheDocument();
-    expect(getByText(/Support independent artists/)).toBeInTheDocument();
+
+    expect(getByText(/Support the culture/)).toBeInTheDocument();
+    expect(getByText('wear the creativity.')).toBeInTheDocument();
+    expect(getByText(/Shop exclusive limited drops/)).toBeInTheDocument();
   });
 
   it('has proper navigation links', () => {
     const { getByRole } = renderWithRouter(<HeroSection />);
-    
-    const shopNowButton = getByRole('link', { name: /shop now/i });
-    expect(shopNowButton).toBeInTheDocument();
-    expect(shopNowButton).toHaveAttribute('href', '/products');
+
+    const shopDropsLink = getByRole('link', { name: /shop drops/i });
+    expect(shopDropsLink).toBeInTheDocument();
+    expect(shopDropsLink).toHaveAttribute('href', '/products');
+
+    const browseArtistsLink = getByRole('link', { name: /browse artists/i });
+    expect(browseArtistsLink).toBeInTheDocument();
+    expect(browseArtistsLink).toHaveAttribute('href', '/products');
   });
 
-  it('displays hero image', () => {
-    const { getByAltText } = renderWithRouter(<HeroSection />);
-    
-    const heroImage = getByAltText('Hero image showcasing art marketplace');
-    expect(heroImage).toBeInTheDocument();
+  it('displays the dashboard preview', () => {
+    const { getByText } = renderWithRouter(<HeroSection />);
+
+    expect(getByText('app.merchdrop.com/dashboard')).toBeInTheDocument();
+    expect(getByText('Sales This Week')).toBeInTheDocument();
+    expect(getByText('Recent Activity')).toBeInTheDocument();
   });
 });
