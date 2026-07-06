@@ -43,7 +43,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
   const [uploading, setUploading] = useState(false);
   const [artistProfile, setArtistProfile] = useState<any>(null);
   
-  const { user, isArtist } = useAuth();
+  const { user, isArtist, isAdmin } = useAuth();
   const { currency, convertPrice } = useCurrency();
   const { toast } = useToast();
 
@@ -119,8 +119,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
   const uploadImages = async (productId: string) => {
     const uploadPromises = images.map(async (file, index) => {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${productId}/${Date.now()}-${index}.${fileExt}`;
-      
+      // Storage RLS only allows uploads under the current user's folder
+      const fileName = `${user!.id}/${productId}/${Date.now()}-${index}.${fileExt}`;
+
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, file);
@@ -139,19 +140,22 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     });
 
     const imageData = await Promise.all(uploadPromises);
-    
+
     const { error } = await supabase
       .from('product_images')
       .insert(imageData);
 
     if (error) throw error;
+
+    return imageData;
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    if (!isArtist || !artistProfile) {
+    const canSubmitAsArtist = isArtist && artistProfile;
+    if (!canSubmitAsArtist && !isAdmin) {
       toast({
         title: "Access Denied",
-        description: "You must be an approved artist to create products.",
+        description: "You must be an approved artist or an admin to create products.",
         variant: "destructive",
       });
       return;
@@ -167,7 +171,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
         stock: data.stock,
         category_id: data.category_id,
         sku: data.sku,
-        artist_id: artistProfile.id,
+        // Preserve the owner on edit; admins without an artist profile
+        // create platform-owned products (artist_id is nullable)
+        artist_id: editProduct?.artist_id ?? artistProfile?.id ?? null,
         currency,
         tags,
         status: 'draft' as const,
@@ -198,14 +204,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
       }
 
       if (images.length > 0) {
-        await uploadImages(productId);
-        
+        const uploadedImages = await uploadImages(productId);
+
         // Update main_image_url with the first uploaded image
-        if (!editProduct && images.length > 0) {
-          const firstImageUrl = `${supabase.storage.from('product-images').getPublicUrl(`${productId}/${Date.now()}-0.${images[0].name.split('.').pop()}`).data.publicUrl}`;
+        if (!editProduct && uploadedImages.length > 0) {
           await supabase
             .from('products')
-            .update({ main_image_url: firstImageUrl })
+            .update({ main_image_url: uploadedImages[0].url })
             .eq('id', productId);
         }
       }
@@ -251,12 +256,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  if (!isArtist) {
+  if (!isArtist && !isAdmin) {
     return (
       <Card>
         <CardContent className="p-6">
           <p className="text-center text-muted-foreground">
-            You need to be an approved artist to create products.
+            You need to be an approved artist or an admin to create products.
           </p>
         </CardContent>
       </Card>
