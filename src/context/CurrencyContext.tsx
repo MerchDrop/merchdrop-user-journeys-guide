@@ -7,6 +7,7 @@ export interface CurrencyData {
   code: Currency;
   symbol: string;
   name: string;
+  rate: number;
 }
 
 export const DEFAULT_RATES: Record<Currency, number> = {
@@ -16,9 +17,9 @@ export const DEFAULT_RATES: Record<Currency, number> = {
 };
 
 export const CURRENCIES: Record<Currency, CurrencyData> = {
-  USD: { code: 'USD', symbol: '$', name: 'US Dollar' },
-  GBP: { code: 'GBP', symbol: '£', name: 'British Pound' },
-  NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira' }
+  USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
+  GBP: { code: 'GBP', symbol: '£', name: 'British Pound', rate: 0.79 },
+  NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', rate: 1650 }
 };
 
 interface CurrencyContextType {

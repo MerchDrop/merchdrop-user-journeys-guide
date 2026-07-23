@@ -44,7 +44,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
   const [artistProfile, setArtistProfile] = useState<any>(null);
   
   const { user, isArtist, isAdmin } = useAuth();
-  const { currency, convertPrice } = useCurrency();
+  const { currency, convertPrice, convertBetweenCurrencies } = useCurrency();
   const { toast } = useToast();
 
   // Create and cleanup blob URLs for image previews
@@ -185,9 +185,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
       // The price input is entered in the currently selected display currency;
       // price_cents must always be stored as canonical USD cents (every reader
       // in the app converts USD -> display currency, e.g. useCurrency.formatPrice).
-      const priceCentsUsd = currency === 'USD'
-        ? data.price_cents
-        : Math.round(data.price_cents / CURRENCIES[currency].rate);
+      const priceCentsUsd = Math.round(convertBetweenCurrencies(data.price_cents, currency, 'USD')) || 0;
 
       const productData = {
         title: data.title,
