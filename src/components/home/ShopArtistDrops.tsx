@@ -284,7 +284,7 @@ const ShopArtistDrops = () => {
                         {product.artist_profiles?.artist_name || 'Unknown Artist'}
                       </span>
                       <span className="ml-auto text-[13px] font-medium text-foreground">
-                        ${formatPrice(product.price_cents)}
+                        {formatPrice(product.price_cents / 100)}
                       </span>
                     </div>
                     <div className="mt-1 text-[14px] font-medium text-foreground">

@@ -22,6 +22,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AdminCurrencyConverter } from './AdminCurrencyConverter';
 
 const AdminSettings = () => {
   const { settings, isLoading, saveSettings, isSaving } = usePlatformSettings();
@@ -296,6 +297,9 @@ const AdminSettings = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Currency & Exchange Rates */}
+        <AdminCurrencyConverter />
 
         {/* Localization */}
         <Card>

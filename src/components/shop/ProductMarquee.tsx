@@ -145,7 +145,7 @@ const ProductMarquee = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-foreground">
-                      {formatPrice(product.price_cents)}
+                      {formatPrice(product.price_cents / 100)}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {product.stock > 0 ? `${product.stock} left` : 'Out of stock'}

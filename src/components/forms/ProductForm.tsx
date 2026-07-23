@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrency, CURRENCIES } from '@/context/CurrencyContext';
 import { Upload, X, Plus } from 'lucide-react';
 
 const productSchema = z.object({
@@ -87,23 +87,41 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
   }, [editProduct]);
 
   const fetchCategories = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name');
-    
+
+    if (error) {
+      toast({
+        title: "Couldn't load categories",
+        description: `${error.message} — try reloading the page.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCategories(data || []);
   };
 
   const fetchArtistProfile = async () => {
     if (!user) return;
-    
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from('artist_profiles')
       .select('*')
       .eq('user_id', user.id)
       .maybeSingle();
-    
+
+    if (error) {
+      toast({
+        title: "Couldn't load your artist profile",
+        description: `${error.message} — try reloading the page.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setArtistProfile(data);
   };
 
@@ -164,17 +182,25 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     try {
       setUploading(true);
 
+      // The price input is entered in the currently selected display currency;
+      // price_cents must always be stored as canonical USD cents (every reader
+      // in the app converts USD -> display currency, e.g. useCurrency.formatPrice).
+      const priceCentsUsd = currency === 'USD'
+        ? data.price_cents
+        : Math.round(data.price_cents / CURRENCIES[currency].rate);
+
       const productData = {
         title: data.title,
         description: data.description,
-        price_cents: data.price_cents,
+        price_cents: priceCentsUsd,
         stock: data.stock,
         category_id: data.category_id,
         sku: data.sku,
         // Preserve the owner on edit; admins without an artist profile
         // create platform-owned products (artist_id is nullable)
         artist_id: editProduct?.artist_id ?? artistProfile?.id ?? null,
-        currency,
+        // price_cents is always USD now, so the stored currency must match
+        currency: 'USD',
         tags,
         status: 'draft' as const,
         slug: await generateSlug(data.title),

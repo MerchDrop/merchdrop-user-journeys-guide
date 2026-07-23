@@ -211,7 +211,7 @@ const MerchCategories = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-lg font-semibold text-foreground">
-                                {formatPrice(product.price_cents)}
+                                {formatPrice(product.price_cents / 100)}
                               </span>
                             </div>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
