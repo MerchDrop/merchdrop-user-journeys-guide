@@ -68,7 +68,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     defaultValues: {
       title: editProduct?.title || '',
       description: editProduct?.description || '',
-      price_cents: editProduct ? Math.round(convertPrice(editProduct.price_cents / 100)) * 100 : 0,
+      price_cents: editProduct ? Number(convertPrice(editProduct.price_cents / 100).toFixed(2)) : 0,
       stock: editProduct?.stock || 0,
       category_id: editProduct?.category_id || '',
       sku: editProduct?.sku || '',
@@ -81,10 +81,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     fetchCategories();
     fetchArtistProfile();
     
-    if (editProduct?.tags) {
-      setTags(editProduct.tags);
+    if (editProduct) {
+      if (editProduct.tags) setTags(editProduct.tags);
+      const displayVal = Number(convertPrice(editProduct.price_cents / 100).toFixed(2));
+      setValue('price_cents', displayVal);
     }
-  }, [editProduct]);
+  }, [editProduct, currency]);
 
   const fetchCategories = async () => {
     const { data, error } = await supabase
@@ -182,10 +184,20 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     try {
       setUploading(true);
 
-      // The price input is entered in the currently selected display currency;
-      // price_cents must always be stored as canonical USD cents (every reader
-      // in the app converts USD -> display currency, e.g. useCurrency.formatPrice).
-      const priceCentsUsd = Math.round(convertBetweenCurrencies(data.price_cents, currency, 'USD')) || 0;
+      // data.price_cents is entered in display currency (e.g., $25.00 USD, £19.75 GBP, or ₦41,250 NGN).
+      // Convert display amount to USD dollars, then to canonical USD cents for database storage.
+      const priceInUsdDollars = convertBetweenCurrencies(data.price_cents, currency, 'USD');
+      const priceCentsUsd = Math.round(priceInUsdDollars * 100);
+
+      if (!priceCentsUsd || priceCentsUsd <= 0) {
+        toast({
+          title: "Invalid Price",
+          description: "Please enter a valid product price greater than 0.",
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
 
       const productData = {
         title: data.title,
@@ -339,9 +351,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
                 id="price_cents"
                 type="number"
                 step="0.01"
+                min="0.01"
                 {...register('price_cents', { valueAsNumber: true })}
-                onChange={(e) => setValue('price_cents', Math.round(parseFloat(e.target.value) * 100))}
-                value={watch('price_cents') ? (watch('price_cents') / 100).toFixed(2) : ''}
                 placeholder="0.00"
               />
               {errors.price_cents && (
