@@ -17,8 +17,6 @@ const corsHeaders = {
 // Allowlist of acceptable confirmation URL origins
 const ALLOWED_ORIGINS = [
   "https://merchdrop.live",
-  "https://merchdrop.lovable.app",
-  "https://id-preview--aea51037-916d-42eb-8d23-5220971444be.lovable.app",
 ];
 
 interface EmailRequest {
@@ -33,7 +31,7 @@ const isUrlAllowed = (url: string): boolean => {
     const u = new URL(url);
     return ALLOWED_ORIGINS.some((origin) => {
       const o = new URL(origin);
-      return u.origin === o.origin || u.hostname.endsWith(".lovable.app");
+      return u.origin === o.origin;
     });
   } catch {
     return false;

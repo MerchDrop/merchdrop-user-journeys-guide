@@ -41,7 +41,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
               <img
-                src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png"
+                src="/Merchdrop.png"
                 alt="MerchDrop"
                 className="h-9 w-auto"
               />

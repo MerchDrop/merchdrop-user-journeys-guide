@@ -150,7 +150,7 @@ export default function DashboardLayout() {
           <div className="flex flex-col h-16 px-6 border-b border-border">
             <Link to="/" className="flex items-center py-4">
               <img 
-                src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+                src="/Merchdrop.png" 
                 alt="MerchDrop" 
                 className="h-6 w-auto"
               />
@@ -202,7 +202,7 @@ export default function DashboardLayout() {
             <div className="flex items-center justify-between py-4">
               <Link to="/" className="flex items-center">
                 <img 
-                  src="/lovable-uploads/f708172b-4051-49f4-9f48-2681025d79d3.png" 
+                  src="/Merchdrop.png" 
                   alt="MerchDrop" 
                   className="h-6 w-auto"
                 />
