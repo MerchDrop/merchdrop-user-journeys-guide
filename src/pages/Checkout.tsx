@@ -51,7 +51,7 @@ export default function Checkout() {
   const shipping = selectedAxis.isCustomQuote
     ? 0
     : convertBetweenCurrencies(selectedAxis.feeNGN, 'NGN', currency);
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.075;
   const total = subtotal + shipping + tax;
 
   const steps = [
@@ -368,7 +368,7 @@ export default function Checkout() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Tax</span>
+                          <span>VAT / Tax (7.5%)</span>
                           <span>{formatPrice(tax)}</span>
                         </div>
                         <div className="border-t pt-2 flex justify-between font-bold">
@@ -499,7 +499,7 @@ export default function Checkout() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tax</span>
+                    <span>VAT / Tax (7.5%)</span>
                     <span>{formatPrice(tax)}</span>
                   </div>
                   <div className="border-t pt-3 flex justify-between font-bold text-lg">

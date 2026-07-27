@@ -15,7 +15,7 @@ export default function Cart() {
 
   const subtotal = getTotalPrice();
   const shipping = subtotal > 100 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.075;
   const total = subtotal + shipping + tax;
 
   if (items.length === 0) {
@@ -164,7 +164,7 @@ export default function Cart() {
                     </div>
                     
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Tax</span>
+                      <span className="text-gray-600">VAT / Tax (7.5%)</span>
                       <span className="font-medium">{formatPrice(tax)}</span>
                     </div>
 
