@@ -20,14 +20,14 @@ export default function NewsletterSubscribers() {
   const fetchSubscribers = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('newsletter_subscribers' as any)
+      .from('newsletter_subscribers')
       .select('*')
       .order('subscribed_at', { ascending: false });
 
     if (error) {
       toast({ title: 'Error', description: 'Could not load subscribers.', variant: 'destructive' });
     } else {
-      setSubscribers((data as Subscriber[]) || []);
+      setSubscribers(data || []);
     }
     setLoading(false);
   };
@@ -38,7 +38,7 @@ export default function NewsletterSubscribers() {
 
   const toggleActive = async (id: string, current: boolean) => {
     const { error } = await supabase
-      .from('newsletter_subscribers' as any)
+      .from('newsletter_subscribers')
       .update({ is_active: !current })
       .eq('id', id);
 

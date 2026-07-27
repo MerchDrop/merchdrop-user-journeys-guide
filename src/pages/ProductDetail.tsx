@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
+import { useProductsQuery } from '@/hooks/useProductsQuery';
+import { ProductReviews } from '@/components/product/ProductReviews';
 
 import { supabase } from '@/integrations/supabase/client';
 
@@ -30,67 +32,6 @@ type UiProduct = {
   category?: string;
 };
 
-
-// Related products for "You May Also Like"
-const relatedProducts = [
-  {
-    id: 3,
-    name: "Luna Logo Cap",
-    artist: "Luna Rivers",
-    price: 28,
-    image: "https://images.unsplash.com/photo-1588117260148-b47c0c19383d?w=400&h=400&fit=crop&auto=format",
-    rating: 5.0
-  },
-  {
-    id: 4,
-    name: "Cosmic Journey Poster",
-    artist: "Luna Rivers", 
-    price: 22,
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=400&fit=crop&auto=format",
-    rating: 4.7
-  },
-  {
-    id: 5,
-    name: "Rivers Phone Case",
-    artist: "Luna Rivers",
-    price: 32,
-    image: "https://images.unsplash.com/photo-1607212640195-b3c4c0ca5f82?w=400&h=400&fit=crop&auto=format",
-    rating: 4.9
-  },
-  {
-    id: 6,
-    name: "Dreamscape Vinyl Sticker Pack",
-    artist: "Luna Rivers",
-    price: 15,
-    image: "https://images.unsplash.com/photo-1541336032412-2048a678540d?w=400&h=400&fit=crop&auto=format",
-    rating: 4.8
-  }
-];
-
-const reviews = [
-  {
-    id: 1,
-    name: "Alex Chen",
-    rating: 5,
-    comment: "Amazing quality! The design is even more beautiful in person.",
-    date: "2 weeks ago"
-  },
-  {
-    id: 2, 
-    name: "Sarah Miller",
-    rating: 5,
-    comment: "Perfect fit and the artwork is stunning. Luna's best merch yet!",
-    date: "1 month ago"
-  },
-  {
-    id: 3,
-    name: "Mike Rodriguez", 
-    rating: 4,
-    comment: "Great hoodie, very comfortable. Shipping was fast too.",
-    date: "3 weeks ago"
-  }
-];
-
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -105,40 +46,61 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
-  const [hoveredRelated, setHoveredRelated] = useState<number | null>(null);
+  const [hoveredRelated, setHoveredRelated] = useState<string | null>(null);
 
   // Load from Supabase
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
       setIsLoading(true);
-      const productId = id as string;
-      if (!productId) { if (isMounted) setIsLoading(false); return; }
-      const { data, error } = await supabase
+      const identifier = id as string;
+      if (!identifier) { if (isMounted) setIsLoading(false); return; }
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+      const selectQuery = `
+        id,
+        title,
+        description,
+        price_cents,
+        currency,
+        stock,
+        main_image_url,
+        tags,
+        artist_id,
+        category_id,
+        category:categories(name, slug),
+        artist_profiles(artist_name, artist_slug),
+        product_images(url, sort_order)
+      `;
+
+      let productRes = await supabase
         .from('products')
-        .select(`
-          id, 
-          title, 
-          description, 
-          price_cents, 
-          currency, 
-          stock, 
-          main_image_url,
-          tags,
-          artist_id,
-          category:categories(name, slug),
-          artist_profiles(artist_name, artist_slug),
-          product_images(url, sort_order)
-        `)
-        .eq('id', productId)
+        .select(selectQuery)
+        .eq(isUuid ? 'id' : 'slug', identifier)
         .eq('status', 'published')
         .maybeSingle();
 
+      if (!productRes.data && !productRes.error) {
+        productRes = await supabase
+          .from('products')
+          .select(selectQuery)
+          .eq(isUuid ? 'slug' : 'id', identifier)
+          .eq('status', 'published')
+          .maybeSingle();
+      }
+
+      const data = productRes.data;
+      const error = productRes.error;
+
       if (!error && data && isMounted) {
+        const reviewRows = await supabase.from('reviews').select('rating').eq('product_id', data.id).then(r => r.data || []);
         const imageList = [
           ...(data.main_image_url ? [data.main_image_url] : []),
           ...(((data as any).product_images as any[] | undefined)?.sort((a,b)=> (a.sort_order ?? 0)-(b.sort_order ?? 0)).map((i)=> i.url) || [])
         ];
+        const ratings = (reviewRows || []).map(r => r.rating);
+        const averageRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
         const mapped: any = {
           id: data.id,
           name: (data as any).title,
@@ -152,11 +114,13 @@ export default function ProductDetail() {
           ],
           images: imageList.length ? imageList : ['/placeholder.svg'],
           stock: (data as any).stock ?? 0,
-          rating: (4.2 + Math.random() * 0.8).toFixed(1), // Demo rating
-          reviews: Math.floor(Math.random() * 50) + 10, // Demo reviews
+          rating: averageRating,
+          reviews: ratings.length,
           artist: (data as any).artist_profiles?.artist_name,
           artistId: (data as any).artist_id, // Extract artist_id for cart
+          artistSlug: (data as any).artist_profiles?.artist_slug,
           category: (data as any).category?.name,
+          categoryId: (data as any).category_id,
           tags: (data as any).tags || [],
         };
         setProduct(mapped);
@@ -164,7 +128,7 @@ export default function ProductDetail() {
           setSelectedSize(mapped.sizes[0]);
         }
       } else {
-        console.error('Error loading product', error);
+        if (error) console.error('Error loading product', error);
         if (isMounted) setProduct(null);
       }
       if (isMounted) setIsLoading(false);
@@ -203,11 +167,33 @@ export default function ProductDetail() {
 
   const prevImage = () => {
     if (product) {
-      setSelectedImage((prev) => 
+      setSelectedImage((prev) =>
         prev === 0 ? product.images.length - 1 : prev - 1
       );
     }
   };
+
+  // Related products: real, published products in same category (or other categories), excluding current product
+  const { data: allPublishedProducts = [] } = useProductsQuery({ published: true });
+
+  const relatedProducts = React.useMemo(() => {
+    if (!product?.id || !allPublishedProducts.length) return [];
+
+    const validProducts = allPublishedProducts.filter(
+      p => p.id !== product.id && p.status === 'published'
+    );
+
+    if (product.categoryId) {
+      const sameCategory = validProducts.filter(
+        p => p.category_id === product.categoryId || p.category?.id === product.categoryId
+      );
+      if (sameCategory.length > 0) {
+        return sameCategory.slice(0, 4);
+      }
+    }
+
+    return validProducts.slice(0, 4);
+  }, [product?.id, product?.categoryId, allPublishedProducts]);
 
   // Handle loading state
   if (isLoading) {
@@ -346,8 +332,8 @@ export default function ProductDetail() {
               {/* Header */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  {product.artist ? (
-                    <Link to={`/artist/${product.artist.toLowerCase().replace(' ', '-')}`}>
+                  {product.artist && product.artistSlug ? (
+                    <Link to={`/artist/${product.artistSlug}`}>
                       <Badge variant="secondary" className="mb-2 hover:bg-secondary/80">By {product.artist}</Badge>
                     </Link>
                   ) : null}
@@ -372,7 +358,9 @@ export default function ProductDetail() {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center">
                     <Star className="h-5 w-5 text-yellow-500 fill-current mr-1" />
-                    <span className="font-semibold">{product.rating}</span>
+                    <span className="font-semibold">
+                      {product.reviews > 0 ? product.rating.toFixed(1) : 'New'}
+                    </span>
                     <span className="text-muted-foreground ml-2">({product.reviews} reviews)</span>
                   </div>
                 </div>
@@ -524,59 +512,65 @@ export default function ProductDetail() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-20 space-y-8"
           >
-            <h2 className="text-3xl font-bold">You May Also Like</h2>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedProducts.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-                  onMouseEnter={() => setHoveredRelated(item.id)}
-                  onMouseLeave={() => setHoveredRelated(null)}
-                >
-                  <Card className="group cursor-pointer hover:shadow-hero transition-all duration-300 overflow-hidden">
-                    <Link to={`/product/${item.id}`}>
-                      <div className="aspect-square overflow-hidden relative">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover transition-transform duration-300"
-                        />
-                        
-                        {/* Hover Overlay */}
-                        <motion.div 
-                          className="absolute inset-0 bg-black/60 flex items-center justify-center"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: hoveredRelated === item.id ? 1 : 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                        </motion.div>
-                      </div>
-                      
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
-                          {item.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-2">{item.artist}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-primary">${item.price}</span>
-                          <div className="flex items-center">
-                            <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
-                            <span className="text-sm">{item.rating}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Link>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+            {relatedProducts.length > 0 && (
+              <>
+                <h2 className="text-3xl font-bold">Other products you might like</h2>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {relatedProducts.map((item, index) => {
+                    const image = item.main_image_url || item.product_images?.[0]?.url || '/placeholder.svg';
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                        onMouseEnter={() => setHoveredRelated(item.id)}
+                        onMouseLeave={() => setHoveredRelated(null)}
+                      >
+                        <Card className="group cursor-pointer hover:shadow-hero transition-all duration-300 overflow-hidden">
+                          <Link to={`/product/${item.slug || item.id}`}>
+                            <div className="aspect-square overflow-hidden relative">
+                              <img
+                                src={image}
+                                alt={item.title}
+                                className="w-full h-full object-cover transition-transform duration-300"
+                              />
+
+                              {/* Hover Overlay */}
+                              <motion.div
+                                className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: hoveredRelated === item.id ? 1 : 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              </motion.div>
+                            </div>
+
+                            <CardContent className="p-4">
+                              <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                                {item.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-2">{item.artist_profiles?.artist_name}</p>
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-primary">{formatPrice(item.price_cents / 100)}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {item.stock > 0 ? `${item.stock} left` : 'Out of stock'}
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Link>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </motion.section>
 
           {/* Reviews Section */}
@@ -586,23 +580,11 @@ export default function ProductDetail() {
             transition={{ duration: 0.6, delay: 0.8 }}
             className="mt-20"
           >
-            <h2 className="text-3xl font-bold mb-8">Customer Reviews</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-card rounded-2xl p-6 shadow-card">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold">{review.name}</h4>
-                    <div className="flex items-center">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-yellow-500 fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-3">{review.comment}</p>
-                  <p className="text-sm text-muted-foreground">{review.date}</p>
-                </div>
-              ))}
-            </div>
+            <ProductReviews
+              productId={product.id}
+              averageRating={product.rating}
+              totalReviews={product.reviews}
+            />
           </motion.section>
         </div>
       </main>

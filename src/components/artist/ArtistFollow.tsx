@@ -168,7 +168,7 @@ export const ArtistCard: React.FC<ArtistCardProps> = ({ artist, showFollowButton
               <div>
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span>{artist.average_rating?.toFixed(1) || '4.5'}</span>
+                  <span>{artist.average_rating !== undefined ? artist.average_rating.toFixed(1) : 'New'}</span>
                 </div>
               </div>
             </div>
@@ -234,13 +234,45 @@ export const ArtistGrid: React.FC<{ searchQuery?: string; limit?: number }> = ({
 
       if (error) throw error;
 
-      // Add mock follower and product counts
-      const enrichedArtists = (data || []).map(artist => ({
-        ...artist,
-        followers_count: Math.floor(Math.random() * 1000) + 50,
-        products_count: Math.floor(Math.random() * 20) + 3,
-        average_rating: 4.0 + Math.random() * 1.0,
-      }));
+      const artistRows = data || [];
+      const artistIds = artistRows.map(a => a.id);
+
+      // Real per-artist counts: followers, published products, and average review rating
+      const [followsResult, productsResult, reviewsResult] = await Promise.all([
+        supabase.from('artist_follows').select('artist_id').in('artist_id', artistIds),
+        supabase.from('products').select('artist_id').eq('status', 'published').in('artist_id', artistIds),
+        supabase.from('reviews').select('rating, products!inner(artist_id)').in('products.artist_id', artistIds),
+      ]);
+
+      const followersByArtist: Record<string, number> = {};
+      (followsResult.data || []).forEach(f => {
+        followersByArtist[f.artist_id] = (followersByArtist[f.artist_id] || 0) + 1;
+      });
+
+      const productsByArtist: Record<string, number> = {};
+      (productsResult.data || []).forEach(p => {
+        productsByArtist[p.artist_id] = (productsByArtist[p.artist_id] || 0) + 1;
+      });
+
+      const ratingsByArtist: Record<string, number[]> = {};
+      (reviewsResult.data || []).forEach((r: any) => {
+        const artistId = r.products?.artist_id;
+        if (!artistId) return;
+        ratingsByArtist[artistId] = ratingsByArtist[artistId] || [];
+        ratingsByArtist[artistId].push(r.rating);
+      });
+
+      const enrichedArtists = artistRows.map(artist => {
+        const ratings = ratingsByArtist[artist.id] || [];
+        return {
+          ...artist,
+          followers_count: followersByArtist[artist.id] || 0,
+          products_count: productsByArtist[artist.id] || 0,
+          average_rating: ratings.length > 0
+            ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+            : undefined,
+        };
+      });
 
       setArtists(enrichedArtists);
     } catch (error) {

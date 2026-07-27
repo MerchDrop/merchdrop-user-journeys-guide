@@ -39,7 +39,7 @@ const ShopArtistDrops = () => {
       try {
         setLoading(true);
         
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('products')
           .select(`
             id,
@@ -50,7 +50,7 @@ const ShopArtistDrops = () => {
             description,
             published_at,
             stock,
-            artist_profiles!inner (
+            artist_profiles (
               artist_name,
               artist_slug,
               user_id,
@@ -61,9 +61,37 @@ const ShopArtistDrops = () => {
             )
           `)
           .eq('status', 'published')
-          .not('artist_profiles.artist_name', 'is', null)
-          .order('published_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(9);
+
+        // Fallback: If no published products found, fetch all available products
+        if ((!data || data.length === 0) && !error) {
+          const fallback = await supabase
+            .from('products')
+            .select(`
+              id,
+              title,
+              price_cents,
+              main_image_url,
+              slug,
+              description,
+              published_at,
+              stock,
+              artist_profiles (
+                artist_name,
+                artist_slug,
+                user_id,
+                profiles (
+                  avatar_url,
+                  display_name
+                )
+              )
+            `)
+            .order('created_at', { ascending: false })
+            .limit(9);
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (error) {
           console.error('Error fetching products:', error);

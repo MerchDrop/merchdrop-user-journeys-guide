@@ -24,23 +24,25 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useRequestPayoutMutation } from '@/hooks/usePayoutsQuery';
 
 interface RequestPayoutDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  artistId: string;
   availableBalance: number;
 }
 
-export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: RequestPayoutDialogProps) {
+export function RequestPayoutDialog({ open, onOpenChange, artistId, availableBalance }: RequestPayoutDialogProps) {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { formatPrice } = useCurrency();
+  const requestPayoutMutation = useRequestPayoutMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!amount || !paymentMethod) {
       toast({
         title: "Missing Information",
@@ -69,20 +71,17 @@ export function RequestPayoutDialog({ open, onOpenChange, availableBalance }: Re
       return;
     }
 
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Payout Requested",
-        description: `Your payout request for ${formatPrice(requestAmount)} has been submitted`,
-      });
-      setIsSubmitting(false);
+    try {
+      await requestPayoutMutation.mutateAsync({ artistId, amount: requestAmount, paymentMethod });
       setAmount('');
       setPaymentMethod('');
       onOpenChange(false);
-    }, 2000);
+    } catch {
+      // Error toast is handled by the mutation's onError
+    }
   };
+
+  const isSubmitting = requestPayoutMutation.isPending;
 
   const paymentMethods = [
     { value: 'bank_transfer', label: 'Bank Transfer', icon: Banknote },

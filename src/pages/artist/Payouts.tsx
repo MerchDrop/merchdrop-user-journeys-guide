@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { 
-  CreditCard, 
-  TrendingUp, 
-  Calendar, 
+import {
+  CreditCard,
+  TrendingUp,
+  Calendar,
   Download,
   Clock,
   CheckCircle,
@@ -18,45 +18,35 @@ import {
 } from 'lucide-react';
 
 import { useCurrency } from '@/context/CurrencyContext';
+import { useMyArtistProfile } from '@/hooks/useMyArtistProfile';
+import { usePayoutsQuery, Payout } from '@/hooks/usePayoutsQuery';
+import { useOrdersQuery } from '@/hooks/useOrdersQuery';
 import { RequestPayoutDialog } from '@/components/artist/RequestPayoutDialog';
 import { PayoutDetailsDialog } from '@/components/artist/PayoutDetailsDialog';
 import { PaymentMethodDialog } from '@/components/artist/PaymentMethodDialog';
 import { CancelPayoutDialog } from '@/components/artist/CancelPayoutDialog';
 import { useToast } from '@/hooks/use-toast';
 
-interface Payout {
-  id: string;
-  date: string;
-  amount: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  method: 'bank_transfer' | 'paypal' | 'stripe';
-  reference?: string;
-}
-
-const mockPayouts: Payout[] = [];
-
-const statusConfig = {
-  pending: { 
+const statusConfig: Record<string, { color: string; icon: typeof Clock }> = {
+  pending: {
     color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-    icon: Clock 
+    icon: Clock
   },
-  processing: { 
+  processing: {
     color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    icon: TrendingUp 
+    icon: TrendingUp
   },
-  completed: { 
+  completed: {
     color: 'bg-green-500/10 text-green-600 border-green-500/20',
-    icon: CheckCircle 
+    icon: CheckCircle
   },
-  failed: { 
+  failed: {
     color: 'bg-red-500/10 text-red-600 border-red-500/20',
-    icon: AlertCircle 
+    icon: AlertCircle
   }
 };
 
 export default function Payouts() {
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [payouts, setPayouts] = useState(mockPayouts);
   const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
@@ -66,12 +56,31 @@ export default function Payouts() {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
-  const totalEarnings = payouts.reduce((sum, payout) => sum + payout.amount, 0);
+  const { data: artistProfile } = useMyArtistProfile();
+  const { data: payouts = [], isLoading, error } = usePayoutsQuery(artistProfile?.id);
+  const { data: orders = [] } = useOrdersQuery({ artistId: artistProfile?.id });
+
+  // Available balance = revenue from this artist's paid orders, minus payouts already
+  // requested or completed (so a pending/completed payout isn't counted twice).
+  const totalRevenue = orders
+    .filter(order => order.payment_status === 'completed' || order.payment_status === 'paid')
+    .flatMap(order => order.order_items || [])
+    .filter(item => item.artist_id === artistProfile?.id)
+    .reduce((sum, item) => sum + Number(item.total_price), 0);
+
+  const reservedAmount = payouts
+    .filter(p => p.status === 'pending' || p.status === 'processing' || p.status === 'completed')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  const availableBalance = Math.max(totalRevenue - reservedAmount, 0);
+  const totalEarnings = payouts.reduce((sum, payout) => sum + Number(payout.amount), 0);
   const completedPayouts = payouts.filter(p => p.status === 'completed');
   const pendingAmount = payouts
     .filter(p => p.status === 'pending')
-    .reduce((sum, payout) => sum + payout.amount, 0);
-  const availableBalance = 0;
+    .reduce((sum, payout) => sum + Number(payout.amount), 0);
+  const successRate = payouts.length > 0
+    ? Math.round((completedPayouts.length / payouts.length) * 100)
+    : 0;
 
   const handleViewDetails = (payout: Payout) => {
     setSelectedPayout(payout);
@@ -83,15 +92,9 @@ export default function Payouts() {
     setIsCancelDialogOpen(true);
   };
 
-  const handleConfirmCancel = (payoutId: string) => {
-    setPayouts(prevPayouts => 
-      prevPayouts.filter(payout => payout.id !== payoutId)
-    );
-  };
-
   const handleExportReport = () => {
-    const csv = payouts.map(payout => 
-      `${payout.id},${payout.date},${payout.amount},${payout.status},${payout.method},${payout.reference || ''}`
+    const csv = payouts.map(payout =>
+      `${payout.id},${payout.created_at},${payout.amount},${payout.status},${payout.payment_method || ''},${payout.payment_reference || ''}`
     ).join('\n');
     const blob = new Blob([`ID,Date,Amount,Status,Method,Reference\n${csv}`], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -99,6 +102,7 @@ export default function Payouts() {
     a.href = url;
     a.download = 'payouts-report.csv';
     a.click();
+    URL.revokeObjectURL(url);
     toast({
       title: "Export Complete",
       description: "Payouts report has been downloaded",
@@ -110,25 +114,21 @@ export default function Payouts() {
       title: "Total Earnings",
       value: formatPrice(totalEarnings),
       icon: DollarSign,
-      trend: "0%"
     },
     {
       title: "Completed Payouts",
       value: completedPayouts.length.toString(),
       icon: CheckCircle,
-      trend: "0"
     },
     {
       title: "Pending Amount",
       value: formatPrice(pendingAmount),
       icon: Clock,
-      trend: formatPrice(0)
     },
     {
       title: "Success Rate",
-      value: "0%",
+      value: `${successRate}%`,
       icon: BarChart3,
-      trend: "0%"
     }
   ];
 
@@ -147,9 +147,19 @@ export default function Payouts() {
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
-            <Button onClick={() => setIsRequestDialogOpen(true)}>Request Payout</Button>
+            <Button onClick={() => setIsRequestDialogOpen(true)} disabled={!artistProfile}>
+              Request Payout
+            </Button>
           </div>
         </div>
+
+        {error && (
+          <Card className="border-destructive/50">
+            <CardContent className="p-6 text-center text-destructive">
+              Error loading payouts: {error.message}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -169,9 +179,6 @@ export default function Payouts() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <p className="text-xs text-green-600 mt-1">
-                    {stat.trend} from last month
-                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -203,68 +210,79 @@ export default function Payouts() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {payouts.map((payout, index) => {
-                      const StatusIcon = statusConfig[payout.status].icon;
-                      return (
-                        <motion.div
-                          key={payout.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="p-2 rounded-lg bg-muted">
-                              <StatusIcon className="h-4 w-4" />
+                    {isLoading ? (
+                      <p className="text-muted-foreground text-center py-8">Loading payouts…</p>
+                    ) : payouts.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No payouts yet</p>
+                    ) : (
+                      payouts.map((payout, index) => {
+                        const config = statusConfig[payout.status || 'pending'] || statusConfig.pending;
+                        const StatusIcon = config.icon;
+                        return (
+                          <motion.div
+                            key={payout.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="p-2 rounded-lg bg-muted">
+                                <StatusIcon className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className="font-medium text-foreground">
+                                    {formatPrice(payout.amount)}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className={config.color}
+                                  >
+                                    {payout.status}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center text-sm text-muted-foreground space-x-2">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>{new Date(payout.created_at).toLocaleDateString()}</span>
+                                  {payout.payment_method && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="capitalize">{payout.payment_method.replace('_', ' ')}</span>
+                                    </>
+                                  )}
+                                  {payout.payment_reference && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{payout.payment_reference}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="font-medium text-foreground">
-                                  {formatPrice(payout.amount)}
-                                </span>
-                                <Badge 
-                                  variant="outline" 
-                                  className={statusConfig[payout.status].color}
+
+                            <div className="flex items-center space-x-2">
+                              {payout.status === 'pending' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCancelPayout(payout)}
                                 >
-                                  {payout.status}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center text-sm text-muted-foreground space-x-2">
-                                <Calendar className="h-3 w-3" />
-                                <span>{new Date(payout.date).toLocaleDateString()}</span>
-                                <span>•</span>
-                                <span className="capitalize">{payout.method.replace('_', ' ')}</span>
-                                {payout.reference && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{payout.reference}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            {payout.status === 'pending' && (
-                              <Button 
-                                variant="outline" 
+                                  Cancel
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
                                 size="sm"
-                                onClick={() => handleCancelPayout(payout)}
+                                onClick={() => handleViewDetails(payout)}
                               >
-                                Cancel
+                                View Details
                               </Button>
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleViewDetails(payout)}
-                            >
-                              View Details
-                            </Button>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
+                            </div>
+                          </motion.div>
+                        );
+                      })
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -284,11 +302,11 @@ export default function Payouts() {
                           <div>
                             <div className="font-medium">{formatPrice(payout.amount)}</div>
                             <div className="text-sm text-muted-foreground">
-                              Requested {new Date(payout.date).toLocaleDateString()}
+                              Requested {new Date(payout.created_at).toLocaleDateString()}
                             </div>
                           </div>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleCancelPayout(payout)}
                           >
@@ -296,6 +314,9 @@ export default function Payouts() {
                           </Button>
                         </div>
                       ))}
+                    {payouts.filter(p => p.status === 'pending').length === 0 && (
+                      <p className="text-muted-foreground text-center py-4">No pending payouts</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -313,8 +334,8 @@ export default function Payouts() {
                         <div>
                           <div className="font-medium">{formatPrice(payout.amount)}</div>
                           <div className="text-sm text-muted-foreground">
-                            Completed {new Date(payout.date).toLocaleDateString()}
-                            {payout.reference && ` • ${payout.reference}`}
+                            Completed {payout.processed_at ? new Date(payout.processed_at).toLocaleDateString() : new Date(payout.created_at).toLocaleDateString()}
+                            {payout.payment_reference && ` • ${payout.payment_reference}`}
                           </div>
                         </div>
                         <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
@@ -322,6 +343,9 @@ export default function Payouts() {
                         </Badge>
                       </div>
                     ))}
+                    {completedPayouts.length === 0 && (
+                      <p className="text-muted-foreground text-center py-4">No completed payouts yet</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -345,28 +369,27 @@ export default function Payouts() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <h4 className="font-medium">Auto Payout</h4>
+                  <h4 className="font-medium">Available Balance</h4>
                   <p className="text-sm text-muted-foreground">
-                    Automatically request payouts when balance reaches threshold
+                    Revenue from paid orders not yet requested as a payout
                   </p>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm">Threshold:</span>
-                    <span className="font-medium">{formatPrice(1000)}</span>
+                    <span className="text-sm">Balance:</span>
+                    <span className="font-medium">{formatPrice(availableBalance)}</span>
                   </div>
-                  <Progress value={75} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium">Payment Method</h4>
                   <p className="text-sm text-muted-foreground">
                     Primary method for receiving payments
                   </p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     onClick={() => setIsPaymentMethodDialogOpen(true)}
                   >
-                    Bank Transfer (••••1234)
+                    Manage Payment Method
                   </Button>
                 </div>
               </div>
@@ -375,11 +398,14 @@ export default function Payouts() {
         </motion.div>
 
         {/* Dialogs */}
-        <RequestPayoutDialog
-          open={isRequestDialogOpen}
-          onOpenChange={setIsRequestDialogOpen}
-          availableBalance={availableBalance}
-        />
+        {artistProfile && (
+          <RequestPayoutDialog
+            open={isRequestDialogOpen}
+            onOpenChange={setIsRequestDialogOpen}
+            artistId={artistProfile.id}
+            availableBalance={availableBalance}
+          />
+        )}
 
         <PayoutDetailsDialog
           open={isDetailsDialogOpen}
@@ -397,7 +423,6 @@ export default function Payouts() {
           onOpenChange={setIsCancelDialogOpen}
           payoutId={payoutToCancel?.id || null}
           payoutAmount={payoutToCancel?.amount || 0}
-          onCancel={handleConfirmCancel}
         />
     </div>
   );

@@ -12,7 +12,14 @@ import {
   Settings,
   BarChart3,
   UserCheck,
-  Palette
+  Palette,
+  Truck,
+  Wallet,
+  Boxes,
+  Tag,
+  MessageSquare,
+  FileText,
+  ShieldCheck,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -37,6 +44,41 @@ const adminNavItems = [
     title: 'Orders',
     href: '/admin/orders',
     icon: ShoppingCart,
+  },
+  {
+    title: 'Shipping',
+    href: '/admin/shipping',
+    icon: Truck,
+  },
+  {
+    title: 'Payouts',
+    href: '/admin/payouts',
+    icon: Wallet,
+  },
+  {
+    title: 'Promotions',
+    href: '/admin/promotions',
+    icon: Tag,
+  },
+  {
+    title: 'Inventory',
+    href: '/admin/inventory',
+    icon: Boxes,
+  },
+  {
+    title: 'Support',
+    href: '/admin/support',
+    icon: MessageSquare,
+  },
+  {
+    title: 'CMS',
+    href: '/admin/cms',
+    icon: FileText,
+  },
+  {
+    title: 'Audit Logs',
+    href: '/admin/audit-logs',
+    icon: ShieldCheck,
   },
   {
     title: 'Artists',

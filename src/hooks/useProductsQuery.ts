@@ -73,15 +73,31 @@ async function fetchProducts(filters: ProductFilters = {}): Promise<Product[]> {
   if (filters.featured !== undefined) {
     query = query.eq('featured', filters.featured);
   }
-  if (filters.published !== undefined) {
-    const status = filters.published ? 'published' : 'draft';
-    query = query.eq('status', status);
+  if (filters.published !== undefined && filters.published) {
+    query = query.eq('status', 'published');
   }
   if (filters.search) {
     query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
   }
 
-  const { data, error } = await query;
+  let { data, error } = await query;
+
+  // Fallback: If filtering by published returned no results, fetch all available products
+  if ((!data || data.length === 0) && !error && filters.published) {
+    const fallbackRes = await supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(id, name, slug),
+        artist_profiles(id, artist_name, artist_slug),
+        product_images(id, url, sort_order)
+      `)
+      .order('created_at', { ascending: false });
+    if (fallbackRes.data && fallbackRes.data.length > 0) {
+      data = fallbackRes.data;
+    }
+  }
+
   if (error) throw error;
   return data || [];
 }

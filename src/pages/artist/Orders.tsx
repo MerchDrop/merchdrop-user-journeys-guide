@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -18,9 +18,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Download,
   Eye,
   Package,
@@ -29,63 +29,64 @@ import {
   Clock
 } from 'lucide-react';
 import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
+import { useMyArtistProfile } from '@/hooks/useMyArtistProfile';
+import { useOrdersQuery, useUpdateOrderStatusMutation, Order } from '@/hooks/useOrdersQuery';
+import { useCurrency } from '@/context/CurrencyContext';
 
-// Mock orders data - replace with actual API call
-const mockOrders = [
-  {
-    id: '1',
-    order_number: 'ORD-001',
-    customer_name: 'John Doe',
-    customer_email: 'john@example.com',
-    product_title: 'Custom T-Shirt Design',
-    quantity: 2,
-    total_amount: 49.98,
-    status: 'pending',
-    payment_status: 'completed',
-    created_at: '2024-01-15T10:30:00Z',
-    shipped_at: null,
-    delivered_at: null,
-  },
-  {
-    id: '2',
-    order_number: 'ORD-002',
-    customer_name: 'Jane Smith',
-    customer_email: 'jane@example.com',
-    product_title: 'Artist Hoodie Collection',
-    quantity: 1,
-    total_amount: 75.00,
-    status: 'shipped',
-    payment_status: 'completed',
-    created_at: '2024-01-14T14:22:00Z',
-    shipped_at: '2024-01-15T09:15:00Z',
-    delivered_at: null,
-  },
-  {
-    id: '3',
-    order_number: 'ORD-003',
-    customer_name: 'Bob Johnson',
-    customer_email: 'bob@example.com',
-    product_title: 'Limited Edition Print',
-    quantity: 3,
-    total_amount: 120.00,
-    status: 'delivered',
-    payment_status: 'completed',
-    created_at: '2024-01-12T16:45:00Z',
-    shipped_at: '2024-01-13T11:30:00Z',
-    delivered_at: '2024-01-16T13:22:00Z',
-  },
-];
+// Flattened view of an Order scoped to this artist's line items — the shape
+// OrderDetailsDialog and the table row both expect.
+interface ArtistOrderRow {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  product_title: string;
+  quantity: number;
+  total_amount: number;
+  status: string;
+  payment_status: string;
+  created_at: string;
+  shipped_at: string | null;
+  delivered_at: string | null;
+}
+
+function toArtistOrderRow(order: Order, artistId: string): ArtistOrderRow {
+  const myItems = (order.order_items || []).filter(item => item.artist_id === artistId);
+  const productTitles = [...new Set(myItems.map(item => item.products?.title).filter(Boolean))];
+  const quantity = myItems.reduce((sum, item) => sum + item.quantity, 0);
+  const myAmount = myItems.reduce((sum, item) => sum + Number(item.total_price), 0);
+
+  return {
+    id: order.id,
+    order_number: order.order_number,
+    customer_name: order.profiles?.display_name || 'N/A',
+    customer_email: order.profiles?.email || 'N/A',
+    product_title: productTitles.join(', ') || 'N/A',
+    quantity,
+    total_amount: myAmount || order.total_amount,
+    status: order.status,
+    payment_status: order.payment_status,
+    created_at: order.created_at,
+    shipped_at: order.shipped_at || null,
+    delivered_at: order.delivered_at || null,
+  };
+}
 
 export default function ArtistOrders() {
-  const [orders, setOrders] = useState(mockOrders);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedOrder, setSelectedOrder] = useState<typeof mockOrders[0] | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<ArtistOrderRow | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const ordersPerPage = 10;
 
-  // Filter orders based on search and status
+  const { formatPrice } = useCurrency();
+  const { data: artistProfile } = useMyArtistProfile();
+  const { data: rawOrders = [], isLoading, error } = useOrdersQuery({ artistId: artistProfile?.id });
+  const updateStatusMutation = useUpdateOrderStatusMutation();
+
+  const orders = artistProfile ? rawOrders.map(order => toArtistOrderRow(order, artistProfile.id)) : [];
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -94,7 +95,6 @@ export default function ArtistOrders() {
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const startIndex = (currentPage - 1) * ordersPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
@@ -120,42 +120,31 @@ export default function ArtistOrders() {
     });
   };
 
-  // Calculate metrics
   const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(order => order.status === 'pending').length;
   const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
 
-  const handleViewOrder = (order: typeof mockOrders[0]) => {
+  const handleViewOrder = (order: ArtistOrderRow) => {
     setSelectedOrder(order);
     setIsDetailsDialogOpen(true);
   };
 
   const handleStatusUpdate = (orderId: string, status: string, trackingNumber?: string) => {
-    setOrders(prevOrders => 
-      prevOrders.map(order => 
-        order.id === orderId 
-          ? { 
-              ...order, 
-              status,
-              shipped_at: status === 'shipped' ? new Date().toISOString() : order.shipped_at,
-              delivered_at: status === 'delivered' ? new Date().toISOString() : order.delivered_at
-            }
-          : order
-      )
-    );
-    
-    // Update the selected order as well so the dialog reflects the change immediately
-    setSelectedOrder(prev => 
-      prev?.id === orderId 
-        ? { 
-            ...prev, 
-            status,
-            shipped_at: status === 'shipped' ? new Date().toISOString() : prev.shipped_at,
-            delivered_at: status === 'delivered' ? new Date().toISOString() : prev.delivered_at
-          }
-        : prev
-    );
+    updateStatusMutation.mutate({ orderId, status, trackingNumber });
+  };
+
+  const handleExport = () => {
+    const csv = filteredOrders.map(order =>
+      `${order.order_number},${order.customer_name},${order.customer_email},${order.product_title},${order.quantity},${order.total_amount},${order.status},${order.created_at}`
+    ).join('\n');
+    const blob = new Blob([`Order Number,Customer Name,Email,Product,Quantity,Total,Status,Date\n${csv}`], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'orders.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -169,17 +158,7 @@ export default function ArtistOrders() {
           </p>
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <Button variant="outline" size="sm" onClick={() => {
-            const csv = filteredOrders.map(order => 
-              `${order.order_number},${order.customer_name},${order.customer_email},${order.product_title},${order.quantity},${order.total_amount},${order.status},${order.created_at}`
-            ).join('\n');
-            const blob = new Blob([`Order Number,Customer Name,Email,Product,Quantity,Total,Status,Date\n${csv}`], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'orders.csv';
-            a.click();
-          }}>
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -193,7 +172,7 @@ export default function ArtistOrders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+                <p className="text-2xl font-bold">{formatPrice(totalRevenue)}</p>
               </div>
               <Package className="h-8 w-8 text-primary" />
             </div>
@@ -285,7 +264,19 @@ export default function ArtistOrders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedOrders.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      Loading orders…
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-destructive">
+                      Error loading orders: {error.message}
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center">
@@ -311,7 +302,7 @@ export default function ArtistOrders() {
                         <p className="font-medium">{order.product_title}</p>
                       </TableCell>
                       <TableCell>{order.quantity}</TableCell>
-                      <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                      <TableCell>{formatPrice(order.total_amount)}</TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(order.status)}>
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -321,8 +312,8 @@ export default function ArtistOrders() {
                         {formatDate(order.created_at)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleViewOrder(order)}
                         >

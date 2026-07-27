@@ -29,6 +29,13 @@ import Admin from '@/pages/Admin';
 import AdminProducts from '@/pages/admin/Products';
 import AdminDesigns from '@/pages/admin/Designs';
 import AdminOrders from '@/pages/admin/Orders';
+import AdminShippingPage from '@/pages/admin/Shipping';
+import AdminPayoutsPage from '@/pages/admin/Payouts';
+import AdminPromotionsPage from '@/pages/admin/Promotions';
+import AdminInventoryPage from '@/pages/admin/Inventory';
+import AdminSupportPage from '@/pages/admin/Support';
+import AdminCMSPage from '@/pages/admin/CMS';
+import AdminAuditLogsPage from '@/pages/admin/AuditLogs';
 import AdminUsers from '@/pages/admin/Users';
 import AdminArtists from '@/pages/admin/Artists';
 import AdminDesigners from '@/pages/admin/Designers';
@@ -121,6 +128,13 @@ function App() {
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="designs" element={<AdminDesigns />} />
                     <Route path="orders" element={<AdminOrders />} />
+                    <Route path="shipping" element={<AdminShippingPage />} />
+                    <Route path="payouts" element={<AdminPayoutsPage />} />
+                    <Route path="promotions" element={<AdminPromotionsPage />} />
+                    <Route path="inventory" element={<AdminInventoryPage />} />
+                    <Route path="support" element={<AdminSupportPage />} />
+                    <Route path="cms" element={<AdminCMSPage />} />
+                    <Route path="audit-logs" element={<AdminAuditLogsPage />} />
                     <Route path="artists" element={<AdminArtists />} />
                     <Route path="designers" element={<AdminDesigners />} />
                     <Route path="users" element={<AdminUsers />} />

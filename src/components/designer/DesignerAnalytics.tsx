@@ -1,23 +1,45 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDesigners } from '@/hooks/useDesignersQuery';
 import { useCurrency } from '@/context/CurrencyContext';
-import { TrendingUp, FileImage, CheckCircle, DollarSign, Calendar, Target } from 'lucide-react';
+import { FileImage, CheckCircle, DollarSign, Calendar } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 export const DesignerAnalytics = () => {
   const { designerProfile, designs, payouts, loading } = useDesigners();
   const { formatPrice } = useCurrency();
 
-  // Sample data for charts
-  const monthlyData = [
-    { month: 'Jan', uploads: 2, approved: 1, earnings: 45 },
-    { month: 'Feb', uploads: 4, approved: 3, earnings: 120 },
-    { month: 'Mar', uploads: 3, approved: 2, earnings: 85 },
-    { month: 'Apr', uploads: 6, approved: 4, earnings: 200 },
-    { month: 'May', uploads: 5, approved: 4, earnings: 180 },
-    { month: 'Jun', uploads: 7, approved: 5, earnings: 250 },
-  ];
+  // Uploads, approvals, and earnings per month for the last 6 months
+  const monthlyData = useMemo(() => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const result = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+
+      const monthDesigns = designs.filter(d => {
+        const created = new Date(d.created_at);
+        return created.getMonth() === month && created.getFullYear() === year;
+      });
+      const monthApproved = monthDesigns.filter(d => d.status === 'approved').length;
+      const monthEarnings = payouts
+        .filter(p => {
+          const created = new Date(p.created_at);
+          return created.getMonth() === month && created.getFullYear() === year;
+        })
+        .reduce((sum, p) => sum + p.net_amount, 0);
+
+      result.push({
+        month: monthNames[month],
+        uploads: monthDesigns.length,
+        approved: monthApproved,
+        earnings: monthEarnings,
+      });
+    }
+    return result;
+  }, [designs, payouts]);
 
   const statusData = [
     { name: 'Approved', value: designerProfile?.approved_designs || 0, color: '#22c55e' },
@@ -27,8 +49,19 @@ export const DesignerAnalytics = () => {
 
   const recentDesigns = designs.slice(0, 5);
   const totalEarnings = payouts.reduce((sum, p) => sum + p.net_amount, 0);
-  const approvalRate = designerProfile?.total_designs ? 
+  const approvalRate = designerProfile?.total_designs ?
     ((designerProfile.approved_designs / designerProfile.total_designs) * 100).toFixed(1) : '0';
+
+  const avgApprovalDays = useMemo(() => {
+    const approved = designs.filter(d => d.status === 'approved' && d.approved_at);
+    if (approved.length === 0) return null;
+    const totalDays = approved.reduce((sum, d) => {
+      const created = new Date(d.created_at).getTime();
+      const approvedAt = new Date(d.approved_at!).getTime();
+      return sum + (approvedAt - created) / (1000 * 60 * 60 * 24);
+    }, 0);
+    return totalDays / approved.length;
+  }, [designs]);
 
   if (loading) {
     return (
@@ -60,7 +93,9 @@ export const DesignerAnalytics = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Total Designs</p>
                 <p className="text-3xl font-bold">{designerProfile?.total_designs || 0}</p>
-                <p className="text-sm text-green-600">+2 this month</p>
+                <p className="text-sm text-muted-foreground">
+                  {monthlyData[monthlyData.length - 1]?.uploads || 0} this month
+                </p>
               </div>
               <FileImage className="h-12 w-12 text-blue-600" />
             </div>
@@ -73,7 +108,9 @@ export const DesignerAnalytics = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Approval Rate</p>
                 <p className="text-3xl font-bold">{approvalRate}%</p>
-                <p className="text-sm text-green-600">+5% vs last month</p>
+                <p className="text-sm text-muted-foreground">
+                  {designerProfile?.approved_designs || 0} of {designerProfile?.total_designs || 0} designs
+                </p>
               </div>
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
@@ -86,7 +123,9 @@ export const DesignerAnalytics = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
                 <p className="text-3xl font-bold">{formatPrice(totalEarnings)}</p>
-                <p className="text-sm text-green-600">+{formatPrice(50)} this month</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatPrice(monthlyData[monthlyData.length - 1]?.earnings || 0)} this month
+                </p>
               </div>
               <DollarSign className="h-12 w-12 text-purple-600" />
             </div>
@@ -98,8 +137,10 @@ export const DesignerAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Avg. Time to Approval</p>
-                <p className="text-3xl font-bold">3.2</p>
-                <p className="text-sm text-muted-foreground">days</p>
+                <p className="text-3xl font-bold">{avgApprovalDays !== null ? avgApprovalDays.toFixed(1) : 'N/A'}</p>
+                <p className="text-sm text-muted-foreground">
+                  {avgApprovalDays !== null ? 'days' : 'no approvals yet'}
+                </p>
               </div>
               <Calendar className="h-12 w-12 text-orange-600" />
             </div>
@@ -224,39 +265,22 @@ export const DesignerAnalytics = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Performance Goals</CardTitle>
-            <CardDescription>Your progress towards monthly targets</CardDescription>
+            <CardTitle>This Month</CardTitle>
+            <CardDescription>Your activity over the current month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Monthly Uploads</span>
-                  <span>7/10</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '70%' }}></div>
-                </div>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Uploads</span>
+                <span className="font-medium">{monthlyData[monthlyData.length - 1]?.uploads || 0}</span>
               </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Approval Rate</span>
-                  <span>{approvalRate}/80%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: `${Math.min(parseFloat(approvalRate), 100)}%` }}></div>
-                </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Approved</span>
+                <span className="font-medium">{monthlyData[monthlyData.length - 1]?.approved || 0}</span>
               </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Monthly Earnings</span>
-                  <span>{formatPrice(totalEarnings)}/{formatPrice(300)}</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${Math.min((totalEarnings / 300) * 100, 100)}%` }}></div>
-                </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Earnings</span>
+                <span className="font-medium">{formatPrice(monthlyData[monthlyData.length - 1]?.earnings || 0)}</span>
               </div>
             </div>
           </CardContent>

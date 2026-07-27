@@ -16,16 +16,19 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { SHIPPING_AXES, getShippingAxis } from '@/config/shipping';
+import { MapPin, Info } from 'lucide-react';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { items, getTotalPrice, clearCart } = useCart();
-  const { formatPrice, convertPrice, currency } = useCurrency();
+  const { formatPrice, convertPrice, convertBetweenCurrencies, currency } = useCurrency();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [selectedAxisId, setSelectedAxisId] = useState<string>('axis-1');
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: '',
@@ -43,8 +46,11 @@ export default function Checkout() {
     return null;
   }
 
+  const selectedAxis = getShippingAxis(selectedAxisId);
   const subtotal = convertPrice(getTotalPrice());
-  const shipping = subtotal > 50 ? 0 : convertPrice(8.99);
+  const shipping = selectedAxis.isCustomQuote
+    ? 0
+    : convertBetweenCurrencies(selectedAxis.feeNGN, 'NGN', currency);
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
@@ -79,7 +85,11 @@ export default function Checkout() {
             city: formData.city,
             state: formData.state,
             zipCode: formData.zipCode,
-            country: formData.country
+            country: formData.country,
+            shippingAxis: selectedAxis.name,
+            shippingAreas: selectedAxis.areas,
+            shippingFeeNGN: selectedAxis.feeNGN,
+            isCustomQuote: selectedAxis.isCustomQuote || false,
           }
         }
       });
@@ -243,6 +253,76 @@ export default function Checkout() {
                       />
                     </div>
 
+                    {/* Delivery Location / Shipping Axis */}
+                    <div className="pt-4 border-t space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-base font-semibold">Delivery Location (Shipping Axis)</Label>
+                          <p className="text-xs text-muted-foreground">Select your delivery zone to calculate shipping fees</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs font-normal">
+                          <MapPin className="h-3 w-3 mr-1 text-primary" />
+                          Delivery Zone
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {SHIPPING_AXES.map((axis) => {
+                          const isSelected = selectedAxisId === axis.id;
+                          const feeDisplay = axis.isCustomQuote
+                            ? 'Email Quote'
+                            : formatPrice(convertBetweenCurrencies(axis.feeNGN, 'NGN', currency));
+
+                          return (
+                            <div
+                              key={axis.id}
+                              onClick={() => setSelectedAxisId(axis.id)}
+                              className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-primary bg-primary/5 shadow-sm'
+                                  : 'border-border hover:border-primary/40'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start space-x-3">
+                                  <input
+                                    type="radio"
+                                    name="shippingAxis"
+                                    checked={isSelected}
+                                    onChange={() => setSelectedAxisId(axis.id)}
+                                    className="mt-0.5 h-4 w-4 text-primary focus:ring-primary"
+                                  />
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-sm">{axis.name}</span>
+                                      {axis.isCustomQuote && (
+                                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                          Custom Quote
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                                      {axis.areas}
+                                    </p>
+                                  </div>
+                                </div>
+                                <span className={`text-sm font-bold flex-shrink-0 ${axis.isCustomQuote ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>
+                                  {feeDisplay}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {selectedAxis.isCustomQuote && selectedAxis.customNotice && (
+                        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-300 flex items-start space-x-2.5">
+                          <Info className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <p className="leading-relaxed">{selectedAxis.customNotice}</p>
+                        </div>
+                      )}
+                    </div>
+
                     <Button 
                       onClick={() => {
                         if (!formData.email || !formData.firstName || !formData.lastName || !formData.address) {
@@ -276,9 +356,16 @@ export default function Checkout() {
                           <span>Subtotal</span>
                           <span>{formatPrice(subtotal)}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Shipping</span>
-                          <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span>Shipping</span>
+                            <p className="text-xs text-muted-foreground">{selectedAxis.name}</p>
+                          </div>
+                          <span className="font-medium">
+                            {selectedAxis.isCustomQuote
+                              ? 'Email Quote'
+                              : formatPrice(shipping)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Tax</span>
@@ -398,9 +485,18 @@ export default function Checkout() {
                     <span>Subtotal</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span>Shipping</span>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedAxis.name} ({selectedAxis.areas})
+                      </p>
+                    </div>
+                    <span className="font-semibold text-right">
+                      {selectedAxis.isCustomQuote
+                        ? 'Email Quote'
+                        : formatPrice(shipping)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
@@ -412,10 +508,10 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {shipping === 0 && (
-                  <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                      🎉 You qualify for free shipping!
+                {selectedAxis.isCustomQuote && (
+                  <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                    <p className="text-xs text-amber-700 dark:text-amber-300 font-medium leading-relaxed">
+                      📌 Delivery fee will be calculated based on your address and emailed prior to dispatch.
                     </p>
                   </div>
                 )}

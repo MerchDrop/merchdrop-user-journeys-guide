@@ -64,7 +64,7 @@ interface AuthContextType {
   updateProfile: (updates: ProfileUpdateInput) => Promise<{ error: any }>;
   assignRole: (input: RoleAssignmentInput) => Promise<{ error: any }>;
   verifyOtp: (email: string, token: string, type?: 'signup' | 'recovery') => Promise<{ error: any; data?: any }>;
-  resendOtp: (email: string, type?: 'signup' | 'recovery') => Promise<{ error: any }>;
+  resendOtp: (email: string, type?: 'signup' | 'email_change') => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -638,7 +638,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const resendOtp = async (email: string, type: 'signup' | 'recovery' = 'signup') => {
+  const resendOtp = async (email: string, type: 'signup' | 'email_change' = 'signup') => {
     try {
       const { error } = await supabase.auth.resend({
         type,

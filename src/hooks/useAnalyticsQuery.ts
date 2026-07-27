@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
-import { handleQueryError } from '@/lib/queryUtils';
 
 export interface AnalyticsData {
   totalRevenue: number;
@@ -18,85 +17,89 @@ export interface AnalyticsData {
   usersGrowth: number;
 }
 
-// Fetch analytics data
-async function fetchAnalytics(): Promise<AnalyticsData> {
-  try {
-    // Fetch orders for revenue and order calculations
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('*');
-
-    // Fetch users count
-    const { count: usersCount, error: usersError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
-
-    // Fetch artists count
-    const { count: artistsCount, error: artistsError } = await supabase
-      .from('artist_profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'approved');
-
-    // Fetch products count
-    const { count: productsCount, error: productsError } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'published');
-
-    // If we get permission errors, return mock data
-    if (ordersError || usersError || artistsError || productsError) {
-      console.warn('Using mock analytics data due to access restrictions');
-      return getMockAnalyticsData();
-    }
-
-    const completedOrders = orders?.filter(order => order.payment_status === 'completed') || [];
-    const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
-    const totalOrders = completedOrders.length;
-
-    // Calculate monthly revenue (last 6 months)
-    const monthlyRevenue = calculateMonthlyRevenue(completedOrders);
-
-    // Calculate orders by status
-    const ordersByStatus = calculateOrdersByStatus(orders || []);
-
-    // Mock growth percentages (in real app, compare with previous period)
-    const revenueGrowth = 12.5;
-    const ordersGrowth = 8.3;
-    const usersGrowth = 15.2;
-
-    return {
-      totalRevenue,
-      totalOrders,
-      totalUsers: usersCount || 0,
-      totalArtists: artistsCount || 0,
-      totalProducts: productsCount || 0,
-      monthlyRevenue,
-      topProducts: [], // Would need complex query with joins
-      topArtists: [], // Would need complex query with joins
-      ordersByStatus,
-      revenueGrowth,
-      ordersGrowth,
-      usersGrowth,
-    };
-  } catch (error) {
-    console.warn('Error fetching analytics, using mock data:', error);
-    return getMockAnalyticsData();
-  }
+// Percentage change between the last two full calendar months of a series
+function monthOverMonthGrowth(monthly: Array<{ month: string; revenue: number }>): number {
+  if (monthly.length < 2) return 0;
+  const previous = monthly[monthly.length - 2].revenue;
+  const current = monthly[monthly.length - 1].revenue;
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return ((current - previous) / previous) * 100;
 }
 
-// Helper function to calculate monthly revenue
-function calculateMonthlyRevenue(orders: any[]): Array<{ month: string; revenue: number }> {
+// Growth in count of rows created in the most recent calendar month vs the one before
+function monthOverMonthCountGrowth(createdDates: string[]): number {
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  let thisMonthCount = 0;
+  let lastMonthCount = 0;
+  for (const dateStr of createdDates) {
+    const date = new Date(dateStr);
+    if (date >= thisMonthStart) thisMonthCount++;
+    else if (date >= lastMonthStart) lastMonthCount++;
+  }
+
+  if (lastMonthCount === 0) return thisMonthCount > 0 ? 100 : 0;
+  return ((thisMonthCount - lastMonthCount) / lastMonthCount) * 100;
+}
+
+async function fetchAnalytics(): Promise<AnalyticsData> {
+  const [
+    { data: orders, error: ordersError },
+    { data: profiles, error: usersError },
+    { count: artistsCount, error: artistsError },
+    { count: productsCount, error: productsError },
+    { data: orderItems, error: itemsError },
+  ] = await Promise.all([
+    supabase.from('orders').select('total_amount, status, payment_status, created_at'),
+    supabase.from('profiles').select('created_at'),
+    supabase.from('artist_profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase
+      .from('order_items')
+      .select('quantity, total_price, products(title), artist_profiles(artist_name)'),
+  ]);
+
+  if (ordersError) throw ordersError;
+  if (usersError) throw usersError;
+  if (artistsError) throw artistsError;
+  if (productsError) throw productsError;
+  if (itemsError) throw itemsError;
+
+  const completedOrders = (orders || []).filter(order => order.payment_status === 'completed');
+  const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
+  const totalOrders = completedOrders.length;
+
+  const monthlyRevenue = calculateMonthlyRevenue(completedOrders);
+  const ordersByStatus = calculateOrdersByStatus(orders || []);
+  const { topProducts, topArtists } = calculateTopSellers(orderItems || []);
+
+  return {
+    totalRevenue,
+    totalOrders,
+    totalUsers: (profiles || []).length,
+    totalArtists: artistsCount || 0,
+    totalProducts: productsCount || 0,
+    monthlyRevenue,
+    topProducts,
+    topArtists,
+    ordersByStatus,
+    revenueGrowth: monthOverMonthGrowth(monthlyRevenue),
+    ordersGrowth: monthOverMonthCountGrowth((orders || []).map(o => o.created_at)),
+    usersGrowth: monthOverMonthCountGrowth((profiles || []).map(p => p.created_at)),
+  };
+}
+
+function calculateMonthlyRevenue(orders: Array<{ payment_status: string; created_at: string; total_amount: number }>): Array<{ month: string; revenue: number }> {
   const monthlyData: Record<string, number> = {};
-  
+
   orders.forEach(order => {
-    if (order.payment_status === 'completed') {
-      const date = new Date(order.created_at);
-      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-      monthlyData[monthKey] = (monthlyData[monthKey] || 0) + Number(order.total_amount);
-    }
+    const date = new Date(order.created_at);
+    const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    monthlyData[monthKey] = (monthlyData[monthKey] || 0) + Number(order.total_amount);
   });
 
-  // Get last 6 months
   const result = [];
   const now = new Date();
   for (let i = 5; i >= 0; i--) {
@@ -111,65 +114,67 @@ function calculateMonthlyRevenue(orders: any[]): Array<{ month: string; revenue:
   return result;
 }
 
-// Helper function to calculate orders by status
-function calculateOrdersByStatus(orders: any[]): Array<{ status: string; count: number }> {
+function calculateOrdersByStatus(orders: Array<{ status: string }>): Array<{ status: string; count: number }> {
   const statusCounts: Record<string, number> = {};
-  
+
   orders.forEach(order => {
     statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
   });
 
-  return Object.entries(statusCounts).map(([status, count]) => ({
-    status,
-    count
-  }));
+  return Object.entries(statusCounts).map(([status, count]) => ({ status, count }));
 }
 
-// Mock data fallback
-function getMockAnalyticsData(): AnalyticsData {
-  return {
-    totalRevenue: 12500,
-    totalOrders: 85,
-    totalUsers: 245,
-    totalArtists: 12,
-    totalProducts: 68,
-    monthlyRevenue: [
-      { month: 'Jul 2024', revenue: 1800 },
-      { month: 'Aug 2024', revenue: 2200 },
-      { month: 'Sep 2024', revenue: 1950 },
-      { month: 'Oct 2024', revenue: 2800 },
-      { month: 'Nov 2024', revenue: 2400 },
-      { month: 'Dec 2024', revenue: 3200 },
-    ],
-    topProducts: [
-      { name: 'Artist T-Shirt Collection', sales: 45, revenue: 1350 },
-      { name: 'Limited Edition Hoodie', sales: 28, revenue: 1680 },
-      { name: 'Custom Art Print', sales: 67, revenue: 1005 },
-    ],
-    topArtists: [
-      { name: 'Alex Johnson', sales: 32, revenue: 2400 },
-      { name: 'Sarah Chen', sales: 28, revenue: 2100 },
-      { name: 'Mike Rodriguez', sales: 25, revenue: 1875 },
-    ],
-    ordersByStatus: [
-      { status: 'completed', count: 52 },
-      { status: 'processing', count: 18 },
-      { status: 'shipped', count: 12 },
-      { status: 'pending', count: 3 },
-    ],
-    revenueGrowth: 12.5,
-    ordersGrowth: 8.3,
-    usersGrowth: 15.2,
-  };
+interface OrderItemRow {
+  quantity: number;
+  total_price: number;
+  products: { title: string } | null;
+  artist_profiles: { artist_name: string } | null;
 }
 
-// React Query hooks
+function calculateTopSellers(orderItems: OrderItemRow[]): {
+  topProducts: Array<{ name: string; sales: number; revenue: number }>;
+  topArtists: Array<{ name: string; sales: number; revenue: number }>;
+} {
+  const productTotals: Record<string, { sales: number; revenue: number }> = {};
+  const artistTotals: Record<string, { sales: number; revenue: number }> = {};
+
+  orderItems.forEach(item => {
+    const productName = item.products?.title;
+    if (productName) {
+      const entry = productTotals[productName] || { sales: 0, revenue: 0 };
+      entry.sales += item.quantity;
+      entry.revenue += Number(item.total_price);
+      productTotals[productName] = entry;
+    }
+
+    const artistName = item.artist_profiles?.artist_name;
+    if (artistName) {
+      const entry = artistTotals[artistName] || { sales: 0, revenue: 0 };
+      entry.sales += item.quantity;
+      entry.revenue += Number(item.total_price);
+      artistTotals[artistName] = entry;
+    }
+  });
+
+  const topProducts = Object.entries(productTotals)
+    .map(([name, stats]) => ({ name, ...stats }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5);
+
+  const topArtists = Object.entries(artistTotals)
+    .map(([name, stats]) => ({ name, ...stats }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5);
+
+  return { topProducts, topArtists };
+}
+
 export function useAnalyticsQuery() {
   return useQuery({
     queryKey: queryKeys.analytics.overview,
     queryFn: fetchAnalytics,
-    staleTime: 10 * 60 * 1000, // 10 minutes - analytics can be a bit stale
-    retry: 1, // Only retry once for analytics
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
   });
 }
 
@@ -178,7 +183,7 @@ export function useAnalytics() {
   const { data, isLoading: loading, error, refetch } = useAnalyticsQuery();
 
   return {
-    data: data || getMockAnalyticsData(),
+    data,
     loading,
     error: error?.message || null,
     refetch,

@@ -48,6 +48,15 @@ export const queryKeys = {
     payouts: (designerId: string) => [...queryKeys.designers.all, 'payouts', designerId] as const,
   },
 
+  // Artist payouts
+  payouts: {
+    all: ['payouts'] as const,
+    list: (artistId?: string) => [...queryKeys.payouts.all, 'list', artistId] as const,
+  },
+
+  // Current user's artist profile
+  myArtistProfile: (userId: string) => ['myArtistProfile', userId] as const,
+
   // Analytics
   analytics: {
     all: ['analytics'] as const,

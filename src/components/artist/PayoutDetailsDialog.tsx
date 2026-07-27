@@ -22,19 +22,8 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Payout {
-  id: string;
-  date: string;
-  amount: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  method: 'bank_transfer' | 'paypal' | 'stripe';
-  reference?: string;
-  processingFee?: number;
-  netAmount?: number;
-  processedAt?: string;
-  failureReason?: string;
-}
+import { useCurrency } from '@/context/CurrencyContext';
+import { Payout } from '@/hooks/usePayoutsQuery';
 
 interface PayoutDetailsDialogProps {
   open: boolean;
@@ -42,37 +31,40 @@ interface PayoutDetailsDialogProps {
   payout: Payout | null;
 }
 
+const STATUS_CONFIG: Record<string, { color: string; icon: typeof Clock }> = {
+  pending: {
+    color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+    icon: Clock
+  },
+  processing: {
+    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    icon: TrendingUp
+  },
+  completed: {
+    color: 'bg-green-500/10 text-green-600 border-green-500/20',
+    icon: CheckCircle
+  },
+  failed: {
+    color: 'bg-red-500/10 text-red-600 border-red-500/20',
+    icon: AlertCircle
+  }
+};
+
 export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetailsDialogProps) {
   const { toast } = useToast();
+  const { formatPrice } = useCurrency();
 
   if (!payout) return null;
 
-  const statusConfig = {
-    pending: { 
-      color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-      icon: Clock 
-    },
-    processing: { 
-      color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-      icon: TrendingUp 
-    },
-    completed: { 
-      color: 'bg-green-500/10 text-green-600 border-green-500/20',
-      icon: CheckCircle 
-    },
-    failed: { 
-      color: 'bg-red-500/10 text-red-600 border-red-500/20',
-      icon: AlertCircle 
-    }
-  };
-
-  const StatusIcon = statusConfig[payout.status].icon;
-  const processingFee = payout.processingFee || payout.amount * 0.025;
-  const netAmount = payout.netAmount || payout.amount - processingFee;
+  const status = payout.status || 'pending';
+  const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+  const StatusIcon = statusConfig.icon;
+  const processingFee = payout.processing_fee ?? payout.amount * 0.025;
+  const netAmount = payout.net_amount ?? payout.amount - processingFee;
 
   const handleCopyReference = () => {
-    if (payout.reference) {
-      navigator.clipboard.writeText(payout.reference);
+    if (payout.payment_reference) {
+      navigator.clipboard.writeText(payout.payment_reference);
       toast({
         title: "Copied",
         description: "Reference number copied to clipboard",
@@ -114,12 +106,12 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
           {/* Status */}
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Status</span>
-            <Badge 
-              variant="outline" 
-              className={statusConfig[payout.status].color}
+            <Badge
+              variant="outline"
+              className={statusConfig.color}
             >
               <StatusIcon className="h-3 w-3 mr-1" />
-              {payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
           </div>
 
@@ -129,15 +121,15 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm">Gross Amount</span>
-              <span className="font-medium">${payout.amount.toFixed(2)}</span>
+              <span className="font-medium">{formatPrice(payout.amount)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">Processing Fee</span>
-              <span className="text-red-600">-${processingFee.toFixed(2)}</span>
+              <span className="text-red-600">-{formatPrice(processingFee)}</span>
             </div>
             <div className="flex items-center justify-between font-medium">
               <span>Net Amount</span>
-              <span>${netAmount.toFixed(2)}</span>
+              <span>{formatPrice(netAmount)}</span>
             </div>
           </div>
 
@@ -149,7 +141,7 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
               <span className="capitalize">
-                {payout.method.replace('_', ' ')}
+                {payout.payment_method?.replace('_', ' ') || 'N/A'}
               </span>
             </div>
           </div>
@@ -160,29 +152,29 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
               <span className="text-sm">Requested</span>
               <div className="flex items-center gap-1 text-sm">
                 <Calendar className="h-3 w-3" />
-                {formatDate(payout.date)}
+                {formatDate(payout.created_at)}
               </div>
             </div>
-            {payout.processedAt && (
+            {payout.processed_at && (
               <div className="flex items-center justify-between">
                 <span className="text-sm">Processed</span>
                 <div className="flex items-center gap-1 text-sm">
                   <Calendar className="h-3 w-3" />
-                  {formatDate(payout.processedAt)}
+                  {formatDate(payout.processed_at)}
                 </div>
               </div>
             )}
           </div>
 
           {/* Reference Number */}
-          {payout.reference && (
+          {payout.payment_reference && (
             <>
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Reference</span>
                 <div className="flex items-center gap-2">
                   <code className="text-xs bg-muted px-2 py-1 rounded">
-                    {payout.reference}
+                    {payout.payment_reference}
                   </code>
                   <Button
                     variant="ghost"
@@ -197,31 +189,13 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
             </>
           )}
 
-          {/* Failure Reason */}
-          {payout.status === 'failed' && payout.failureReason && (
-            <>
-              <Separator />
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-600">Failed</p>
-                    <p className="text-xs text-red-600 mt-1">
-                      {payout.failureReason}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
           {/* Actions */}
           <div className="flex justify-between pt-4">
             <Button
               variant="outline"
               size="sm"
               onClick={handleDownloadReceipt}
-              disabled={payout.status !== 'completed'}
+              disabled={status !== 'completed'}
             >
               <Download className="h-4 w-4 mr-2" />
               Receipt

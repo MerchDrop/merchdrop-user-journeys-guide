@@ -8,83 +8,12 @@ const ProductMarquee = () => {
   const { products, loading } = useProducts();
   const { formatPrice } = useCurrency();
 
-  // Mock products as fallback
-  const mockProducts = [
-    { 
-      id: '1', 
-      title: 'Summer Vibes T-Shirt', 
-      price_cents: 2500, 
-      artist_profiles: { artist_name: 'Alex River' }, 
-      published_at: new Date().toISOString(), 
-      stock: 15,
-      slug: 'summer-vibes-t-shirt',
-      main_image_url: '/placeholder.svg',
-      product_images: [{ url: '/placeholder.svg' }]
-    },
-    { 
-      id: '2', 
-      title: 'Urban Hoodie', 
-      price_cents: 4500, 
-      artist_profiles: { artist_name: 'Maya Studio' }, 
-      published_at: new Date().toISOString(), 
-      stock: 8,
-      slug: 'urban-hoodie',
-      main_image_url: '/placeholder.svg',
-      product_images: [{ url: '/placeholder.svg' }]
-    },
-    { 
-      id: '3', 
-      title: 'Neon Dreams Print', 
-      price_cents: 1800, 
-      artist_profiles: { artist_name: 'Digital Arts Co' }, 
-      published_at: new Date().toISOString(), 
-      stock: 25,
-      slug: 'neon-dreams-print',
-      main_image_url: '/placeholder.svg',
-      product_images: [{ url: '/placeholder.svg' }]
-    },
-    { 
-      id: '4', 
-      title: 'Retro Cap', 
-      price_cents: 2200, 
-      artist_profiles: { artist_name: 'Vintage Works' }, 
-      published_at: new Date().toISOString(), 
-      stock: 12,
-      slug: 'retro-cap',
-      main_image_url: '/placeholder.svg',
-      product_images: [{ url: '/placeholder.svg' }]
-    },
-    { 
-      id: '5', 
-      title: 'Abstract Art Tote', 
-      price_cents: 2800, 
-      artist_profiles: { artist_name: 'Creative Mind' }, 
-      published_at: new Date().toISOString(), 
-      stock: 20,
-      slug: 'abstract-art-tote',
-      main_image_url: '/placeholder.svg',
-      product_images: [{ url: '/placeholder.svg' }]
-    },
-    { 
-      id: '6', 
-      title: 'Minimalist Poster', 
-      price_cents: 1500, 
-      artist_profiles: { artist_name: 'Clean Design' }, 
-      published_at: new Date().toISOString(), 
-      stock: 30,
-      slug: 'minimalist-poster',
-      main_image_url: '/placeholder.svg',
-      product_images: [{ url: '/placeholder.svg' }]
-    }
-  ];
-
   // Use useMemo instead of useEffect + useState to prevent infinite loops
   const duplicatedProducts = useMemo(() => {
-    const productsToUse = products && products.length > 0 ? products : mockProducts;
     // Take first 8 products and duplicate them for smooth infinite scroll
-    const productSlice = productsToUse.slice(0, 8);
+    const productSlice = products.slice(0, 8);
     return [...productSlice, ...productSlice, ...productSlice];
-  }, [products?.length]); // Only recalculate when products length changes
+  }, [products]);
 
   const getBadge = (product: any) => {
     const publishedDate = new Date(product.published_at || product.created_at);

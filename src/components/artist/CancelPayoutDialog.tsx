@@ -11,44 +11,37 @@ import {
   AlertTriangle,
   DollarSign
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useCancelPayoutMutation } from '@/hooks/usePayoutsQuery';
 
 interface CancelPayoutDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   payoutId: string | null;
   payoutAmount: number;
-  onCancel: (payoutId: string) => void;
 }
 
-export function CancelPayoutDialog({ 
-  open, 
-  onOpenChange, 
-  payoutId, 
-  payoutAmount, 
-  onCancel 
+export function CancelPayoutDialog({
+  open,
+  onOpenChange,
+  payoutId,
+  payoutAmount,
 }: CancelPayoutDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   const { formatPrice } = useCurrency();
+  const cancelPayoutMutation = useCancelPayoutMutation();
 
   const handleCancel = async () => {
     if (!payoutId) return;
 
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      onCancel(payoutId);
-      toast({
-        title: "Payout Cancelled",
-        description: `Payout request for ${formatPrice(payoutAmount)} has been cancelled`,
-      });
-      setIsSubmitting(false);
+    try {
+      await cancelPayoutMutation.mutateAsync(payoutId);
       onOpenChange(false);
-    }, 1500);
+    } catch {
+      // Error toast is handled by the mutation's onError
+    }
   };
+
+  const isSubmitting = cancelPayoutMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import KpiCard from '@/components/dashboard/KpiCard';
 import SalesChart from '@/components/dashboard/SalesChart';
 import ProductPerformance from '@/components/dashboard/ProductPerformance';
-import RecentOrders from '@/components/dashboard/RecentOrders';
 import PayoutsList from '@/components/dashboard/PayoutsList';
 import { CalendarDialog } from '@/components/dialogs/CalendarDialog';
 import { useCurrency } from '@/context/CurrencyContext';
-import { 
-  DollarSign, 
-  ShoppingCart, 
-  Package, 
+import { useMyArtistProfile } from '@/hooks/useMyArtistProfile';
+import { useOrdersQuery } from '@/hooks/useOrdersQuery';
+import { useProductsQuery } from '@/hooks/useProductsQuery';
+import { usePayoutsQuery } from '@/hooks/usePayoutsQuery';
+import {
+  DollarSign,
+  ShoppingCart,
+  Package,
   Users,
   TrendingUp,
   Calendar,
@@ -26,35 +28,113 @@ import {
 } from 'lucide-react';
 import SEOHelmet from '@/components/SEO/SEOHelmet';
 
-const salesData: any[] = [];
-const recentOrders: any[] = [];
-const products: any[] = [];
-const payouts: any[] = [];
-const goals: any[] = [];
-
 export default function Dashboard() {
   const { user, isArtist, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
-  const [loading, setLoading] = useState(true);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Empty data for new users - they start with a clean slate
+  const { data: artistProfile, isLoading: profileLoading } = useMyArtistProfile();
+  const artistId = artistProfile?.id;
+  const { data: orders = [], isLoading: ordersLoading } = useOrdersQuery({ artistId });
+  const { data: products = [], isLoading: productsLoading } = useProductsQuery({ artist: artistId });
+  const { data: payouts = [], isLoading: payoutsLoading } = usePayoutsQuery(artistId);
+
+  const loading = authLoading || profileLoading || (!!artistId && (ordersLoading || productsLoading || payoutsLoading));
+
+  const myItems = useMemo(
+    () => orders.flatMap(order => (order.order_items || []).filter(item => item.artist_id === artistId)),
+    [orders, artistId]
+  );
+
+  const totalRevenue = myItems.reduce((sum, item) => sum + Number(item.total_price), 0);
+  const ordersForMe = orders.filter(o => (o.order_items || []).some(i => i.artist_id === artistId));
+  const uniqueCustomers = new Set(ordersForMe.map(o => o.user_id)).size;
+
   const kpiData = [
-    { title: 'Total Sales', value: formatPrice(0), change: '+0%', trend: 'neutral' as const, icon: DollarSign },
-    { title: 'Orders', value: '0', change: '+0%', trend: 'neutral' as const, icon: ShoppingCart },
-    { title: 'Products', value: '0', change: '+0%', trend: 'neutral' as const, icon: Package },
-    { title: 'Customers', value: '0', change: '+0%', trend: 'neutral' as const, icon: Users },
+    { title: 'Total Sales', value: formatPrice(totalRevenue), change: '', trend: 'neutral' as const, icon: DollarSign },
+    { title: 'Orders', value: ordersForMe.length.toString(), change: '', trend: 'neutral' as const, icon: ShoppingCart },
+    { title: 'Products', value: products.length.toString(), change: '', trend: 'neutral' as const, icon: Package },
+    { title: 'Customers', value: uniqueCustomers.toString(), change: '', trend: 'neutral' as const, icon: Users },
   ];
 
-  useEffect(() => {
-    // Simulate loading state
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+  // Revenue per day for the last 30 days
+  const salesData = useMemo(() => {
+    const byDay: Record<string, number> = {};
+    ordersForMe.forEach(order => {
+      const dayKey = new Date(order.created_at).toISOString().slice(0, 10);
+      const myOrderItems = (order.order_items || []).filter(i => i.artist_id === artistId);
+      byDay[dayKey] = (byDay[dayKey] || 0) + myOrderItems.reduce((sum, i) => sum + Number(i.total_price), 0);
+    });
+    const result = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const dayKey = date.toISOString().slice(0, 10);
+      result.push({ date: dayKey, sales: byDay[dayKey] || 0 });
+    }
+    return result;
+  }, [ordersForMe, artistId]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Units sold per product, for the ProductPerformance chart
+  const productPerformanceData = useMemo(() => {
+    const unitsByProduct: Record<string, number> = {};
+    myItems.forEach(item => {
+      const title = item.products?.title;
+      if (!title) return;
+      unitsByProduct[title] = (unitsByProduct[title] || 0) + item.quantity;
+    });
+    return products
+      .map(product => ({
+        name: product.title,
+        unitsSold: unitsByProduct[product.title] || 0,
+        stock: product.stock,
+      }))
+      .sort((a, b) => b.unitsSold - a.unitsSold)
+      .slice(0, 5);
+  }, [products, myItems]);
+
+  // Top products by revenue, for the "Top Products" list below
+  const topProducts = useMemo(() => {
+    const totals: Record<string, { sales: number; revenue: number }> = {};
+    myItems.forEach(item => {
+      const title = item.products?.title;
+      if (!title) return;
+      const entry = totals[title] || { sales: 0, revenue: 0 };
+      entry.sales += item.quantity;
+      entry.revenue += Number(item.total_price);
+      totals[title] = entry;
+    });
+    return Object.entries(totals)
+      .map(([name, stats]) => ({ name, ...stats }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 3);
+  }, [myItems]);
+
+  const recentOrders = useMemo(() => {
+    return [...ordersForMe]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5)
+      .map(order => {
+        const myOrderItems = (order.order_items || []).filter(i => i.artist_id === artistId);
+        return {
+          id: order.id,
+          customer: order.profiles?.display_name || order.profiles?.email || 'Unknown',
+          product: myOrderItems.map(i => i.products?.title).filter(Boolean).join(', ') || 'N/A',
+          amount: formatPrice(myOrderItems.reduce((sum, i) => sum + Number(i.total_price), 0)),
+          status: order.status,
+        };
+      });
+  }, [ordersForMe, artistId, formatPrice]);
+
+  const recentPayouts = useMemo(
+    () => payouts.slice(0, 5).map(p => ({
+      id: p.id,
+      date: p.created_at,
+      amount: p.amount,
+      status: (p.status === 'completed' || p.status === 'processing' ? p.status : 'pending') as 'pending' | 'processing' | 'completed',
+    })),
+    [payouts]
+  );
 
   if (authLoading) {
     return (
@@ -68,17 +148,9 @@ export default function Dashboard() {
     return <Navigate to="/artist-auth" replace />;
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
     <>
-      <SEOHelmet 
+      <SEOHelmet
         title="Artist Dashboard"
         description="Manage your art products, track sales, and view analytics on your artist dashboard."
       />
@@ -99,31 +171,31 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Button 
+          <Button
             className="h-20 flex flex-col items-center justify-center gap-2"
             onClick={() => navigate('/dashboard/products')}
           >
             <Plus className="h-5 w-5" />
             <span>Add Product</span>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-20 flex flex-col items-center justify-center gap-2"
             onClick={() => navigate('/dashboard/orders')}
           >
             <ShoppingCart className="h-5 w-5" />
             <span>View Orders</span>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-20 flex flex-col items-center justify-center gap-2"
             onClick={() => navigate('/dashboard/analytics')}
           >
             <BarChart3 className="h-5 w-5" />
             <span>Analytics</span>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-20 flex flex-col items-center justify-center gap-2"
             onClick={() => navigate('/dashboard/profile')}
           >
@@ -139,36 +211,10 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Goals Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Goals & Progress
-            </CardTitle>
-            <CardDescription>Track your progress toward monthly goals</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {goals.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No goals set yet</p>
-            ) : (
-              goals.map((goal, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{goal.title}</span>
-                    <span className="text-muted-foreground">{goal.current} / {goal.target}</span>
-                  </div>
-                  <Progress value={goal.percentage} />
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
         {/* Charts */}
         <div className="grid gap-4 md:grid-cols-2">
           <SalesChart data={salesData} loading={loading} />
-          <ProductPerformance data={products} loading={loading} />
+          <ProductPerformance data={productPerformanceData} loading={loading} />
         </div>
 
         {/* Lower Section */}
@@ -182,18 +228,17 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {products.length === 0 ? (
+              {topProducts.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">No products yet</p>
               ) : (
-                products.slice(0, 3).map((product, index) => (
+                topProducts.map((product, index) => (
                   <div key={index} className="flex items-center justify-between py-2">
                     <div>
                       <p className="font-medium">{product.name}</p>
                       <p className="text-sm text-muted-foreground">{product.sales} sales</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{product.revenue}</p>
-                      <p className="text-sm text-green-600">{product.growth}</p>
+                      <p className="font-semibold">{formatPrice(product.revenue)}</p>
                     </div>
                   </div>
                 ))
@@ -229,10 +274,10 @@ export default function Dashboard() {
           </Card>
 
           {/* Payouts */}
-          <PayoutsList payouts={payouts} loading={loading} />
+          <PayoutsList payouts={recentPayouts} loading={loading} />
         </div>
       </div>
-      
+
       <CalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
     </>
   );
