@@ -37,7 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function AdminPromotions() {
   const { toast } = useToast();
-  const [coupons, setCoupons] = useState<any[]>(demoCoupons);
+  const [coupons, setCoupons] = useState<any[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const [newCoupon, setNewCoupon] = useState({
@@ -335,39 +335,3 @@ export default function AdminPromotions() {
     </div>
   );
 }
-
-const demoCoupons = [
-  {
-    id: 'cop-1',
-    code: 'WELCOME10',
-    type: 'percentage',
-    value: 10,
-    min_spend_ngn: 5000,
-    usage_limit: 500,
-    used_count: 142,
-    expires_at: '2026-12-31',
-    active: true,
-  },
-  {
-    id: 'cop-2',
-    code: 'SUMMER2000',
-    type: 'fixed',
-    value: 2000,
-    min_spend_ngn: 15000,
-    usage_limit: 100,
-    used_count: 38,
-    expires_at: '2026-08-31',
-    active: true,
-  },
-  {
-    id: 'cop-3',
-    code: 'FREESHIP',
-    type: 'fixed',
-    value: 3000,
-    min_spend_ngn: 20000,
-    usage_limit: 200,
-    used_count: 95,
-    expires_at: '2026-10-15',
-    active: true,
-  },
-];

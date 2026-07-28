@@ -283,9 +283,13 @@ export default function ArtistProfile() {
                         </h3>
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-bold text-primary">{formatPrice(product.price_cents / 100)}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {product.stock > 0 ? `${product.stock} left` : 'Out of stock'}
-                          </span>
+                          {product.stock <= 0 ? (
+                            <span className="text-xs text-red-500">Out of stock</span>
+                          ) : product.stock <= 10 ? (
+                            <span className="text-xs text-red-500">Almost sold out</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">{product.stock} left</span>
+                          )}
                         </div>
                       </div>
                     </motion.div>

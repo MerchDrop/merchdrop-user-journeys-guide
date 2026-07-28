@@ -21,79 +21,96 @@ import {
 import { TrendingUp, DollarSign, CreditCard, Banknote } from 'lucide-react';
 import { useCurrency } from '@/context/CurrencyContext';
 
-// Mock sales data
-const mockSalesData = [
-  {
-    month: 'Jan',
-    grossRevenue: 12500,
-    netProfit: 8750,
-    totalPayouts: 3750,
-  },
-  {
-    month: 'Feb',
-    grossRevenue: 15200,
-    netProfit: 10640,
-    totalPayouts: 4560,
-  },
-  {
-    month: 'Mar',
-    grossRevenue: 18700,
-    netProfit: 13090,
-    totalPayouts: 5610,
-  },
-  {
-    month: 'Apr',
-    grossRevenue: 16800,
-    netProfit: 11760,
-    totalPayouts: 5040,
-  },
-  {
-    month: 'May',
-    grossRevenue: 21400,
-    netProfit: 14980,
-    totalPayouts: 6420,
-  },
-  {
-    month: 'Jun',
-    grossRevenue: 19300,
-    netProfit: 13510,
-    totalPayouts: 5790,
-  },
-];
-
-const summaryStats = (formatPrice: (price: number) => string) => [
-  {
-    title: 'Total Revenue',
-    value: formatPrice(103900),
-    change: '+12.5%',
-    icon: DollarSign,
-    color: 'text-green-500'
-  },
-  {
-    title: 'Net Profit',
-    value: formatPrice(72730),
-    change: '+8.2%',
-    icon: TrendingUp,
-    color: 'text-blue-500'
-  },
-  {
-    title: 'Artist Payouts',
-    value: formatPrice(31170),
-    change: '+15.3%',
-    icon: CreditCard,
-    color: 'text-purple-500'
-  },
-  {
-    title: 'Platform Fee',
-    value: formatPrice(31170),
-    change: '+10.1%',
-    icon: Banknote,
-    color: 'text-orange-500'
-  },
-];
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const PlatformSalesReport = () => {
   const { formatPrice } = useCurrency();
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [totals, setTotals] = useState({
+    totalRevenue: 0,
+    netProfit: 0,
+    artistPayouts: 0,
+    platformFee: 0,
+  });
+
+  useEffect(() => {
+    fetchSalesData();
+  }, []);
+
+  const fetchSalesData = async () => {
+    try {
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount, created_at, status');
+
+      if (orders && orders.length > 0) {
+        const gross = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+        const payouts = gross * 0.7; // 70% artist payout split
+        const platform = gross * 0.3; // 30% platform margin
+        setTotals({
+          totalRevenue: gross,
+          netProfit: platform,
+          artistPayouts: payouts,
+          platformFee: platform,
+        });
+
+        // Group by month
+        const monthly: { [key: string]: { grossRevenue: number; netProfit: number; totalPayouts: number } } = {};
+        orders.forEach((o) => {
+          const month = o.created_at ? new Date(o.created_at).toLocaleString('default', { month: 'short' }) : 'Recent';
+          if (!monthly[month]) {
+            monthly[month] = { grossRevenue: 0, netProfit: 0, totalPayouts: 0 };
+          }
+          monthly[month].grossRevenue += o.total_amount || 0;
+          monthly[month].totalPayouts += (o.total_amount || 0) * 0.7;
+          monthly[month].netProfit += (o.total_amount || 0) * 0.3;
+        });
+
+        const chart = Object.keys(monthly).map((m) => ({
+          month: m,
+          ...monthly[m],
+        }));
+        setSalesData(chart);
+      } else {
+        setSalesData([]);
+        setTotals({ totalRevenue: 0, netProfit: 0, artistPayouts: 0, platformFee: 0 });
+      }
+    } catch (e) {
+      console.error('Error fetching sales report:', e);
+    }
+  };
+
+  const summaryStats = [
+    {
+      title: 'Total Revenue',
+      value: formatPrice(totals.totalRevenue),
+      change: 'Live',
+      icon: DollarSign,
+      color: 'text-green-500',
+    },
+    {
+      title: 'Net Profit',
+      value: formatPrice(totals.netProfit),
+      change: 'Live',
+      icon: TrendingUp,
+      color: 'text-blue-500',
+    },
+    {
+      title: 'Artist Payouts',
+      value: formatPrice(totals.artistPayouts),
+      change: 'Live',
+      icon: CreditCard,
+      color: 'text-purple-500',
+    },
+    {
+      title: 'Platform Margin',
+      value: formatPrice(totals.platformFee),
+      change: 'Live',
+      icon: Banknote,
+      color: 'text-orange-500',
+    },
+  ];
   
   return (
     <div className="space-y-6">
@@ -117,7 +134,7 @@ const PlatformSalesReport = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {summaryStats(formatPrice).map((stat, index) => {
+        {summaryStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <Card key={index}>
@@ -150,7 +167,7 @@ const PlatformSalesReport = () => {
         <CardContent>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockSalesData}>
+              <BarChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />

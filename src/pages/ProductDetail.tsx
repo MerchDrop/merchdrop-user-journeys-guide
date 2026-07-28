@@ -558,9 +558,13 @@ export default function ProductDetail() {
                               <p className="text-sm text-muted-foreground mb-2">{item.artist_profiles?.artist_name}</p>
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-primary">{formatPrice(item.price_cents / 100)}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {item.stock > 0 ? `${item.stock} left` : 'Out of stock'}
-                                </span>
+                                {item.stock <= 0 ? (
+                                  <span className="text-xs text-red-500">Out of stock</span>
+                                ) : item.stock <= 10 ? (
+                                  <span className="text-xs text-red-500">Almost sold out</span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">{item.stock} left</span>
+                                )}
                               </div>
                             </CardContent>
                           </Link>

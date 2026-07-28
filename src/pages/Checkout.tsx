@@ -47,12 +47,15 @@ export default function Checkout() {
   }
 
   const selectedAxis = getShippingAxis(selectedAxisId);
-  const subtotal = convertPrice(getTotalPrice());
-  const shipping = selectedAxis.isCustomQuote
-    ? 0
-    : convertBetweenCurrencies(selectedAxis.feeNGN, 'NGN', currency);
-  const tax = subtotal * 0.075;
-  const total = subtotal + shipping + tax;
+  const rawSubtotalNGN = getTotalPrice();
+  const rawShippingNGN = selectedAxis.isCustomQuote ? 0 : selectedAxis.feeNGN;
+  const rawTaxNGN = rawSubtotalNGN * 0.075;
+  const rawTotalNGN = rawSubtotalNGN + rawShippingNGN + rawTaxNGN;
+
+  const subtotal = convertPrice(rawSubtotalNGN, 'NGN');
+  const shipping = convertPrice(rawShippingNGN, 'NGN');
+  const tax = convertPrice(rawTaxNGN, 'NGN');
+  const total = convertPrice(rawTotalNGN, 'NGN');
 
   const steps = [
     { number: 1, title: "Information", icon: Truck },
@@ -354,7 +357,7 @@ export default function Checkout() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span>Subtotal</span>
-                          <span>{formatPrice(subtotal)}</span>
+                          <span>{formatPrice(rawSubtotalNGN)}</span>
                         </div>
                         <div className="flex justify-between items-start">
                           <div>
@@ -364,16 +367,16 @@ export default function Checkout() {
                           <span className="font-medium">
                             {selectedAxis.isCustomQuote
                               ? 'Email Quote'
-                              : formatPrice(shipping)}
+                              : formatPrice(rawShippingNGN)}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>VAT / Tax (7.5%)</span>
-                          <span>{formatPrice(tax)}</span>
+                          <span>{formatPrice(rawTaxNGN)}</span>
                         </div>
                         <div className="border-t pt-2 flex justify-between font-bold">
                           <span>Total</span>
-                          <span>{formatPrice(total)}</span>
+                          <span>{formatPrice(rawTotalNGN)}</span>
                         </div>
                       </div>
                     </div>
@@ -483,7 +486,7 @@ export default function Checkout() {
                 <div className="border-t pt-6 space-y-3">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
+                    <span>{formatPrice(rawSubtotalNGN)}</span>
                   </div>
                   <div className="flex justify-between items-start">
                     <div>
@@ -495,16 +498,16 @@ export default function Checkout() {
                     <span className="font-semibold text-right">
                       {selectedAxis.isCustomQuote
                         ? 'Email Quote'
-                        : formatPrice(shipping)}
+                        : formatPrice(rawShippingNGN)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>VAT / Tax (7.5%)</span>
-                    <span>{formatPrice(tax)}</span>
+                    <span>{formatPrice(rawTaxNGN)}</span>
                   </div>
                   <div className="border-t pt-3 flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>{formatPrice(total)}</span>
+                    <span>{formatPrice(rawTotalNGN)}</span>
                   </div>
                 </div>
 

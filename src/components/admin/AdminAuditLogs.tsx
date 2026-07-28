@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 
 export default function AdminAuditLogs() {
-  const [logs, setLogs] = useState<any[]>(demoLogs);
+  const [logs, setLogs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleFilter, setModuleFilter] = useState('all');
 
@@ -161,38 +161,3 @@ export default function AdminAuditLogs() {
     </div>
   );
 }
-
-const demoLogs = [
-  {
-    id: 'log-1',
-    timestamp: '2026-07-27 22:30:12',
-    action: 'Updated Shipping Zone Rates',
-    module: 'shipping',
-    performed_by: 'admin@merchdrop.com',
-    details: 'Updated Axis 1 delivery fee to ₦3,000 NGN',
-  },
-  {
-    id: 'log-2',
-    timestamp: '2026-07-27 21:15:40',
-    action: 'Approved Creator Payout',
-    module: 'payouts',
-    performed_by: 'admin@merchdrop.com',
-    details: 'Released payout of ₦85,000 to Blessing Okafor',
-  },
-  {
-    id: 'log-3',
-    timestamp: '2026-07-27 18:45:00',
-    action: 'Created Promo Code',
-    module: 'promotions',
-    performed_by: 'admin@merchdrop.com',
-    details: 'Created coupon WELCOME10 with 10% discount',
-  },
-  {
-    id: 'log-4',
-    timestamp: '2026-07-27 15:20:10',
-    action: 'Updated Top Marquee Ticker',
-    module: 'cms',
-    performed_by: 'admin@merchdrop.com',
-    details: 'Changed text to "SUMMER SCORCH MERCH OUT NOW!!!"',
-  },
-];

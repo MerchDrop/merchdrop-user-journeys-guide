@@ -24,14 +24,41 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
 export default function AdminInventory() {
   const { toast } = useToast();
-  const [inventoryItems, setInventoryItems] = useState<any[]>(demoInventory);
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
   const [adjustedStock, setAdjustedStock] = useState<number>(0);
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  const fetchInventory = async () => {
+    try {
+      const { data, error } = await supabase.from('products').select('*');
+      if (!error && data && data.length > 0) {
+        setInventoryItems(data.map((p) => ({
+          id: p.id,
+          sku: `SKU-${p.id.slice(0, 6).toUpperCase()}`,
+          name: p.title,
+          size: 'All Sizes',
+          stock: p.stock || 0,
+        })));
+      } else {
+        setInventoryItems([]);
+      }
+    } catch (e) {
+      console.error('Error fetching inventory:', e);
+      setInventoryItems([]);
+    }
+  };
 
   const handleSaveStock = () => {
     if (!editingItem) return;
@@ -246,11 +273,3 @@ export default function AdminInventory() {
     </div>
   );
 }
-
-const demoInventory = [
-  { id: 'inv-1', sku: 'TS-BLK-L', name: 'Summer Scorch Oversized Tee', size: 'L', stock: 24 },
-  { id: 'inv-2', sku: 'TS-BLK-XL', name: 'Summer Scorch Oversized Tee', size: 'XL', stock: 4 },
-  { id: 'inv-3', sku: 'HD-CRM-M', name: 'Vintage Heavyweight Hoodie', size: 'M', stock: 12 },
-  { id: 'inv-4', sku: 'BN-BLK-OS', name: 'Test Beanie', size: 'One Size', stock: 0 },
-  { id: 'inv-5', sku: 'TS-WHT-S', name: 'Minimalist Logo Tee', size: 'S', stock: 3 },
-];

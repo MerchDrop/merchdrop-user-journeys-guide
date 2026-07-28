@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function AdminSupport() {
   const { toast } = useToast();
-  const [tickets, setTickets] = useState<any[]>(demoTickets);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
@@ -285,25 +285,3 @@ export default function AdminSupport() {
     </div>
   );
 }
-
-const demoTickets = [
-  {
-    id: 'TCK-301',
-    customer_name: 'Femi Otedola',
-    customer_email: 'femi@example.com',
-    subject: 'Inquiry regarding custom shipping to Epe',
-    message: 'Hello, I placed an order with Other Locations selected. When will I get the quote?',
-    status: 'open',
-    created_at: '2026-07-27',
-  },
-  {
-    id: 'TCK-302',
-    customer_name: 'Sandra Bullock',
-    customer_email: 'sandra@example.com',
-    subject: 'Size exchange for Summer Scorch Tee',
-    message: 'Can I swap my size M for size L?',
-    status: 'in_progress',
-    created_at: '2026-07-26',
-    replies: [{ sender: 'Admin Support', message: 'Hello Sandra, sure! We are processing your exchange.' }],
-  },
-];

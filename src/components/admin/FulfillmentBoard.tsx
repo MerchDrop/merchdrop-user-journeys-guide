@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,46 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Package, Truck, Clock, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/context/CurrencyContext';
-
-// Mock order data
-const mockOrders = [
-  {
-    id: 'ORD-001',
-    customer: 'John Doe',
-    items: ['Mystic Forest Poster', 'Galaxy Cat T-Shirt'],
-    total: 64.98,
-    status: 'pending',
-    date: '2024-01-20',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: 'ORD-002',
-    customer: 'Jane Smith',
-    items: ['Urban Dreams Print'],
-    total: 24.99,
-    status: 'processing',
-    date: '2024-01-19',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: 'ORD-003',
-    customer: 'Bob Wilson',
-    items: ['Retro Wave Mug', 'Galaxy Cat T-Shirt'],
-    total: 54.98,
-    status: 'shipped',
-    date: '2024-01-18',
-    avatar: '/placeholder.svg'
-  },
-  {
-    id: 'ORD-004',
-    customer: 'Alice Brown',
-    items: ['Mystic Forest Poster'],
-    total: 29.99,
-    status: 'delivered',
-    date: '2024-01-17',
-    avatar: '/placeholder.svg'
-  },
-];
+import { supabase } from '@/integrations/supabase/client';
 
 const statusColumns = [
   {
@@ -129,8 +90,33 @@ const OrderCard = ({ order }: { order: any }) => {
 };
 
 const FulfillmentBoard = () => {
+  const [liveOrders, setLiveOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const { data } = await supabase.from('orders').select('*');
+      if (data) {
+        setLiveOrders(data.map((o) => ({
+          id: o.order_number || o.id.slice(0, 8),
+          customer: o.shipping_address?.firstName ? `${o.shipping_address.firstName} ${o.shipping_address.lastName || ''}` : 'Customer',
+          items: ['Apparel Item'],
+          total: o.total_amount || 0,
+          status: o.status || 'pending',
+          date: o.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+          avatar: '/placeholder.svg'
+        })));
+      }
+    } catch (e) {
+      console.error('Error fetching fulfillment orders:', e);
+    }
+  };
+
   const getOrdersByStatus = (status: string) => {
-    return mockOrders.filter(order => order.status === status);
+    return liveOrders.filter(order => order.status === status);
   };
 
   return (

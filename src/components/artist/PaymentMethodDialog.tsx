@@ -39,25 +39,8 @@ interface PaymentMethodDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const mockPaymentMethods: PaymentMethod[] = [
-  {
-    id: '1',
-    type: 'bank_transfer',
-    label: 'Chase Bank',
-    details: '••••1234',
-    isDefault: true
-  },
-  {
-    id: '2',
-    type: 'paypal',
-    label: 'PayPal',
-    details: 'user@example.com',
-    isDefault: false
-  }
-];
-
 export function PaymentMethodDialog({ open, onOpenChange }: PaymentMethodDialogProps) {
-  const [paymentMethods, setPaymentMethods] = useState(mockPaymentMethods);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newMethodType, setNewMethodType] = useState<'bank_transfer' | 'paypal' | 'stripe'>('bank_transfer');
   const { toast } = useToast();

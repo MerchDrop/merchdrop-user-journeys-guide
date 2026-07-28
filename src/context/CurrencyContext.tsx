@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type Currency = 'USD' | 'GBP' | 'NGN';
+export type Currency = 'USD' | 'GBP' | 'EUR' | 'NGN';
 
 export interface CurrencyData {
   code: Currency;
@@ -13,13 +13,15 @@ export interface CurrencyData {
 export const DEFAULT_RATES: Record<Currency, number> = {
   USD: 1,
   GBP: 0.79,
+  EUR: 0.92,
   NGN: 1650
 };
 
 export const CURRENCIES: Record<Currency, CurrencyData> = {
+  NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', rate: 1650 },
   USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
   GBP: { code: 'GBP', symbol: '£', name: 'British Pound', rate: 0.79 },
-  NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', rate: 1650 }
+  EUR: { code: 'EUR', symbol: '€', name: 'Euro', rate: 0.92 }
 };
 
 interface CurrencyContextType {
@@ -27,7 +29,7 @@ interface CurrencyContextType {
   setCurrency: (currency: Currency) => void;
   rates: Record<Currency, number>;
   updateRates: (newRates: Partial<Record<Currency, number>>) => void;
-  formatPrice: (price: number) => string;
+  formatPrice: (price: number, fromCurrency?: Currency) => string;
   convertPrice: (price: number, fromCurrency?: Currency) => number;
   convertBetweenCurrencies: (amount: number, from: Currency, to: Currency) => number;
 }
@@ -66,6 +68,8 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     const savedCurrency = localStorage.getItem('preferredCurrency');
     if (savedCurrency && savedCurrency in CURRENCIES) {
       setCurrencyState(savedCurrency as Currency);
+    } else {
+      setCurrencyState('NGN');
     }
 
     // Fetch exchange rates from platform_settings table if available
@@ -127,15 +131,15 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     return amountInUSD * toRate;
   };
 
-  // Convert price from base/source currency (default USD) to current active selected currency
-  const convertPrice = (price: number, fromCurrency: Currency = 'USD'): number => {
+  // Convert price from base/source currency (default NGN) to current active selected currency
+  const convertPrice = (price: number, fromCurrency: Currency = 'NGN'): number => {
     return convertBetweenCurrencies(price, fromCurrency, currency);
   };
 
-  // Format price with currency symbol and appropriate decimal places
-  const formatPrice = (price: number): string => {
-    const convertedPrice = convertPrice(price);
-    const currencyData = CURRENCIES[currency];
+  // Format price with currency symbol and appropriate decimal places from source currency (default NGN)
+  const formatPrice = (price: number, fromCurrency: Currency = 'NGN'): string => {
+    const convertedPrice = convertBetweenCurrencies(price, fromCurrency, currency);
+    const currencyData = CURRENCIES[currency] || CURRENCIES.NGN;
     
     if (currency === 'NGN') {
       return `${currencyData.symbol}${Math.round(convertedPrice).toLocaleString()}`;

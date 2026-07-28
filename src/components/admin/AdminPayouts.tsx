@@ -38,7 +38,7 @@ export default function AdminPayouts() {
   const { toast } = useToast();
   const { formatPrice } = useCurrency();
 
-  const [payouts, setPayouts] = useState<any[]>(demoPayouts);
+  const [payouts, setPayouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusTab, setSelectedStatusTab] = useState('all');
@@ -59,11 +59,14 @@ export default function AdminPayouts() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setPayouts(data);
+      } else {
+        setPayouts([]);
       }
     } catch (e) {
       console.error('Error fetching payouts:', e);
+      setPayouts([]);
     } finally {
       setLoading(false);
     }
@@ -375,40 +378,3 @@ export default function AdminPayouts() {
     </div>
   );
 }
-
-const demoPayouts = [
-  {
-    id: 'pay-7701',
-    creator_name: 'David Adeleke',
-    role: 'artist',
-    bank_name: 'Guaranty Trust Bank (GTB)',
-    account_number: '0123456789',
-    account_name: 'David Adeleke',
-    amount_ngn: 150000,
-    status: 'pending',
-    created_at: '2026-07-26T10:00:00Z',
-  },
-  {
-    id: 'pay-7702',
-    creator_name: 'Blessing Arts',
-    role: 'designer',
-    bank_name: 'Zenith Bank',
-    account_number: '2089123456',
-    account_name: 'Blessing Okafor',
-    amount_ngn: 85000,
-    status: 'paid',
-    created_at: '2026-07-25T14:30:00Z',
-    processed_at: '2026-07-25T16:00:00Z',
-  },
-  {
-    id: 'pay-7703',
-    creator_name: 'Wizkid Merch',
-    role: 'artist',
-    bank_name: 'Access Bank',
-    account_number: '0712398471',
-    account_name: 'Ayodeji Balogun',
-    amount_ngn: 320000,
-    status: 'pending',
-    created_at: '2026-07-27T08:15:00Z',
-  },
-];

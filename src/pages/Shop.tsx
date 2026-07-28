@@ -47,7 +47,7 @@ const ShopHeroSection = () => {
         </div>
         
         {/* Call to Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="flex justify-center items-center">
           <Button 
             variant="default" 
             size="lg" 
@@ -55,14 +55,6 @@ const ShopHeroSection = () => {
             asChild
           >
             <Link to="/products">Shop Now</Link>
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-black px-8 py-3 text-lg font-semibold backdrop-blur-sm"
-            asChild
-          >
-            <Link to="/creators">I'm an Artist/Creative</Link>
           </Button>
         </div>
       </div>

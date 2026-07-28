@@ -94,16 +94,22 @@ export default function AdminShippingOverview() {
       if (!error && data) {
         setOrders(data);
       } else {
-        // Fallback demo orders for testing UI if database is empty
-        setOrders(demoOrders);
+        setOrders([]);
       }
     } catch (e) {
       console.error('Error fetching orders for shipping management:', e);
-      setOrders(demoOrders);
+      setOrders([]);
     } finally {
       setLoadingOrders(false);
     }
   };
+
+  const totalShippedOrders = orders.filter((o) => o.status === 'shipped').length;
+  const totalCustomQuotes = orders.filter((o) => o.shipping_address?.isCustomQuote || o.shipping_address?.shippingAxis === 'Other Locations').length;
+  const totalShippingCollectedNGN = orders.reduce(
+    (sum, o) => sum + (o.shipping_address?.shippingFeeNGN || 0),
+    0
+  );
 
   const handleSaveAxisEdit = () => {
     if (!editingAxis) return;
@@ -346,7 +352,7 @@ export default function AdminShippingOverview() {
                         <td className="py-4 px-4 font-medium text-foreground">
                           {axis.isCustomQuote
                             ? 'Email Quote'
-                            : formatPrice(convertBetweenCurrencies(axis.feeNGN, 'NGN', currency))}
+                            : formatPrice(axis.feeNGN)}
                         </td>
                         <td className="py-4 px-4 text-center">
                           <Badge variant={axis.active !== false ? 'default' : 'secondary'}>
@@ -746,72 +752,3 @@ export default function AdminShippingOverview() {
     </div>
   );
 }
-
-// Fallback demo orders for testing UI
-const demoOrders = [
-  {
-    id: 'ord-1001',
-    order_number: 'MD-8901',
-    status: 'pending',
-    customer_email: 'buyer@example.com',
-    shipping_address: {
-      firstName: 'Tunde',
-      lastName: 'Adeola',
-      email: 'buyer@example.com',
-      address: '22 Commercial Avenue',
-      city: 'Yaba',
-      state: 'Lagos',
-      shippingAxis: 'Axis 1',
-      shippingFeeNGN: 3000,
-    },
-  },
-  {
-    id: 'ord-1002',
-    order_number: 'MD-8902',
-    status: 'shipped',
-    customer_email: 'chioma@example.com',
-    shipping_address: {
-      firstName: 'Chioma',
-      lastName: 'Okonkwo',
-      email: 'chioma@example.com',
-      address: '15 Glover Road',
-      city: 'Ikoyi',
-      state: 'Lagos',
-      shippingAxis: 'Axis 2',
-      shippingFeeNGN: 5000,
-    },
-  },
-  {
-    id: 'ord-1003',
-    order_number: 'MD-8903',
-    status: 'pending',
-    customer_email: 'emeka@example.com',
-    shipping_address: {
-      firstName: 'Emeka',
-      lastName: 'Nnamdi',
-      email: 'emeka@example.com',
-      address: 'Plot 12 Admiralty Way',
-      city: 'Lekki',
-      state: 'Lagos',
-      shippingAxis: 'Axis 3',
-      shippingFeeNGN: 8000,
-    },
-  },
-  {
-    id: 'ord-1004',
-    order_number: 'MD-8904',
-    status: 'pending',
-    customer_email: 'kemi@example.com',
-    shipping_address: {
-      firstName: 'Kemi',
-      lastName: 'Bello',
-      email: 'kemi@example.com',
-      address: 'Ikorodu Phase 1',
-      city: 'Ikorodu',
-      state: 'Lagos',
-      shippingAxis: 'Other Locations',
-      isCustomQuote: true,
-      shippingFeeNGN: 0,
-    },
-  },
-];
