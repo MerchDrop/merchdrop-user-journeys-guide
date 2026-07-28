@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Filter, Edit, Eye, Archive, MoreHorizontal } from 'lucide-react';
 import { useProducts } from '@/hooks/useProductsQuery';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,7 @@ export default function ArtistProducts() {
   
   const { products, loading, error, fetchArtistProducts, publishProduct, unpublishProduct, deleteProduct } = useProducts();
   const { isArtist } = useAuth();
+  const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -260,7 +262,7 @@ export default function ArtistProducts() {
                       {product.description || 'No description'}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold">${(product.price_cents / 100).toFixed(2)}</span>
+                      <span className="font-bold">{formatPrice(product.price_cents / 100)}</span>
                       <span className="text-sm text-muted-foreground">Stock: {product.stock}</span>
                     </div>
                   </CardContent>

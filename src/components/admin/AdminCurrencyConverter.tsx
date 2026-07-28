@@ -95,16 +95,16 @@ export const AdminCurrencyConverter: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* USD Base */}
+            {/* NGN Base */}
             <div className="p-4 border rounded-xl bg-gray-50/70 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-sm text-gray-700">US Dollar (USD)</span>
+                <span className="font-semibold text-sm text-gray-700">Nigerian Naira (NGN)</span>
                 <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-full">
                   Base Currency
                 </span>
               </div>
-              <div className="text-2xl font-extrabold text-gray-900">$1.00 USD</div>
-              <p className="text-xs text-gray-500">All pricing reference calculations originate in USD.</p>
+              <div className="text-2xl font-extrabold text-gray-900">₦1.00 NGN</div>
+              <p className="text-xs text-gray-500">All pricing reference calculations originate in NGN.</p>
             </div>
 
             {/* GBP Rate */}

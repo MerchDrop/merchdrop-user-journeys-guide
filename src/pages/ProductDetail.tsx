@@ -371,10 +371,10 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
                   {product.originalPrice && (
                     <>
-                      <span className="text-xl text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</span>
+                      <span className="text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                       <Badge variant="destructive">
                         {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                       </Badge>
@@ -384,12 +384,16 @@ export default function ProductDetail() {
 
                 {/* Stock Status */}
                 <div className="mt-2">
-                  {product.stock > 0 ? (
+                  {product.stock > 10 ? (
                     <Badge variant="outline" className="text-green-600 border-green-600">
                       {product.stock} in stock
                     </Badge>
+                  ) : product.stock > 0 ? (
+                    <Badge variant="outline" className="text-red-500 border-red-500 text-xs">
+                      Almost sold out
+                    </Badge>
                   ) : (
-                    <Badge variant="destructive">Out of stock</Badge>
+                    <Badge variant="destructive" className="text-xs">Out of stock</Badge>
                   )}
                 </div>
               </div>
@@ -485,7 +489,7 @@ export default function ProductDetail() {
                   disabled={product.stock === 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart - ${(product.price * quantity).toFixed(2)}
+                  Add to Cart - {formatPrice(product.price * quantity)}
                 </Button>
                 <Button variant="outline" size="lg" className="w-full">
                   Buy Now

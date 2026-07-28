@@ -243,12 +243,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
     try {
       setUploading(true);
 
-      // data.price_cents is entered in display currency (e.g., $25.00 USD, £19.75 GBP, or ₦41,250 NGN).
-      // Convert display amount to USD dollars, then to canonical USD cents for database storage.
-      const priceInUsdDollars = convertBetweenCurrencies(data.price_cents, currency, 'USD');
-      const priceCentsUsd = Math.round(priceInUsdDollars * 100);
+      // data.price_cents is entered in the current active currency (e.g. 1000 NGN or $0.61 USD).
+      // Convert display amount to NGN Naira, then save as canonical NGN kobo in database.
+      const priceInNaira = convertBetweenCurrencies(data.price_cents, currency, 'NGN');
+      const priceCentsNgn = Math.round(priceInNaira * 100);
 
-      if (!priceCentsUsd || priceCentsUsd <= 0) {
+      if (!priceCentsNgn || priceCentsNgn <= 0) {
         toast({
           title: "Invalid Price",
           description: "Please enter a valid product price greater than 0.",
@@ -261,15 +261,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
       const productData = {
         title: data.title,
         description: data.description,
-        price_cents: priceCentsUsd,
+        price_cents: priceCentsNgn,
         stock: data.stock,
         category_id: data.category_id,
         sku: data.sku,
         // Preserve the owner on edit; admins without an artist profile
         // create platform-owned products (artist_id is nullable)
         artist_id: editProduct?.artist_id ?? artistProfile?.id ?? null,
-        // price_cents is always USD now, so the stored currency must match
-        currency: 'USD',
+        currency: 'NGN',
         tags,
         status: 'draft' as const,
         slug: await generateSlug(data.title),

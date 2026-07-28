@@ -11,17 +11,17 @@ export interface CurrencyData {
 }
 
 export const DEFAULT_RATES: Record<Currency, number> = {
-  USD: 1,
-  GBP: 0.79,
-  EUR: 0.92,
-  NGN: 1650
+  NGN: 1,
+  USD: 1 / 1650,
+  GBP: 1 / 2088,
+  EUR: 1 / 1795,
 };
 
 export const CURRENCIES: Record<Currency, CurrencyData> = {
-  NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', rate: 1650 },
-  USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
-  GBP: { code: 'GBP', symbol: '£', name: 'British Pound', rate: 0.79 },
-  EUR: { code: 'EUR', symbol: '€', name: 'Euro', rate: 0.92 }
+  NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', rate: 1 },
+  USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 / 1650 },
+  GBP: { code: 'GBP', symbol: '£', name: 'British Pound', rate: 1 / 2088 },
+  EUR: { code: 'EUR', symbol: '€', name: 'Euro', rate: 1 / 1795 }
 };
 
 interface CurrencyContextType {
@@ -122,13 +122,14 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     });
   };
 
-  // Convert amount between any two specified currencies
+  // Convert amount between any two specified currencies (Base is NGN)
   const convertBetweenCurrencies = (amount: number, from: Currency, to: Currency): number => {
+    if (!amount || isNaN(amount)) return 0;
     if (from === to) return amount;
-    const fromRate = rates[from] || 1;
-    const toRate = rates[to] || 1;
-    const amountInUSD = amount / fromRate;
-    return amountInUSD * toRate;
+    const fromRate = rates[from] ?? DEFAULT_RATES[from] ?? 1;
+    const toRate = rates[to] ?? DEFAULT_RATES[to] ?? 1;
+    const amountInNGN = amount / fromRate;
+    return amountInNGN * toRate;
   };
 
   // Convert price from base/source currency (default NGN) to current active selected currency

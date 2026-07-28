@@ -48,7 +48,13 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({ className })
                     {curr.code} <span className="text-xs text-gray-500 font-normal">({curr.name})</span>
                   </div>
                   <div className="text-[11px] text-gray-400">
-                    {curr.code === 'USD' ? 'Base Currency' : `1 USD = ${rate?.toLocaleString()} ${curr.code}`}
+                    {curr.code === 'NGN'
+                      ? 'Base Currency'
+                      : curr.code === 'USD'
+                      ? '1 USD = ₦1,650 NGN'
+                      : curr.code === 'GBP'
+                      ? '1 GBP = ₦2,088 NGN'
+                      : '1 EUR = ₦1,795 NGN'}
                   </div>
                 </div>
               </div>
