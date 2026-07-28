@@ -130,11 +130,11 @@ export default function Checkout() {
 
   // Paystack configuration - using environment variable for public key
   const paystackConfig = {
-    reference: new Date().getTime().toString(),
-    email: formData.email,
-    amount: Math.round(total * 100), // Convert to kobo for NGN or cents for USD
-    currency: currency,
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+    reference: `MD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    email: formData.email.trim() || user?.email || '',
+    amount: Math.max(100, Math.round(rawTotalNGN * 100)), // Always send amount in NGN kobo (minimum 100 kobo = ₦1.00)
+    currency: 'NGN',
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
   };
 
   const initializePayment = usePaystackPayment(paystackConfig);
@@ -397,6 +397,15 @@ export default function Checkout() {
                       </Button>
                       <Button 
                          onClick={() => {
+                           if (!formData.email || !formData.email.includes('@')) {
+                             toast({
+                               title: "Email Required",
+                               description: "Please enter a valid email address before proceeding with payment.",
+                               variant: "destructive",
+                             });
+                             setCurrentStep(1);
+                             return;
+                           }
                            initializePayment({ 
                              onSuccess: handlePaystackSuccess, 
                              onClose: handlePaystackClose 
