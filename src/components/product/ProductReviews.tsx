@@ -99,15 +99,32 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles(display_name, avatar_url)
-        `)
+        .select('*')
         .eq('product_id', productId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReviews((data as any) || []);
+
+      if (data && data.length > 0) {
+        const userIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
+        let profileMap: { [id: string]: any } = {};
+        if (userIds.length > 0) {
+          const { data: profs } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url')
+            .in('id', userIds);
+          profs?.forEach((p: any) => {
+            profileMap[p.id] = p;
+          });
+        }
+        const merged = data.map((r: any) => ({
+          ...r,
+          profiles: profileMap[r.user_id] || null,
+        }));
+        setReviews(merged);
+      } else {
+        setReviews([]);
+      }
     } catch (error) {
       console.error('Error loading reviews:', error);
     } finally {

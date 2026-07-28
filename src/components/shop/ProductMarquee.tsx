@@ -78,7 +78,7 @@ const ProductMarquee = () => {
                       {formatPrice(product.price_cents / 100)}
                     </span>
                     {product.stock <= 0 ? (
-                      <span className="text-xs text-red-500">Out of stock</span>
+                      <span className="text-xs text-red-500 font-semibold">Sold Out</span>
                     ) : product.stock <= 10 ? (
                       <span className="text-xs text-red-500">Almost sold out</span>
                     ) : (

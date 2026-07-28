@@ -402,7 +402,7 @@ export default function ProductDetail() {
                       Almost sold out
                     </Badge>
                   ) : (
-                    <Badge variant="destructive" className="text-xs">Out of stock</Badge>
+                    <Badge variant="destructive" className="text-xs">Sold Out</Badge>
                   )}
                 </div>
               </div>
@@ -587,7 +587,7 @@ export default function ProductDetail() {
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-primary">{formatPrice(item.price_cents / 100)}</span>
                                 {item.stock <= 0 ? (
-                                  <span className="text-xs text-red-500">Out of stock</span>
+                                  <span className="text-xs text-red-500 font-semibold">Sold Out</span>
                                 ) : item.stock <= 10 ? (
                                   <span className="text-xs text-red-500">Almost sold out</span>
                                 ) : (

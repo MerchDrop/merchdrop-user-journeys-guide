@@ -286,7 +286,7 @@ export default function ArtistProfile() {
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-bold text-primary">{formatPrice(product.price_cents / 100)}</span>
                           {product.stock <= 0 ? (
-                            <span className="text-xs text-red-500">Out of stock</span>
+                            <span className="text-xs text-red-500 font-semibold">Sold Out</span>
                           ) : product.stock <= 10 ? (
                             <span className="text-xs text-red-500">Almost sold out</span>
                           ) : (
