@@ -130,12 +130,12 @@ const ShopArtistDrops = () => {
   };
 
   const getProductImage = (imageUrl: string | null) => {
-    if (!imageUrl) {
+    if (!imageUrl || imageUrl.startsWith('blob:')) {
       return "https://images.unsplash.com/photo-1520975922284-9e0ce8272aa9?q=80&w=1600&auto=format&fit=crop";
     }
     
-    // If it's a Supabase storage URL, use it directly
-    if (imageUrl.includes('supabase')) {
+    // If it's a Supabase storage URL or full URL, use it directly
+    if (imageUrl.includes('supabase') || imageUrl.startsWith('http')) {
       return imageUrl;
     }
     
@@ -144,7 +144,7 @@ const ShopArtistDrops = () => {
   };
 
   const getArtistAvatar = (avatarUrl: string | null) => {
-    if (!avatarUrl) {
+    if (!avatarUrl || avatarUrl.startsWith('blob:')) {
       return "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200&auto=format&fit=crop";
     }
     return avatarUrl;

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Search, Filter, ShoppingCart, Star, Flame, Tag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeImageUrl } from '@/lib/image-utils';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
@@ -127,7 +128,7 @@ export default function Products() {
           artist: p.artist_profiles?.artist_name,
           artistId: p.artist_id,
           price: (p.price_cents ?? 0) / 100,
-          image: p.main_image_url || '/placeholder.svg',
+          image: sanitizeImageUrl(p.main_image_url),
           rating: avgRating,
           reviews: rStats.count,
           likes: totalLikes,

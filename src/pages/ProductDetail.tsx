@@ -15,6 +15,7 @@ import { useProductsQuery } from '@/hooks/useProductsQuery';
 import { ProductReviews } from '@/components/product/ProductReviews';
 
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeImageUrl } from '@/lib/image-utils';
 
 type UiProduct = {
   id: string;
@@ -99,6 +100,11 @@ export default function ProductDetail() {
           ...(data.main_image_url ? [data.main_image_url] : []),
           ...(((data as any).product_images as any[] | undefined)?.sort((a,b)=> (a.sort_order ?? 0)-(b.sort_order ?? 0)).map((i)=> i.url) || [])
         ];
+        const sanitizedList = imageList
+          .map((img) => sanitizeImageUrl(img))
+          .filter((img) => img !== '/placeholder.svg');
+        const finalImages = sanitizedList.length > 0 ? sanitizedList : ['/placeholder.svg'];
+
         const ratings = (reviewRows || []).map(r => r.rating);
         const averageRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
         const mapped: any = {
@@ -112,7 +118,7 @@ export default function ProductDetail() {
             'Handcrafted quality',
             'Perfect for gifting'
           ],
-          images: imageList.length ? imageList : ['/placeholder.svg'],
+          images: finalImages,
           stock: (data as any).stock ?? 0,
           rating: averageRating,
           reviews: ratings.length,
@@ -145,6 +151,9 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (!product) return;
     
+    const activeColorObj = product.colors && product.colors[selectedColor];
+    const activeColorName = typeof activeColorObj === 'string' ? activeColorObj : activeColorObj?.name;
+
     addItem({
       id: product.id,
       name: product.name,
@@ -153,7 +162,7 @@ export default function ProductDetail() {
       price: product.price,
       image: product.images[0],
       size: selectedSize || undefined,
-      color: product.colors ? product.colors[selectedColor]?.name : undefined
+      color: activeColorName || undefined
     }, quantity);
 
     toast({
@@ -417,23 +426,33 @@ export default function ProductDetail() {
               </div>
 
               {/* Color Selection */}
-              {product.colors && (
+              {product.colors && product.colors.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-3">Color:</h3>
-                  <div className="flex gap-3">
-                    {product.colors.map((color: any, index: number) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedColor(index)}
-                        className={`w-12 h-12 rounded-full border-2 ${
-                          selectedColor === index ? 'border-primary' : 'border-muted'
-                        }`}
-                        style={{ backgroundColor: color.value }}
-                        title={color.name}
-                      />
-                    ))}
+                  <div className="flex gap-3 flex-wrap">
+                    {product.colors.map((color: any, index: number) => {
+                      const colorName = typeof color === 'string' ? color : color?.name || 'Color';
+                      const colorValue = typeof color === 'string' ? color : color?.value || '#000000';
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedColor(index)}
+                          className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center ${
+                            selectedColor === index ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-muted'
+                          }`}
+                          style={{ backgroundColor: colorValue }}
+                          title={colorName}
+                        />
+                      );
+                    })}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">{product.colors[selectedColor].name}</p>
+                  <p className="text-sm text-muted-foreground mt-2 font-medium">
+                    {(() => {
+                      const active = product.colors[selectedColor];
+                      if (!active) return '';
+                      return typeof active === 'string' ? active : active.name || '';
+                    })()}
+                  </p>
                 </div>
               )}
 

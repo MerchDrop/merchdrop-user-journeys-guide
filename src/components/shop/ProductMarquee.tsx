@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProductsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Badge } from '@/components/ui/badge';
+import { sanitizeImageUrl } from '@/lib/image-utils';
 
 const ProductMarquee = () => {
   const { products, loading } = useProducts();
@@ -42,7 +43,7 @@ const ProductMarquee = () => {
       <div className="flex space-x-6 animate-marquee">
         {duplicatedProducts.map((product, index) => {
           const badge = getBadge(product);
-          const productImage = product.product_images?.[0]?.url || product.main_image_url || '/placeholder.svg';
+          const productImage = sanitizeImageUrl(product.product_images?.[0]?.url || product.main_image_url);
           
           return (
             <Link

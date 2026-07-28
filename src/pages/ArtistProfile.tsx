@@ -6,6 +6,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
+import { sanitizeImageUrl } from '@/lib/image-utils';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useArtistProfileBySlug } from '@/hooks/useArtistProfileBySlug';
@@ -112,9 +114,9 @@ export default function ArtistProfile() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.6 }}
                     className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-background shadow-hero bg-cover bg-center bg-muted flex items-center justify-center"
-                    style={artist.avatar_url ? { backgroundImage: `url(${artist.avatar_url})` } : undefined}
+                    style={sanitizeImageUrl(artist.avatar_url, '') ? { backgroundImage: `url(${sanitizeImageUrl(artist.avatar_url)})` } : undefined}
                   >
-                    {!artist.avatar_url && <UserIcon className="h-16 w-16 text-muted-foreground" />}
+                    {!sanitizeImageUrl(artist.avatar_url, '') && <UserIcon className="h-16 w-16 text-muted-foreground" />}
                   </motion.div>
 
                   {/* Info */}
@@ -234,7 +236,7 @@ export default function ArtistProfile() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {products.map((product, index) => {
-                  const image = product.main_image_url || product.product_images?.[0]?.url || '/placeholder.svg';
+                  const image = sanitizeImageUrl(product.main_image_url || product.product_images?.[0]?.url);
                   return (
                     <motion.div
                       key={product.id}

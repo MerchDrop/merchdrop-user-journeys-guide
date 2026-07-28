@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingCart, Flame } from "lucide-react";
 import { useCurrency } from "@/context/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeImageUrl } from "@/lib/image-utils";
 
 interface TrendingProduct {
   id: string;
@@ -74,7 +75,7 @@ const TrendingProducts = () => {
             artist: artistName,
             artistHandle: `@${artistSlug}`,
             price: (p.price_cents ?? 0) / 100,
-            image: p.main_image_url || '/placeholder.svg',
+            image: sanitizeImageUrl(p.main_image_url),
             likes: totalLikes,
             sales: totalSales,
             trending: totalSales >= 5,
