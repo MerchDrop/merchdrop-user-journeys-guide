@@ -122,8 +122,13 @@ export default function ProductDetail() {
           category: (data as any).category?.name,
           categoryId: (data as any).category_id,
           tags: (data as any).tags || [],
+          colors: (data as any).variants?.colors || (data as any).colors || [],
+          sizes: (data as any).variants?.sizes || (data as any).sizes || [],
         };
         setProduct(mapped);
+        if (mapped.colors && mapped.colors.length > 0) {
+          setSelectedColor(0);
+        }
         if (mapped.sizes && mapped.sizes.length > 0) {
           setSelectedSize(mapped.sizes[0]);
         }
