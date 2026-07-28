@@ -43,29 +43,34 @@ const MerchCreator = () => {
     }
   }, [productDetails.uploadedFile]);
 
-  const preUploadedDesigns = [
-    {
-      id: 'design1',
-      name: 'Vintage Band Tee',
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop',
-      category: 'tshirt',
-      tags: ['vintage', 'music', 'retro']
-    },
-    {
-      id: 'design2', 
-      name: 'Abstract Hoodie',
-      image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=300&h=300&fit=crop',
-      category: 'hoodie',
-      tags: ['abstract', 'modern', 'colorful']
-    },
-    {
-      id: 'design3',
-      name: 'Minimalist Cap',
-      image: 'https://images.unsplash.com/photo-1588117260148-b47c0c19383d?w=300&h=300&fit=crop',
-      category: 'cap',
-      tags: ['minimal', 'clean', 'simple']
+  const [preUploadedDesigns, setPreUploadedDesigns] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchApprovedDesigns();
+  }, []);
+
+  const fetchApprovedDesigns = async () => {
+    try {
+      const { data } = await supabase
+        .from('designs')
+        .select('*')
+        .eq('status', 'approved');
+
+      if (data && data.length > 0) {
+        setPreUploadedDesigns(data.map(d => ({
+          id: d.id,
+          name: d.title || 'Artwork Design',
+          image: d.image_url || '/placeholder.svg',
+          category: 'tshirt',
+          tags: d.tags || ['artwork'],
+        })));
+      } else {
+        setPreUploadedDesigns([]);
+      }
+    } catch (e) {
+      setPreUploadedDesigns([]);
     }
-  ];
+  };
 
   const productTypes = [
     { id: 'tshirt', name: 'T-Shirt', basePrice: 15, minPrice: 25 },
