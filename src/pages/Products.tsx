@@ -93,23 +93,52 @@ export default function Products() {
       .order('published_at', { ascending: false });
 
     if (!error && data) {
-      const mapped: UiProduct[] = data.map((p: any) => ({
-        id: p.id,
-        name: p.title,
-        artist: p.artist_profiles?.artist_name,
-        artistId: p.artist_id,
-        price: (p.price_cents ?? 0) / 100,
-        image: p.main_image_url || '/placeholder.svg',
-        rating: Math.random() * 2 + 3, // Random rating between 3-5 for demo
-        reviews: Math.floor(Math.random() * 50) + 5,
-        likes: Math.floor(Math.random() * 100) + 10,
-        sales: Math.floor(Math.random() * 200) + 20,
-        trending: Math.random() > 0.8,
-        onSale: Math.random() > 0.9,
-        category: p.category?.name,
-        tags: p.tags || [],
-        publishedAt: p.published_at ?? null,
-      }));
+      // Query reviews, order_items, and wishlists tables to compute real metrics
+      const { data: reviewsData } = await supabase.from('reviews').select('product_id, rating');
+      const { data: orderItemsData } = await supabase.from('order_items').select('product_id, quantity');
+      const { data: wishlistsData } = await supabase.from('wishlists').select('product_id');
+
+      const reviewMap: { [id: string]: { count: number; sum: number } } = {};
+      reviewsData?.forEach((r) => {
+        if (!reviewMap[r.product_id]) reviewMap[r.product_id] = { count: 0, sum: 0 };
+        reviewMap[r.product_id].count += 1;
+        reviewMap[r.product_id].sum += Number(r.rating || 0);
+      });
+
+      const salesMap: { [id: string]: number } = {};
+      orderItemsData?.forEach((item) => {
+        salesMap[item.product_id] = (salesMap[item.product_id] || 0) + (item.quantity || 1);
+      });
+
+      const likesMap: { [id: string]: number } = {};
+      wishlistsData?.forEach((w) => {
+        likesMap[w.product_id] = (likesMap[w.product_id] || 0) + 1;
+      });
+
+      const mapped: UiProduct[] = data.map((p: any) => {
+        const rStats = reviewMap[p.id] || { count: 0, sum: 0 };
+        const avgRating = rStats.count > 0 ? rStats.sum / rStats.count : 0;
+        const totalSales = salesMap[p.id] || 0;
+        const totalLikes = likesMap[p.id] || 0;
+
+        return {
+          id: p.id,
+          name: p.title,
+          artist: p.artist_profiles?.artist_name,
+          artistId: p.artist_id,
+          price: (p.price_cents ?? 0) / 100,
+          image: p.main_image_url || '/placeholder.svg',
+          rating: avgRating,
+          reviews: rStats.count,
+          likes: totalLikes,
+          sales: totalSales,
+          trending: totalSales >= 5,
+          onSale: false,
+          category: p.category?.name,
+          tags: p.tags || [],
+          publishedAt: p.published_at ?? null,
+        };
+      });
       setProducts(mapped);
     } else {
       console.error('Error loading products', error);
@@ -290,11 +319,15 @@ export default function Products() {
                     </Link>
 
                     {/* Rating */}
-                    {product.rating && (
+                    {product.reviews > 0 ? (
                       <div className="flex items-center gap-1 mb-2">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm font-medium">{product.rating.toFixed(1)}</span>
                         <span className="text-sm text-gray-500">({product.reviews})</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 mb-2 text-xs text-muted-foreground">
+                        <span>No reviews yet</span>
                       </div>
                     )}
 

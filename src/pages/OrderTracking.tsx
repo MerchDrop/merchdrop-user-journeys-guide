@@ -25,71 +25,104 @@ const OrderTracking = () => {
   const [orderData, setOrderData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock order data - in real app, fetch from API
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setOrderData({
-        id: orderId,
-        status: 'shipped',
-        orderDate: '2024-01-15',
-        estimatedDelivery: '2024-01-22',
-        shippingAddress: '123 Main St, Anytown, ST 12345',
-        trackingNumber: 'TRK123456789',
-        items: [
-          {
-            id: 1,
-            name: 'Midnight Vibes Hoodie',
-            artist: 'Luna Rivers',
-            size: 'M',
-            quantity: 1,
-            price: 55,
-            image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=150&h=150&fit=crop'
-          },
-          {
-            id: 2,
-            name: 'Ethereal Dreams Tee',
-            artist: 'Luna Rivers',
-            size: 'L',
-            quantity: 2,
-            price: 35,
-            image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=150&h=150&fit=crop'
-          }
-        ],
-        timeline: [
-          {
-            status: 'pending',
-            title: 'Order Placed',
-            description: 'Your order has been received and is being processed',
-            date: '2024-01-15',
-            completed: true
-          },
-          {
-            status: 'processing', 
-            title: 'In Production',
-            description: 'Your items are being printed and prepared',
-            date: '2024-01-17',
-            completed: true
-          },
-          {
-            status: 'shipped',
-            title: 'Shipped',
-            description: 'Your order is on its way!',
-            date: '2024-01-19',
-            completed: true
-          },
-          {
-            status: 'delivered',
-            title: 'Delivered',
-            description: 'Package delivered successfully',
-            date: null,
-            completed: false
-          }
-        ]
-      });
-      setIsLoading(false);
-    }, 1000);
+    const fetchOrderData = async () => {
+      setIsLoading(true);
+      try {
+        if (!orderId) {
+          setIsLoading(false);
+          return;
+        }
 
-    return () => clearTimeout(timer);
+        const { data: order, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items(
+              *,
+              products(title, main_image_url)
+            )
+          `)
+          .or(`id.eq.${orderId},order_number.eq.${orderId}`)
+          .maybeSingle();
+
+        if (!error && order) {
+          const addr = order.shipping_address || {};
+          const mappedItems = (order.order_items || []).map((item: any) => ({
+            id: item.id,
+            name: item.products?.title || 'Merch Item',
+            artist: 'MerchDrop Creator',
+            size: item.size || 'M',
+            quantity: item.quantity || 1,
+            price: Number(item.unit_price || 0),
+            image: item.products?.main_image_url || '/placeholder.svg',
+          }));
+
+          setOrderData({
+            id: order.order_number || order.id,
+            status: order.status || 'pending',
+            orderDate: order.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+            estimatedDelivery: '3-5 Business Days',
+            shippingAddress: addr.address ? `${addr.address}, ${addr.city || ''}, ${addr.state || ''}` : 'Standard Shipping Address',
+            trackingNumber: order.tracking_number || `TRK-${order.id.slice(0, 8).toUpperCase()}`,
+            items: mappedItems.length > 0 ? mappedItems : [
+              {
+                id: '1',
+                name: 'Merch Order',
+                artist: 'Verified Creator',
+                size: 'Standard',
+                quantity: 1,
+                price: Number(order.total_amount || 0),
+                image: '/placeholder.svg',
+              }
+            ],
+            timeline: [
+              {
+                status: 'pending',
+                title: 'Order Placed',
+                description: 'Your order has been received and confirmed',
+                date: order.created_at?.slice(0, 10),
+                completed: true,
+              },
+              {
+                status: 'processing',
+                title: 'Order Processing',
+                description: 'Your items are being printed and prepared for dispatch',
+                date: order.created_at?.slice(0, 10),
+                completed: order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered',
+              },
+              {
+                status: 'shipped',
+                title: 'Order Shipped',
+                description: 'Your order is out for delivery with our logistics partner',
+                date: order.shipped_at?.slice(0, 10) || 'Pending Dispatch',
+                completed: order.status === 'shipped' || order.status === 'delivered',
+              },
+              {
+                status: 'delivered',
+                title: 'Delivered',
+                description: 'Package has been delivered to customer address',
+                date: order.delivered_at?.slice(0, 10) || 'Pending',
+                completed: order.status === 'delivered',
+              },
+            ],
+            subtotal: Number(order.subtotal || order.total_amount || 0),
+            shipping: Number(order.shipping_fee || 0),
+            tax: Number(order.tax || 0),
+            total: Number(order.total_amount || 0),
+          });
+        } else {
+          setOrderData(null);
+        }
+      } catch (e) {
+        console.error('Error fetching order tracking:', e);
+        setOrderData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrderData();
   }, [orderId]);
 
   const getStatusIcon = (status: string, completed: boolean) => {
