@@ -7,6 +7,7 @@ import { Heart, ShoppingCart, Flame } from "lucide-react";
 import { useCurrency } from "@/context/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeImageUrl } from "@/lib/image-utils";
+import { getProductUrl } from "@/lib/slug-utils";
 
 interface TrendingProduct {
   id: string;
@@ -71,6 +72,7 @@ const TrendingProducts = () => {
 
           return {
             id: p.id,
+            slug: p.slug,
             name: p.title,
             artist: artistName,
             artistHandle: `@${artistSlug}`,
@@ -160,9 +162,11 @@ const TrendingProducts = () => {
                   </Link>
 
                   {/* Product Name */}
-                  <h3 className="text-[20px] lg:text-[22px] font-bold mb-3 text-foreground group-hover:text-accent transition-colors">
-                    {product.name}
-                  </h3>
+                  <Link to={getProductUrl(product)}>
+                    <h3 className="text-[20px] lg:text-[22px] font-bold mb-3 text-foreground group-hover:text-accent transition-colors">
+                      {product.name}
+                    </h3>
+                  </Link>
 
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-4">

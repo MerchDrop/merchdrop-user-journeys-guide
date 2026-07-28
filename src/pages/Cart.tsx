@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/hooks/use-toast';
+import { getProductUrl } from '@/lib/slug-utils';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
@@ -84,7 +86,7 @@ export default function Cart() {
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <Link 
-                              to={`/product/${item.id}`}
+                              to={getProductUrl(item)}
                               className="font-semibold text-black hover:text-gray-600 transition-colors"
                             >
                               {item.name}

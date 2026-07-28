@@ -16,6 +16,7 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeImageUrl } from '@/lib/image-utils';
+import { slugify, getProductUrl } from '@/lib/slug-utils';
 
 type UiProduct = {
   id: string;
@@ -89,6 +90,22 @@ export default function ProductDetail() {
           .eq(isUuid ? 'slug' : 'id', identifier)
           .eq('status', 'published')
           .maybeSingle();
+      }
+
+      if (!productRes.data && !productRes.error) {
+        const { data: allPublished } = await supabase
+          .from('products')
+          .select(selectQuery)
+          .eq('status', 'published');
+
+        if (allPublished && allPublished.length > 0) {
+          const matched = allPublished.find(
+            (p: any) => p.slug === identifier || p.id === identifier || slugify(p.title) === identifier
+          );
+          if (matched) {
+            productRes = { data: matched, error: null } as any;
+          }
+        }
       }
 
       const data = productRes.data;
@@ -557,7 +574,7 @@ export default function ProductDetail() {
                         onMouseLeave={() => setHoveredRelated(null)}
                       >
                         <Card className="group cursor-pointer hover:shadow-hero transition-all duration-300 overflow-hidden">
-                          <Link to={`/product/${item.slug || item.id}`}>
+                          <Link to={getProductUrl(item)}>
                             <div className="aspect-square overflow-hidden relative">
                               <img
                                 src={image}

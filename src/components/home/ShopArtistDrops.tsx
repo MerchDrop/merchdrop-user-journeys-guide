@@ -4,6 +4,7 @@ import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { ShoppingBag, ArrowRight, Flame, Sparkles, Star, Eye, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getProductUrl } from '@/lib/slug-utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -271,7 +272,7 @@ const ShopArtistDrops = () => {
                 transition={{ duration: 0.8, delay: 0.1 + index * 0.1 }}
               >
                 <Link 
-                  to={`/product/${product.slug}`}
+                  to={getProductUrl(product)}
                   className="group rounded-xl border overflow-hidden hover:shadow-sm transition-all hover:-translate-y-0.5 border-border bg-card block"
                 >
                   {/* Product Image */}

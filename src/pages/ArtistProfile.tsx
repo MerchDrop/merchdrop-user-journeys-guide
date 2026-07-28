@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeImageUrl } from '@/lib/image-utils';
+import { getProductUrl } from '@/lib/slug-utils';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useArtistProfileBySlug } from '@/hooks/useArtistProfileBySlug';
@@ -260,10 +261,10 @@ export default function ArtistProfile() {
                         >
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white" asChild>
-                              <a href={`/product/${product.slug || product.id}`}>
+                              <Link to={getProductUrl(product)}>
                                 <Eye className="h-4 w-4 mr-1" />
                                 View
-                              </a>
+                              </Link>
                             </Button>
                             <Button
                               variant="default"

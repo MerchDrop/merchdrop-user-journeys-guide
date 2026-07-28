@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Heart, Search, Filter, ShoppingCart, Star, Flame, Tag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeImageUrl } from '@/lib/image-utils';
+import { getProductUrl } from '@/lib/slug-utils';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
@@ -124,6 +125,7 @@ export default function Products() {
 
         return {
           id: p.id,
+          slug: p.slug,
           name: p.title,
           artist: p.artist_profiles?.artist_name,
           artistId: p.artist_id,
@@ -313,7 +315,7 @@ export default function Products() {
                     )}
 
                     {/* Product Name */}
-                    <Link to={`/product/${product.id}`}>
+                    <Link to={getProductUrl(product)}>
                       <h3 className="font-semibold text-black hover:text-gray-600 transition-colors mt-1 mb-2">
                         {product.name}
                       </h3>

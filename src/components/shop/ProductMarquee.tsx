@@ -4,6 +4,7 @@ import { useProducts } from '@/hooks/useProductsQuery';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Badge } from '@/components/ui/badge';
 import { sanitizeImageUrl } from '@/lib/image-utils';
+import { getProductUrl } from '@/lib/slug-utils';
 
 const ProductMarquee = () => {
   const { products, loading } = useProducts();
@@ -48,7 +49,7 @@ const ProductMarquee = () => {
           return (
             <Link
               key={`${product.id}-${index}`}
-              to={`/product/${product.slug || product.id}`}
+              to={getProductUrl(product)}
               className="flex-shrink-0 group"
             >
               <div className="flex items-center space-x-4 bg-background rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 w-80">

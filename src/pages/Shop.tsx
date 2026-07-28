@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getProductUrl } from '@/lib/slug-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -204,7 +206,7 @@ const MerchCategories = () => {
                         </div>
                         
                         <Link 
-                          to={`/product/${product.slug || product.id}`}
+                          to={getProductUrl(product)}
                           className="block"
                         >
                           <h3 className="font-medium text-foreground hover:text-accent transition-colors line-clamp-2">

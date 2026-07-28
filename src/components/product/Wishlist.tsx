@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { Heart, Trash2, ShoppingCart, Star } from 'lucide-react';
+import { getProductUrl } from '@/lib/slug-utils';
 import { Link } from 'react-router-dom';
 
 interface WishlistItem {
@@ -189,7 +190,7 @@ export const Wishlist: React.FC<WishlistProps> = ({ isWidget = false, limit }) =
               </div>
 
               <div className="space-y-2">
-                <Link to={`/product/${item.products.id}`}>
+                <Link to={getProductUrl(item.products)}>
                   <h3 className="font-medium truncate hover:text-primary transition-colors">
                     {item.products.title}
                   </h3>
