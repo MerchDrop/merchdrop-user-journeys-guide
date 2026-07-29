@@ -15,13 +15,58 @@ import {
   DollarSign,
   Eye,
   Check,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  X
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 
 const MerchCreator = () => {
   const [selectedDesignPath, setSelectedDesignPath] = useState<string>('');
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
+  const PRESET_COLORS = [
+    { name: 'Black', value: '#000000' },
+    { name: 'White', value: '#FFFFFF' },
+    { name: 'Navy', value: '#1E293B' },
+    { name: 'Heather Grey', value: '#94A3B8' },
+    { name: 'Red', value: '#EF4444' },
+    { name: 'Forest Green', value: '#15803D' },
+    { name: 'Beige', value: '#F5F5DC' },
+    { name: 'Royal Blue', value: '#2563EB' },
+    { name: 'Purple', value: '#7C3AED' },
+    { name: 'Pink', value: '#EC4899' },
+    { name: 'Olive', value: '#556B2F' },
+    { name: 'Brown', value: '#78350F' },
+  ];
+
+  const [selectedColors, setSelectedColors] = useState<{ name: string; value: string }[]>([]);
+  const [customColorName, setCustomColorName] = useState('');
+  const [customColorHex, setCustomColorHex] = useState('#000000');
+
+  const toggleColor = (colorObj: { name: string; value: string }) => {
+    setSelectedColors(prev => {
+      const exists = prev.some(c => c.name.toLowerCase() === colorObj.name.toLowerCase());
+      if (exists) {
+        return prev.filter(c => c.name.toLowerCase() !== colorObj.name.toLowerCase());
+      } else {
+        return [...prev, colorObj];
+      }
+    });
+  };
+
+  const addCustomColor = () => {
+    const trimmed = customColorName.trim();
+    if (!trimmed) return;
+    const exists = selectedColors.some(c => c.name.toLowerCase() === trimmed.toLowerCase());
+    if (exists) return;
+    setSelectedColors(prev => [...prev, { name: trimmed, value: customColorHex }]);
+    setCustomColorName('');
+  };
+
+  const removeColor = (colorName: string) => {
+    setSelectedColors(prev => prev.filter(c => c.name.toLowerCase() !== colorName.toLowerCase()));
+  };
+
   const [productDetails, setProductDetails] = useState({
     name: '',
     description: '',
@@ -298,6 +343,96 @@ const MerchCreator = () => {
                       className="mt-1"
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Product Colors Section */}
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Palette className="w-5 h-5 text-primary" />
+                      <span>Product Colors</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-normal">
+                      Select color options for buyers
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Preset Colors Grid */}
+                  <div className="flex flex-wrap gap-2 p-3 rounded-md bg-muted/40 border">
+                    {PRESET_COLORS.map((color) => {
+                      const isSelected = selectedColors.some(c => c.name.toLowerCase() === color.name.toLowerCase());
+                      return (
+                        <button
+                          key={color.name}
+                          type="button"
+                          onClick={() => toggleColor(color)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-semibold'
+                              : 'border-border bg-background hover:bg-muted text-foreground'
+                          }`}
+                        >
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-sm flex-shrink-0"
+                            style={{ backgroundColor: color.value }}
+                          />
+                          {color.name}
+                          {isSelected && <Check className="w-3 h-3 text-primary ml-0.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom Color Creator */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Input
+                      value={customColorName}
+                      onChange={(e) => setCustomColorName(e.target.value)}
+                      placeholder="Custom color (e.g. Acid Wash Cyan)"
+                      className="text-xs flex-1"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomColor())}
+                    />
+                    <input
+                      type="color"
+                      value={customColorHex}
+                      onChange={(e) => setCustomColorHex(e.target.value)}
+                      className="w-9 h-9 p-0.5 rounded cursor-pointer border bg-background"
+                      title="Pick color hex"
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={addCustomColor} className="text-xs gap-1">
+                      <Plus className="w-3.5 h-3.5" /> Add Color
+                    </Button>
+                  </div>
+
+                  {/* Selected Colors List */}
+                  {selectedColors.length > 0 && (
+                    <div className="pt-2 border-t mt-2">
+                      <span className="text-xs font-medium text-muted-foreground block mb-2">
+                        Selected Colors ({selectedColors.length}):
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedColors.map((color) => (
+                          <Badge key={color.name} variant="secondary" className="flex items-center gap-1.5 px-3 py-1 text-xs">
+                            <span
+                              className="w-3 h-3 rounded-full border border-black/20"
+                              style={{ backgroundColor: color.value }}
+                            />
+                            <span>{color.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeColor(color.name)}
+                              className="ml-1 hover:text-destructive text-muted-foreground transition-colors"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
