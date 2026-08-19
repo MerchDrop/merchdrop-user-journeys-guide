@@ -15,6 +15,9 @@ import {
   Clock,
   AlertCircle,
   Save,
+  Trash2,
+  Loader2,
+  Power,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,16 +45,15 @@ import { useCurrency } from '@/context/CurrencyContext';
 import {
   ShippingAxis,
   DEFAULT_SHIPPING_AXES,
-  getSavedShippingAxes,
-  saveShippingAxes,
+  useShippingAxes,
 } from '@/config/shipping';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminShippingOverview() {
   const { toast } = useToast();
   const { formatPrice, convertBetweenCurrencies, currency } = useCurrency();
+  const { axes, saveAxes, resetAxes, isSaving } = useShippingAxes();
 
-  const [axes, setAxes] = useState<ShippingAxis[]>(getSavedShippingAxes());
   const [editingAxis, setEditingAxis] = useState<ShippingAxis | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -111,20 +113,26 @@ export default function AdminShippingOverview() {
     0
   );
 
-  const handleSaveAxisEdit = () => {
+  const handleSaveAxisEdit = async () => {
     if (!editingAxis) return;
     const updated = axes.map((a) => (a.id === editingAxis.id ? editingAxis : a));
-    setAxes(updated);
-    saveShippingAxes(updated);
+    const success = await saveAxes(updated);
     setIsEditDialogOpen(false);
     setEditingAxis(null);
-    toast({
-      title: 'Shipping Zone Updated',
-      description: `${editingAxis.name} rates and details have been updated.`,
-    });
+    if (success !== false) {
+      toast({
+        title: 'Shipping Zone Updated',
+        description: `${editingAxis.name} rates and details have been saved to database.`,
+      });
+    } else {
+      toast({
+        title: 'Saved Locally',
+        description: `${editingAxis.name} updated in local cache.`,
+      });
+    }
   };
 
-  const handleCreateAxis = () => {
+  const handleCreateAxis = async () => {
     if (!newAxis.name || !newAxis.areas) {
       toast({
         title: 'Missing Fields',
@@ -139,25 +147,64 @@ export default function AdminShippingOverview() {
       areas: newAxis.areas || '',
       feeNGN: Number(newAxis.feeNGN) || 0,
       isCustomQuote: !!newAxis.isCustomQuote,
-      active: true,
+      active: newAxis.active !== false,
     };
     const updated = [...axes, created];
-    setAxes(updated);
-    saveShippingAxes(updated);
+    const success = await saveAxes(updated);
     setIsAddDialogOpen(false);
     setNewAxis({ name: '', areas: '', feeNGN: 3000, isCustomQuote: false, active: true });
+    if (success !== false) {
+      toast({
+        title: 'New Shipping Zone Created',
+        description: `${created.name} has been added to shipping zones.`,
+      });
+    } else {
+      toast({
+        title: 'Created Locally',
+        description: `${created.name} added to local storage.`,
+      });
+    }
+  };
+
+  const handleDeleteAxis = async (axisId: string) => {
+    if (axisId === 'axis-other') {
+      toast({
+        title: 'Cannot Delete',
+        description: 'The "Other Locations" custom quote axis is required for unlisted delivery addresses.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const target = axes.find((a) => a.id === axisId);
+    const updated = axes.filter((a) => a.id !== axisId);
+    await saveAxes(updated);
     toast({
-      title: 'New Shipping Zone Created',
-      description: `${created.name} has been added to shipping zones.`,
+      title: 'Shipping Zone Removed',
+      description: `${target?.name || 'Axis'} has been deleted.`,
     });
   };
 
-  const handleResetDefaults = () => {
-    setAxes(DEFAULT_SHIPPING_AXES);
-    saveShippingAxes(DEFAULT_SHIPPING_AXES);
+  const handleToggleActive = async (axisId: string) => {
+    const updated = axes.map((a) => {
+      if (a.id === axisId) {
+        const nextState = a.active === false ? true : false;
+        return { ...a, active: nextState };
+      }
+      return a;
+    });
+    await saveAxes(updated);
+    const target = updated.find((a) => a.id === axisId);
+    toast({
+      title: target?.active ? 'Zone Activated' : 'Zone Disabled',
+      description: `${target?.name} is now ${target?.active ? 'visible at checkout' : 'hidden from checkout'}.`,
+    });
+  };
+
+  const handleResetDefaults = async () => {
+    await resetAxes();
     toast({
       title: 'Reset to Default Shipping Axes',
-      description: 'The standard 5-Axis structure has been restored.',
+      description: 'The standard 5-Axis structure has been restored and synced.',
     });
   };
 
@@ -355,21 +402,47 @@ export default function AdminShippingOverview() {
                             : formatPrice(axis.feeNGN)}
                         </td>
                         <td className="py-4 px-4 text-center">
-                          <Badge variant={axis.active !== false ? 'default' : 'secondary'}>
+                          <Badge
+                            variant={axis.active !== false ? 'default' : 'secondary'}
+                            className={axis.active !== false ? 'bg-green-600 hover:bg-green-700 cursor-pointer' : 'cursor-pointer'}
+                            onClick={() => handleToggleActive(axis.id)}
+                            title="Click to toggle status"
+                          >
                             {axis.active !== false ? 'Active' : 'Disabled'}
                           </Badge>
                         </td>
-                        <td className="py-4 px-4 text-right">
+                        <td className="py-4 px-4 text-right whitespace-nowrap space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Toggle visibility"
+                            onClick={() => handleToggleActive(axis.id)}
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          >
+                            <Power className={`h-3.5 w-3.5 ${axis.active !== false ? 'text-green-600' : 'text-muted-foreground'}`} />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setEditingAxis(axis);
+                              setEditingAxis({ ...axis });
                               setIsEditDialogOpen(true);
                             }}
+                            className="h-8 px-2.5"
                           >
-                            <Edit className="h-4 w-4 mr-1" /> Edit
+                            <Edit className="h-3.5 w-3.5 mr-1" /> Edit
                           </Button>
+                          {axis.id !== 'axis-other' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Delete Axis"
+                              onClick={() => handleDeleteAxis(axis.id)}
+                              className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -598,11 +671,11 @@ export default function AdminShippingOverview() {
           <DialogHeader>
             <DialogTitle>Edit {editingAxis?.name}</DialogTitle>
             <DialogDescription>
-              Update delivery fee and covered area neighborhoods for this axis.
+              Update delivery fee, covered area neighborhoods, and visibility for this axis.
             </DialogDescription>
           </DialogHeader>
           {editingAxis && (
-            <div className="space-y-4 py-2">
+            <div className="space-y-4 py-2 px-6">
               <div>
                 <Label htmlFor="axisName">Axis Name</Label>
                 <Input
@@ -634,14 +707,30 @@ export default function AdminShippingOverview() {
                   }
                 />
               </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="axisActiveEdit"
+                  checked={editingAxis.active !== false}
+                  onChange={(e) =>
+                    setEditingAxis({ ...editingAxis, active: e.target.checked })
+                  }
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <Label htmlFor="axisActiveEdit" className="text-sm font-normal cursor-pointer">
+                  Active (show this axis during customer checkout)
+                </Label>
+              </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+          <DialogFooter className="px-6 pb-6 pt-2">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSaveAxisEdit}>
-              <Save className="h-4 w-4 mr-2" /> Save Changes
+            <Button onClick={handleSaveAxisEdit} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -654,7 +743,7 @@ export default function AdminShippingOverview() {
             <DialogTitle>Add New Shipping Zone</DialogTitle>
             <DialogDescription>Create a new delivery axis and price band.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 px-6">
             <div>
               <Label htmlFor="newAxisName">Axis Name</Label>
               <Input
@@ -684,12 +773,30 @@ export default function AdminShippingOverview() {
                 onChange={(e) => setNewAxis({ ...newAxis, feeNGN: Number(e.target.value) })}
               />
             </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <input
+                type="checkbox"
+                id="axisActiveAdd"
+                checked={newAxis.active !== false}
+                onChange={(e) =>
+                  setNewAxis({ ...newAxis, active: e.target.checked })
+                }
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+              />
+              <Label htmlFor="axisActiveAdd" className="text-sm font-normal cursor-pointer">
+                Active (immediately enable in checkout)
+              </Label>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+          <DialogFooter className="px-6 pb-6 pt-2">
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleCreateAxis}>Create Zone</Button>
+            <Button onClick={handleCreateAxis} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+              {isSaving ? 'Creating...' : 'Create Zone'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -705,7 +812,7 @@ export default function AdminShippingOverview() {
           </DialogHeader>
 
           {selectedOrderForQuote && (
-            <div className="space-y-4 py-2">
+            <div className="space-y-4 py-2 px-6">
               <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1">
                 <p className="font-semibold text-sm">
                   {selectedOrderForQuote.shipping_address?.firstName}{' '}
@@ -739,7 +846,7 @@ export default function AdminShippingOverview() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="px-6 pb-6 pt-2">
             <Button variant="outline" onClick={() => setIsQuoteDialogOpen(false)}>
               Cancel
             </Button>

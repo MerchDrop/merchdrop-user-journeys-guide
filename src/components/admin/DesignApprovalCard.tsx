@@ -131,7 +131,6 @@ export function DesignApprovalCard({ design, onApprove, onReject }: DesignApprov
               <div className="flex gap-2">
                 <Button
                   onClick={handleAction}
-                  disabled={actionType === 'reject' && !feedback}
                   className="flex-1"
                   variant={actionType === 'approve' ? 'default' : 'destructive'}
                 >

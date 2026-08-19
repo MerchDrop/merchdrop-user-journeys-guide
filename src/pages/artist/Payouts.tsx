@@ -147,7 +147,7 @@ export default function Payouts() {
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
-            <Button onClick={() => setIsRequestDialogOpen(true)} disabled={!artistProfile}>
+            <Button onClick={() => setIsRequestDialogOpen(true)}>
               Request Payout
             </Button>
           </div>

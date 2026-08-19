@@ -195,7 +195,6 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
               variant="outline"
               size="sm"
               onClick={handleDownloadReceipt}
-              disabled={status !== 'completed'}
             >
               <Download className="h-4 w-4 mr-2" />
               Receipt

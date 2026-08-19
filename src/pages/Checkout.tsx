@@ -16,7 +16,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { SHIPPING_AXES, getShippingAxis } from '@/config/shipping';
+import { useShippingAxes, getShippingAxis } from '@/config/shipping';
 import { MapPin, Info } from 'lucide-react';
 
 export default function Checkout() {
@@ -25,6 +25,7 @@ export default function Checkout() {
   const { items, getTotalPrice, clearCart } = useCart();
   const { formatPrice, convertPrice, convertBetweenCurrencies, currency } = useCurrency();
   const { user } = useAuth();
+  const { axes: shippingAxes } = useShippingAxes();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
@@ -46,7 +47,7 @@ export default function Checkout() {
     return null;
   }
 
-  const selectedAxis = getShippingAxis(selectedAxisId);
+  const selectedAxis = getShippingAxis(selectedAxisId, shippingAxes);
   const rawSubtotalNGN = getTotalPrice();
   const rawShippingNGN = selectedAxis.isCustomQuote ? 0 : selectedAxis.feeNGN;
   const rawTaxNGN = rawSubtotalNGN * 0.075;
@@ -270,7 +271,7 @@ export default function Checkout() {
                       </div>
 
                       <div className="grid grid-cols-1 gap-2.5">
-                        {SHIPPING_AXES.map((axis) => {
+                        {shippingAxes.filter((axis) => axis.active !== false).map((axis) => {
                           const isSelected = selectedAxisId === axis.id;
                           const feeDisplay = axis.isCustomQuote
                             ? 'Email Quote'

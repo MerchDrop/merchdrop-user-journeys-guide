@@ -24,6 +24,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -279,7 +280,7 @@ export function CleanAdminUserTable() {
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="h-px p-0 bg-border" disabled />
+                            <DropdownMenuSeparator />
                             {pendingRoles.length > 0 && (
                               <>
                                 {pendingRoles.map((ur: any, index: number) => (
@@ -300,7 +301,7 @@ export function CleanAdminUserTable() {
                                     </DropdownMenuItem>
                                   </div>
                                 ))}
-                                <DropdownMenuItem className="h-px p-0 bg-border" disabled />
+                                <DropdownMenuSeparator />
                               </>
                             )}
                             <DropdownMenuItem onClick={() => updateUserRole(user.id, 'admin')}>
@@ -315,7 +316,7 @@ export function CleanAdminUserTable() {
                             <DropdownMenuItem onClick={() => updateUserRole(user.id, 'user')}>
                               Make User
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="h-px p-0 bg-border" disabled />
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => activateUser(user.id)}>
                               <UserCheck className="h-4 w-4 mr-2" />
                               Activate

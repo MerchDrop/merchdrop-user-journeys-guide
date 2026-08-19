@@ -77,7 +77,7 @@ export default function NewsletterSubscribers() {
             <Users className="h-4 w-4" />
             <span>{active} active</span>
           </div>
-          <Button size="sm" variant="outline" onClick={exportCSV} disabled={active === 0}>
+          <Button size="sm" variant="outline" onClick={exportCSV}>
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV
           </Button>

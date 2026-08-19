@@ -270,7 +270,6 @@ export default function ArtistProfile() {
                               variant="default"
                               size="sm"
                               onClick={() => handleAddToCart(product)}
-                              disabled={product.stock <= 0}
                               className="bg-primary hover:bg-primary/90"
                             >
                               <ShoppingCart className="h-4 w-4 mr-1" />

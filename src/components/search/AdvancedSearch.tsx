@@ -355,7 +355,6 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
         variant="outline"
         onClick={clearFilters}
         className="w-full"
-        disabled={getActiveFiltersCount() === 0}
       >
         Clear All Filters
       </Button>

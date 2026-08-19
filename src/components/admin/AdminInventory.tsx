@@ -232,7 +232,7 @@ export default function AdminInventory() {
               Update current available inventory for {editingItem?.name} ({editingItem?.size}).
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 px-6">
             <div>
               <Label htmlFor="stockUnits">New Quantity (Units)</Label>
               <div className="flex items-center gap-3 mt-2">
@@ -262,7 +262,7 @@ export default function AdminInventory() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="px-6 pb-6 pt-2">
             <Button variant="outline" onClick={() => setIsStockDialogOpen(false)}>
               Cancel
             </Button>

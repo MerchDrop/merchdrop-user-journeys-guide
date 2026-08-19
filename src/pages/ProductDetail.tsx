@@ -171,11 +171,20 @@ export default function ProductDetail() {
     const activeColorObj = product.colors && product.colors[selectedColor];
     const activeColorName = typeof activeColorObj === 'string' ? activeColorObj : activeColorObj?.name;
 
+    if (product.stock === 0) {
+      toast({
+        title: "Out of Stock",
+        description: "This item is currently out of stock. Please check back soon!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     addItem({
       id: product.id,
       name: product.name,
       artist: product.artist,
-      artistId: product.artistId, // Pass artist ID from product data
+      artistId: product.artistId,
       price: product.price,
       image: product.images[0],
       size: selectedSize || undefined,
@@ -186,6 +195,34 @@ export default function ProductDetail() {
       title: "Added to cart!",
       description: `${product.name} has been added to your cart.`,
     });
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    if (product.stock === 0) {
+      toast({
+        title: "Out of Stock",
+        description: "This item is currently out of stock. Please check back soon!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const activeColorObj = product.colors && product.colors[selectedColor];
+    const activeColorName = typeof activeColorObj === 'string' ? activeColorObj : activeColorObj?.name;
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      artist: product.artist,
+      artistId: product.artistId,
+      price: product.price,
+      image: product.images[0],
+      size: selectedSize || undefined,
+      color: activeColorName || undefined
+    }, quantity);
+
+    navigate('/checkout');
   };
 
   const nextImage = () => {
@@ -522,12 +559,16 @@ export default function ProductDetail() {
                   size="lg" 
                   className="w-full"
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart - {formatPrice(product.price * quantity)}
                 </Button>
-                <Button variant="outline" size="lg" className="w-full">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="w-full"
+                  onClick={handleBuyNow}
+                >
                   Buy Now
                 </Button>
               </div>

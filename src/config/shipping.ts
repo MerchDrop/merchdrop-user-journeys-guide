@@ -1,4 +1,5 @@
-import { Currency } from '@/context/CurrencyContext';
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ShippingAxis {
   id: string;
@@ -62,7 +63,7 @@ export const SHIPPING_AXES = getSavedShippingAxes();
 
 export function getSavedShippingAxes(): ShippingAxis[] {
   try {
-    const saved = localStorage.getItem('shipping_axes_config');
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('shipping_axes_config') : null;
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -75,15 +76,123 @@ export function getSavedShippingAxes(): ShippingAxis[] {
   return DEFAULT_SHIPPING_AXES;
 }
 
-export function saveShippingAxes(axes: ShippingAxis[]): void {
+export async function fetchShippingAxes(): Promise<ShippingAxis[]> {
   try {
-    localStorage.setItem('shipping_axes_config', JSON.stringify(axes));
+    const { data, error } = await supabase
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'shipping_axes')
+      .maybeSingle();
+
+    if (!error && data && Array.isArray(data.value) && data.value.length > 0) {
+      const axes = data.value as ShippingAxis[];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('shipping_axes_config', JSON.stringify(axes));
+      }
+      return axes;
+    }
+  } catch (e) {
+    console.warn('Could not fetch shipping axes from backend, using local:', e);
+  }
+  return getSavedShippingAxes();
+}
+
+export async function saveShippingAxes(axes: ShippingAxis[]): Promise<boolean> {
+  try {
+    // 1. Save to local storage for immediate synchronous access
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('shipping_axes_config', JSON.stringify(axes));
+      window.dispatchEvent(new CustomEvent('shipping_axes_updated', { detail: axes }));
+    }
+
+    // 2. Sync to Supabase platform_settings
+    const { error } = await supabase
+      .from('platform_settings')
+      .upsert(
+        {
+          key: 'shipping_axes',
+          category: 'shipping',
+          value: axes as any,
+          description: 'Shipping delivery axes and fee matrix',
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'key' }
+      );
+
+    if (error) {
+      console.warn('Could not persist shipping axes to database:', error);
+      return false;
+    }
+    return true;
   } catch (e) {
     console.error('Failed to save shipping axes:', e);
+    return false;
   }
 }
 
-export function getShippingAxis(id: string): ShippingAxis {
-  const axes = getSavedShippingAxes();
-  return axes.find((axis) => axis.id === id) || axes[0];
+export function getShippingAxis(id: string, currentAxes?: ShippingAxis[]): ShippingAxis {
+  const axes = currentAxes && currentAxes.length > 0 ? currentAxes : getSavedShippingAxes();
+  return axes.find((axis) => axis.id === id) || axes[0] || DEFAULT_SHIPPING_AXES[0];
+}
+
+export function useShippingAxes() {
+  const [axes, setAxes] = useState<ShippingAxis[]>(getSavedShippingAxes());
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      const fetched = await fetchShippingAxes();
+      if (isMounted && fetched && fetched.length > 0) {
+        setAxes(fetched);
+      }
+      if (isMounted) setIsLoading(false);
+    };
+    load();
+
+    const handleUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && Array.isArray(detail)) {
+        setAxes(detail);
+      } else {
+        setAxes(getSavedShippingAxes());
+      }
+    };
+
+    window.addEventListener('shipping_axes_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('shipping_axes_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const saveAxes = useCallback(async (newAxes: ShippingAxis[]) => {
+    setIsSaving(true);
+    setAxes(newAxes);
+    const success = await saveShippingAxes(newAxes);
+    setIsSaving(false);
+    return success;
+  }, []);
+
+  const resetAxes = useCallback(async () => {
+    setIsSaving(true);
+    setAxes(DEFAULT_SHIPPING_AXES);
+    const success = await saveShippingAxes(DEFAULT_SHIPPING_AXES);
+    setIsSaving(false);
+    return success;
+  }, []);
+
+  return {
+    axes,
+    isLoading,
+    isSaving,
+    saveAxes,
+    resetAxes,
+    setAxes,
+  };
 }

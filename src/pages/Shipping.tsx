@@ -5,11 +5,12 @@ import SEOHelmet from '@/components/SEO/SEOHelmet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Info } from 'lucide-react';
-import { SHIPPING_AXES } from '@/config/shipping';
+import { useShippingAxes } from '@/config/shipping';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export default function Shipping() {
   const { formatPrice, convertBetweenCurrencies, currency } = useCurrency();
+  const { axes: shippingAxes } = useShippingAxes();
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,7 +57,7 @@ export default function Shipping() {
                       </tr>
                     </thead>
                     <tbody className="divide-y text-sm">
-                      {SHIPPING_AXES.map((axis) => {
+                      {shippingAxes.filter((axis) => axis.active !== false).map((axis) => {
                         const feeFormatted = axis.isCustomQuote
                           ? 'Email Quote'
                           : formatPrice(convertBetweenCurrencies(axis.feeNGN, 'NGN', currency));

@@ -20,9 +20,11 @@ import {
   X
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
+import { useToast } from '@/hooks/use-toast';
 
 const MerchCreator = () => {
-  const [selectedDesignPath, setSelectedDesignPath] = useState<string>('');
+  const { toast } = useToast();
+  const [selectedDesignPath, setSelectedDesignPath] = useState<string>('catalog');
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
   const PRESET_COLORS = [
     { name: 'Black', value: '#000000' },
@@ -150,8 +152,35 @@ const MerchCreator = () => {
   };
 
   const handleSubmitProduct = () => {
-    console.log('Product submitted:', productDetails);
-    // Handle product submission logic
+    if (!productDetails.name) {
+      toast({
+        title: 'Product Title Required',
+        description: 'Please enter a name for your merchandise.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!productDetails.price || Number(productDetails.price) <= 0) {
+      toast({
+        title: 'Retail Price Required',
+        description: 'Please set a valid retail price for your merchandise.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!productDetails.selectedDesign && !productDetails.uploadedFile) {
+      toast({
+        title: 'Artwork Required',
+        description: 'Please select a catalog artwork or upload your design file.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Merch Submitted for Approval!',
+      description: `"${productDetails.name}" has been sent to review team.`,
+    });
   };
 
   return (
@@ -535,7 +564,6 @@ const MerchCreator = () => {
                 variant="hero" 
                 size="lg" 
                 className="w-full"
-                disabled={!selectedDesignPath || !productDetails.name || !productDetails.price}
               >
                 Submit for Approval
               </Button>

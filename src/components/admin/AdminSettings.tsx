@@ -371,7 +371,7 @@ const AdminSettings = () => {
           <Button
             onClick={handleSaveSettings}
             size="lg"
-            disabled={isSaving || !hasChanges}
+            disabled={isSaving}
           >
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save All Settings'}

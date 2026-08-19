@@ -248,7 +248,7 @@ export default function AdminPromotions() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 px-6">
             <div>
               <Label htmlFor="code">Promo Code</Label>
               <Input
@@ -324,7 +324,7 @@ export default function AdminPromotions() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="px-6 pb-6 pt-2">
             <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
               Cancel
             </Button>

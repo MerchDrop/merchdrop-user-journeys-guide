@@ -105,27 +105,19 @@ const DesignerLayout = () => {
       <nav className="flex-1 p-4 space-y-1">
         {sidebarItems.map((item) => {
           const isActive = location.pathname === item.href;
-          const isDisabled = isPending && !item.allowPending;
           return (
             <Link
               key={item.name}
-              to={isDisabled ? '#' : item.href}
-              onClick={(e) => {
-                if (isDisabled) {
-                  e.preventDefault();
-                }
-              }}
+              to={item.href}
               className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isDisabled 
-                  ? 'opacity-50 cursor-not-allowed text-muted-foreground'
-                  : isActive
+                isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               <item.icon className="h-4 w-4 mr-3" />
               {item.name}
-              {item.name === 'My Designs' && !isDisabled && (
+              {item.name === 'My Designs' && (
                 <Badge variant="secondary" className="ml-auto">
                   3
                 </Badge>

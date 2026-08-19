@@ -104,24 +104,19 @@ export default function DashboardLayout() {
 
   const renderNavLink = (item: typeof sidebarItemsConfig[0], isMobile = false) => {
     const isActive = location.pathname === item.href;
-    const isDisabled = isPending && !item.allowPending;
 
     return (
       <NavLink
         key={item.name}
-        to={isDisabled ? '#' : item.href}
-        onClick={(e) => {
-          if (isDisabled) {
-            e.preventDefault();
-          } else if (isMobile) {
+        to={item.href}
+        onClick={() => {
+          if (isMobile) {
             setSidebarOpen(false);
           }
         }}
         className={({ isActive: navIsActive }) =>
           `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            isDisabled
-              ? 'opacity-50 cursor-not-allowed text-muted-foreground'
-              : isActive || navIsActive
+            isActive || navIsActive
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
           }`

@@ -207,7 +207,7 @@ export function FixedAdminProductTable() {
 
       {/* Product Form Dialog */}
       <Dialog open={showProductForm} onOpenChange={(open) => { if (!open) closeForm(); }}>
-        <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] !top-[5%] !translate-y-0 overflow-hidden p-0">
+        <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] overflow-hidden p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle>
               {editingProduct ? 'Edit Product' : 'Create New Product'}

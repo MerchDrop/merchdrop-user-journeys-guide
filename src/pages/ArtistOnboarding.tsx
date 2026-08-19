@@ -138,6 +138,10 @@ const ArtistOnboarding = () => {
   };
 
   const nextStep = () => {
+    if (currentStep === 1 && (!formData.displayName || !formData.bio)) {
+      toast.error('Please enter your Artist Display Name and Bio to proceed');
+      return;
+    }
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
@@ -146,6 +150,8 @@ const ArtistOnboarding = () => {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    } else {
+      navigate('/dashboard');
     }
   };
 
@@ -448,7 +454,6 @@ const ArtistOnboarding = () => {
                 <Button 
                   variant="outline" 
                   onClick={prevStep}
-                  disabled={currentStep === 1}
                   className="flex items-center space-x-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -460,7 +465,6 @@ const ArtistOnboarding = () => {
                     onClick={nextStep}
                     variant="hero"
                     className="flex items-center space-x-2"
-                    disabled={currentStep === 1 && (!formData.displayName || !formData.bio)}
                   >
                     <span>Next</span>
                     <ArrowRight className="w-4 h-4" />
