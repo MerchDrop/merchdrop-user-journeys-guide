@@ -16,9 +16,8 @@ export default function Cart() {
   const { formatPrice } = useCurrency();
 
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 100 ? 0 : 9.99;
   const tax = subtotal * 0.075;
-  const total = subtotal + shipping + tax;
+  const total = subtotal + tax;
 
   if (items.length === 0) {
     return (
@@ -158,10 +157,10 @@ export default function Cart() {
                       <span className="font-medium">{formatPrice(subtotal)}</span>
                     </div>
 
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Shipping</span>
-                      <span className="font-medium">
-                        {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                      <span className="text-xs text-muted-foreground italic">
+                        Calculated at checkout
                       </span>
                     </div>
                     
@@ -172,20 +171,16 @@ export default function Cart() {
 
                     <Separator />
 
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span>{formatPrice(total)}</span>
-                    </div>
-                  </div>
-
-                  {/* Free Shipping Notice */}
-                  {subtotal < 100 && (
-                    <div className="bg-gray-50 p-3 rounded-lg mb-6 text-sm">
-                      <p className="text-gray-600">
-                        Add <span className="font-semibold">{formatPrice(100 - subtotal)}</span> more for free shipping!
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Estimated Total</span>
+                        <span>{formatPrice(total)}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground text-right">
+                        Excludes delivery fee (selected at checkout)
                       </p>
                     </div>
-                  )}
+                  </div>
 
                   {/* Checkout Button */}
                   <Button 
