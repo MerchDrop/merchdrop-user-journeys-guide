@@ -336,7 +336,7 @@ export const ProductReviews: React.FC<ReviewsProps> = ({
                       {editingReview ? 'Edit Review' : 'Write a Review'}
                     </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
                     <div>
                       <Label>Rating</Label>
                       <div className="mt-1">

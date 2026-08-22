@@ -675,7 +675,7 @@ export default function AdminShippingOverview() {
             </DialogDescription>
           </DialogHeader>
           {editingAxis && (
-            <div className="space-y-4 py-2 px-6">
+            <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
               <div>
                 <Label htmlFor="axisName">Axis Name</Label>
                 <Input
@@ -724,7 +724,7 @@ export default function AdminShippingOverview() {
               </div>
             </div>
           )}
-          <DialogFooter className="px-6 pb-6 pt-2">
+          <DialogFooter className="px-6 py-4">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
@@ -743,7 +743,7 @@ export default function AdminShippingOverview() {
             <DialogTitle>Add New Shipping Zone</DialogTitle>
             <DialogDescription>Create a new delivery axis and price band.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2 px-6">
+          <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
             <div>
               <Label htmlFor="newAxisName">Axis Name</Label>
               <Input
@@ -789,7 +789,7 @@ export default function AdminShippingOverview() {
               </Label>
             </div>
           </div>
-          <DialogFooter className="px-6 pb-6 pt-2">
+          <DialogFooter className="px-6 py-4">
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
@@ -812,7 +812,7 @@ export default function AdminShippingOverview() {
           </DialogHeader>
 
           {selectedOrderForQuote && (
-            <div className="space-y-4 py-2 px-6">
+            <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
               <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1">
                 <p className="font-semibold text-sm">
                   {selectedOrderForQuote.shipping_address?.firstName}{' '}
@@ -846,7 +846,7 @@ export default function AdminShippingOverview() {
             </div>
           )}
 
-          <DialogFooter className="px-6 pb-6 pt-2">
+          <DialogFooter className="px-6 py-4">
             <Button variant="outline" onClick={() => setIsQuoteDialogOpen(false)}>
               Cancel
             </Button>

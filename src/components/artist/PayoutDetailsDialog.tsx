@@ -102,7 +102,7 @@ export function PayoutDetailsDialog({ open, onOpenChange, payout }: PayoutDetail
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
           {/* Status */}
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Status</span>

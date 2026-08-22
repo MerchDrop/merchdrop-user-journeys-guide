@@ -15,8 +15,11 @@ const corsHeaders = {
 };
 
 // Allowlist of acceptable confirmation URL origins
+const ENV_ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN");
 const ALLOWED_ORIGINS = [
   "https://merchdrop.live",
+  "https://www.merchdrop.live",
+  ...(ENV_ALLOWED_ORIGIN ? [ENV_ALLOWED_ORIGIN] : []),
 ];
 
 interface EmailRequest {

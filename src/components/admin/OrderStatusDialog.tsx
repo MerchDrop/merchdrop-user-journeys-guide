@@ -62,7 +62,7 @@ export function OrderStatusDialog({ open, onOpenChange, order, onUpdateStatus }:
           </DialogDescription>
         </DialogHeader>
         
-        <div className="px-6 pb-6">
+        <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="status">Order Status</Label>
@@ -111,7 +111,7 @@ export function OrderStatusDialog({ open, onOpenChange, order, onUpdateStatus }:
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button 
               type="button" 
               variant="outline" 

@@ -108,7 +108,7 @@ export function PaymentMethodDialog({ open, onOpenChange }: PaymentMethodDialogP
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="existing" className="space-y-4">
+        <Tabs defaultValue="existing" className="space-y-4 p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="existing">My Methods</TabsTrigger>
             <TabsTrigger value="add">Add New</TabsTrigger>

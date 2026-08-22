@@ -237,7 +237,7 @@ export default function AdminSupport() {
           </DialogHeader>
 
           {selectedTicket && (
-            <div className="space-y-4 py-2 px-6">
+            <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
               <div className="p-4 bg-muted/40 rounded-lg space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-semibold">{selectedTicket.customer_name}</span>
@@ -269,7 +269,7 @@ export default function AdminSupport() {
             </div>
           )}
 
-          <DialogFooter className="px-6 pb-6 pt-2 flex-col sm:flex-row gap-2">
+          <DialogFooter className="px-6 py-4 flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => handleSendReply('in_progress')}

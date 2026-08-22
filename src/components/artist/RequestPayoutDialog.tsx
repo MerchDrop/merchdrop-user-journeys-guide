@@ -102,7 +102,7 @@ export function RequestPayoutDialog({ open, onOpenChange, artistId, availableBal
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
           <div className="space-y-2">
             <Label htmlFor="amount">Amount ($)</Label>
             <Input
@@ -158,7 +158,7 @@ export function RequestPayoutDialog({ open, onOpenChange, artistId, availableBal
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button 
               type="button" 
               variant="outline" 
