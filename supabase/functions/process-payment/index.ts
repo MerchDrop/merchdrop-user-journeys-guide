@@ -102,6 +102,7 @@ serve(async (req) => {
 
     // Verify Paystack payment if secret key is present
     const paystackSecret = Deno.env.get("PAYSTACK_SECRET_KEY");
+    let verifiedAmountKobo: number | null = null;
     if (paystackSecret && !reference.startsWith("TEST-") && !reference.startsWith("DEMO-")) {
       const paystackResponse = await fetch(
         `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
@@ -115,24 +116,31 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      verifiedAmountKobo = paystackData.data?.amount;
     }
 
     const orderNumber = `MD-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-    const subtotalCents = Math.round(paystackData.data.amount);
-    const shippingCents = subtotalCents >= 5000 ? 0 : 899;
-    const taxCents = Math.round(subtotalCents * 0.08);
-    const totalCents = subtotalCents + shippingCents + taxCents;
+    const itemsList = Array.isArray(items) ? items : [];
+    const calculatedSubtotal = itemsList.reduce((sum: number, it: any) => sum + ((Number(it.price) || 0) * (Number(it.quantity) || 1)), 0);
+    const shippingFee = Number(shippingAddress?.shippingFeeNGN || 0);
+    const taxFee = Math.round(calculatedSubtotal * 0.075 * 100) / 100;
+    const calculatedTotal = calculatedSubtotal + shippingFee + taxFee;
+
+    const subtotal = calculatedSubtotal > 0 ? calculatedSubtotal : (verifiedAmountKobo ? verifiedAmountKobo / 100 : 0);
+    const shippingCost = shippingFee;
+    const taxAmount = taxFee;
+    const totalAmount = calculatedTotal > 0 ? calculatedTotal : subtotal;
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: userId,
         order_number: orderNumber,
-        subtotal: subtotalCents / 100,
-        shipping_cost: shippingCents / 100,
-        tax_amount: taxCents / 100,
-        total_amount: totalCents / 100,
-        currency: (currency || "USD").toUpperCase(),
+        subtotal: subtotal,
+        shipping_cost: shippingCost,
+        tax_amount: taxAmount,
+        total_amount: totalAmount,
+        currency: (currency || "NGN").toUpperCase(),
         status: "confirmed",
         payment_status: "paid",
         payment_provider: "paystack",
