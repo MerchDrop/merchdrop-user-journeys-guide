@@ -44,7 +44,8 @@ export default function Checkout() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States'
+    country: 'Nigeria',
+    phone: ''
   });
 
   // If cart is empty, redirect to cart page
@@ -231,7 +232,23 @@ export default function Checkout() {
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         placeholder="your@email.com"
+                        autoComplete="email"
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="phone">Phone number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        placeholder="e.g. 0803 123 4567"
+                        aria-describedby="phone-help"
+                      />
+                      <p id="phone-help" className="text-xs text-muted-foreground mt-1">The delivery company will call this number.</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -367,6 +384,14 @@ export default function Checkout() {
                           toast({
                             title: "Missing Information",
                             description: "Please fill in all required fields.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        if (formData.phone.replace(/\D/g, '').length < 10) {
+                          toast({
+                            title: "Phone number needed",
+                            description: "Enter a phone number the delivery company can call.",
                             variant: "destructive",
                           });
                           return;

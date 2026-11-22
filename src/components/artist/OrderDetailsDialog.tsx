@@ -203,15 +203,17 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
                   <Label className="text-xs font-medium text-muted-foreground">Customer Name</Label>
                   <p className="font-semibold">{order.customer_name}</p>
                 </div>
-                <div>
-                  <Label className="text-xs font-medium text-muted-foreground">Email Address</Label>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{order.customer_email}</p>
-                    <Button variant="ghost" size="sm" onClick={handleContactCustomer} className="h-6 w-6 p-0">
-                      <Mail className="h-3 w-3" />
-                    </Button>
+                {order.customer_email && (
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground">Email Address</Label>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{order.customer_email}</p>
+                      <Button variant="ghost" size="sm" onClick={handleContactCustomer} className="h-6 w-6 p-0">
+                        <Mail className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 

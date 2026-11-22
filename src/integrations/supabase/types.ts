@@ -484,6 +484,8 @@ export type Database = {
           payment_reference: string | null
           payment_status: string | null
           reminder_sent_at: string | null
+          return_reason: string | null
+          return_requested_at: string | null
           review_requested_at: string | null
           shipped_at: string | null
           shipping_address: Json
@@ -515,6 +517,8 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: string | null
           reminder_sent_at?: string | null
+          return_reason?: string | null
+          return_requested_at?: string | null
           review_requested_at?: string | null
           shipped_at?: string | null
           shipping_address: Json
@@ -546,6 +550,8 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: string | null
           reminder_sent_at?: string | null
+          return_reason?: string | null
+          return_requested_at?: string | null
           review_requested_at?: string | null
           shipped_at?: string | null
           shipping_address?: Json
@@ -777,6 +783,7 @@ export type Database = {
           currency: string
           description: string | null
           design_id: string | null
+          drop_alerted_at: string | null
           drop_at: string | null
           featured: boolean | null
           id: string
@@ -799,6 +806,7 @@ export type Database = {
           currency?: string
           description?: string | null
           design_id?: string | null
+          drop_alerted_at?: string | null
           drop_at?: string | null
           featured?: boolean | null
           id?: string
@@ -821,6 +829,7 @@ export type Database = {
           currency?: string
           description?: string | null
           design_id?: string | null
+          drop_alerted_at?: string | null
           drop_at?: string | null
           featured?: boolean | null
           id?: string
@@ -1011,6 +1020,41 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlist_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          old_price_cents: number | null
+          product_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          old_price_cents?: number | null
+          product_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          old_price_cents?: number | null
+          product_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlists: {
         Row: {
           created_at: string
@@ -1100,6 +1144,7 @@ export type Database = {
         }
         Returns: Json
       }
+      artist_orders: { Args: never; Returns: Json }
       calculate_product_rating: {
         Args: { product_uuid: string }
         Returns: {
@@ -1159,6 +1204,10 @@ export type Database = {
       }
       repair_missing_artist_profiles: { Args: never; Returns: Json }
       repair_missing_designer_roles: { Args: never; Returns: Json }
+      request_return: {
+        Args: { p_order_id: string; p_reason: string; p_token: string }
+        Returns: string
+      }
       setup_user_profile: {
         Args: {
           _display_name?: string

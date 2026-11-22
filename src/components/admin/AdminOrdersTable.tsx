@@ -31,14 +31,20 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useOrders } from '@/hooks/useOrdersQuery';
-import { MoreHorizontal, Eye, Edit, Search } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Search, Download, Printer } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { downloadCsv, toCsv } from '@/lib/csv';
+import { printPackingSlips, type SlipOrder } from '@/lib/packingSlip';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { OrderStatusDialog } from './OrderStatusDialog';
 import { OrderTrackingBadge } from './OrderTrackingBadge';
 import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
 import { useCurrency } from '@/context/CurrencyContext';
-import { ORDER_STATUS_LABELS, orderStatusLabel, orderStatusTone } from '@/lib/orderStatus';
+import { ADMIN_STATUSES, ORDER_STATUS_LABELS, orderStatusLabel, orderStatusTone } from '@/lib/orderStatus';
+
+// Shipped needs a carrier and tracking number per order, so it isn't offered in bulk.
+const BULK_STATUSES = ADMIN_STATUSES.filter((s) => s !== 'assigned_to_carrier');
 
 export function AdminOrdersTable() {
   const { orders, loading, updateOrderStatus } = useOrders();
@@ -48,6 +54,9 @@ export function AdminOrdersTable() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState('');
+  const [bulkRunning, setBulkRunning] = useState(false);
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -95,6 +104,58 @@ export function AdminOrdersTable() {
     return matchesStatus && matchesSearch;
   }).sort((a: any, b: any) => Number(b.needs_attention ?? false) - Number(a.needs_attention ?? false));
 
+  const selectedOrders = filteredOrders.filter((o) => selected.has(o.id));
+  const allSelected = filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length;
+  const toggleOne = (id: string) => setSelected((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(filteredOrders.map((o) => o.id)));
+
+  // One request per order through update-order-status, so emails and history work as usual.
+  const applyBulkStatus = async () => {
+    if (!bulkStatus || selectedOrders.length === 0) return;
+    setBulkRunning(true);
+    const failures: string[] = [];
+    for (const order of selectedOrders) {
+      try {
+        await updateOrderStatus(order.id, bulkStatus);
+      } catch (error) {
+        failures.push(`${order.order_number}: ${error instanceof Error ? error.message : 'failed'}`);
+      }
+    }
+    setBulkRunning(false);
+    const done = selectedOrders.length - failures.length;
+    if (done) toast.success(`${done} order${done === 1 ? '' : 's'} moved to ${orderStatusLabel(bulkStatus)}`);
+    if (failures.length) toast.error(`${failures.length} not updated`, { description: failures.slice(0, 3).join('\n') });
+    setSelected(new Set());
+    setBulkStatus('');
+  };
+
+  const exportCsv = () => {
+    const rows = (selectedOrders.length ? selectedOrders : filteredOrders).map((o: any) => {
+      const a = (o.shipping_address ?? {}) as Record<string, string>;
+      return [
+        o.order_number, o.created_at?.slice(0, 10), `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim(),
+        o.customer_email ?? o.profiles?.email ?? '', a.phone ?? '',
+        [a.address, a.city, a.state, a.country].filter(Boolean).join(', '), a.shippingAxis ?? '',
+        (o.order_items ?? []).map((i: any) => {
+          const v = [i.product_variant?.color, i.product_variant?.size].filter(Boolean).join('/');
+          return `${i.products?.title ?? 'Item'}${v ? ` (${v})` : ''} x${i.quantity}`;
+        }).join('; '),
+        Number(o.total_amount), orderStatusLabel(o.status), o.payment_status, o.carrier_name ?? '', o.tracking_number ?? '',
+      ];
+    });
+    downloadCsv(`merchdrop-orders-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(
+      ['Order', 'Date', 'Customer', 'Email', 'Phone', 'Address', 'Delivery zone', 'Items', 'Total (NGN)',
+        'Status', 'Payment', 'Carrier', 'Tracking'], rows));
+  };
+
+  const printSlips = (orders: SlipOrder[]) => {
+    if (!printPackingSlips(orders)) toast.error('Allow pop-ups for this site to print packing slips.');
+  };
+
   if (loading) {
     return (
       <Card>
@@ -141,12 +202,38 @@ export function AdminOrdersTable() {
               ))}
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={exportCsv}>
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV{selectedOrders.length ? ` (${selectedOrders.length})` : ''}
+          </Button>
         </div>
+        {selectedOrders.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/40 px-3 py-2" role="region" aria-label="Bulk actions">
+            <span className="text-sm font-medium">{selectedOrders.length} selected</span>
+            <Select value={bulkStatus} onValueChange={setBulkStatus}>
+              <SelectTrigger className="w-[200px]" aria-label="New status"><SelectValue placeholder="Move to status…" /></SelectTrigger>
+              <SelectContent>
+                {BULK_STATUSES.map((s) => <SelectItem key={s} value={s}>{orderStatusLabel(s)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={applyBulkStatus} disabled={!bulkStatus || bulkRunning}>
+              {bulkRunning ? 'Updating…' : 'Apply'}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => printSlips(selectedOrders as SlipOrder[])}>
+              <Printer className="h-4 w-4 mr-2" />Packing slips
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
+            <span className="text-xs text-muted-foreground">Customers are emailed as usual. Use the row menu for Shipped.</span>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all orders" />
+              </TableHead>
               <TableHead>Order #</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Items</TableHead>
@@ -161,13 +248,17 @@ export function AdminOrdersTable() {
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                   {searchTerm || statusFilter !== 'all' ? 'No orders match your filters.' : 'No orders found.'}
                 </TableCell>
               </TableRow>
             ) : (
               filteredOrders.map((order) => (
-                <TableRow key={order.id}>
+                <TableRow key={order.id} data-state={selected.has(order.id) ? 'selected' : undefined}>
+                  <TableCell>
+                    <Checkbox checked={selected.has(order.id)} onCheckedChange={() => toggleOne(order.id)}
+                      aria-label={`Select order ${order.order_number}`} />
+                  </TableCell>
                   <TableCell className="font-medium">
                     {order.order_number}
                   </TableCell>
@@ -199,6 +290,11 @@ export function AdminOrdersTable() {
                     <div className="flex flex-col items-start gap-1">
                       <Badge className={orderStatusTone(order.status)}>{orderStatusLabel(order.status)}</Badge>
                       {(order as any).needs_attention && <Badge variant="destructive">Needs attention</Badge>}
+                      {(order as any).return_requested_at && (
+                        <span className="text-xs text-destructive max-w-[220px]" title={(order as any).return_reason ?? ''}>
+                          Return requested: {(order as any).return_reason}
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -237,6 +333,13 @@ export function AdminOrdersTable() {
                         >
                           <Edit className="mr-2 h-4 w-4" />
                           Update Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => printSlips([order as SlipOrder])}
+                          className="cursor-pointer"
+                        >
+                          <Printer className="mr-2 h-4 w-4" />
+                          Packing slip
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

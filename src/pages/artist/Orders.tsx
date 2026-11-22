@@ -29,12 +29,12 @@ import {
   Clock
 } from 'lucide-react';
 import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
-import { useMyArtistProfile } from '@/hooks/useMyArtistProfile';
-import { useOrdersQuery, useUpdateOrderStatusMutation, Order } from '@/hooks/useOrdersQuery';
+import { useArtistOrders, type ArtistOrder } from '@/hooks/useArtistOrders';
 import { useCurrency } from '@/context/CurrencyContext';
+import { orderStatusLabel, orderStatusTone } from '@/lib/orderStatus';
+import { downloadCsv, toCsv } from '@/lib/csv';
 
-// Flattened view of an Order scoped to this artist's line items — the shape
-// OrderDetailsDialog and the table row both expect.
+// One row per order, scoped to this artist's items — the shape OrderDetailsDialog expects.
 interface ArtistOrderRow {
   id: string;
   order_number: string;
@@ -50,25 +50,21 @@ interface ArtistOrderRow {
   delivered_at: string | null;
 }
 
-function toArtistOrderRow(order: Order, artistId: string): ArtistOrderRow {
-  const myItems = (order.order_items || []).filter(item => item.artist_id === artistId);
-  const productTitles = [...new Set(myItems.map(item => item.products?.title).filter(Boolean))];
-  const quantity = myItems.reduce((sum, item) => sum + item.quantity, 0);
-  const myAmount = myItems.reduce((sum, item) => sum + Number(item.total_price), 0);
-
+function toArtistOrderRow(order: ArtistOrder): ArtistOrderRow {
+  const items = order.items ?? [];
   return {
     id: order.id,
     order_number: order.order_number,
-    customer_name: order.profiles?.display_name || 'N/A',
-    customer_email: order.profiles?.email || 'N/A',
-    product_title: productTitles.join(', ') || 'N/A',
-    quantity,
-    total_amount: myAmount || order.total_amount,
+    customer_name: order.customer_name,
+    customer_email: '',
+    product_title: [...new Set(items.map((i) => i.title).filter(Boolean))].join(', ') || 'Item',
+    quantity: items.reduce((sum, i) => sum + i.quantity, 0),
+    total_amount: items.reduce((sum, i) => sum + Number(i.total_price), 0),
     status: order.status,
     payment_status: order.payment_status,
     created_at: order.created_at,
-    shipped_at: order.shipped_at || null,
-    delivered_at: order.delivered_at || null,
+    shipped_at: order.shipped_at,
+    delivered_at: order.delivered_at,
   };
 }
 
@@ -81,11 +77,8 @@ export default function ArtistOrders() {
   const ordersPerPage = 10;
 
   const { formatPrice } = useCurrency();
-  const { data: artistProfile } = useMyArtistProfile();
-  const { data: rawOrders = [], isLoading, error } = useOrdersQuery({ artistId: artistProfile?.id });
-  const updateStatusMutation = useUpdateOrderStatusMutation();
-
-  const orders = artistProfile ? rawOrders.map(order => toArtistOrderRow(order, artistProfile.id)) : [];
+  const { data: rawOrders = [], isLoading, error } = useArtistOrders();
+  const orders = rawOrders.map(toArtistOrderRow);
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,17 +92,6 @@ export default function ArtistOrders() {
   const startIndex = (currentPage - 1) * ordersPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'pending': return 'secondary';
-      case 'processing': return 'default';
-      case 'on_the_way': return 'outline';
-      case 'delivered': return 'default';
-      case 'cancelled': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -120,9 +102,11 @@ export default function ArtistOrders() {
     });
   };
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
+  const totalRevenue = orders
+    .filter((o) => !['refunded', 'cancelled'].includes(o.status))
+    .reduce((sum, order) => sum + order.total_amount, 0);
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(order => order.status === 'payment_received').length;
+  const pendingOrders = orders.filter(order => ['payment_received', 'processing'].includes(order.status)).length;
   const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
 
   const handleViewOrder = (order: ArtistOrderRow) => {
@@ -130,21 +114,12 @@ export default function ArtistOrders() {
     setIsDetailsDialogOpen(true);
   };
 
-  const handleStatusUpdate = (orderId: string, status: string, trackingNumber?: string) => {
-    updateStatusMutation.mutate({ orderId, status, trackingNumber });
-  };
-
   const handleExport = () => {
-    const csv = filteredOrders.map(order =>
-      `${order.order_number},${order.customer_name},${order.customer_email},${order.product_title},${order.quantity},${order.total_amount},${order.status},${order.created_at}`
-    ).join('\n');
-    const blob = new Blob([`Order Number,Customer Name,Email,Product,Quantity,Total,Status,Date\n${csv}`], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'orders.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv('merchdrop-orders.csv', toCsv(
+      ['Order number', 'Customer', 'Products', 'Quantity', 'Your sales (NGN)', 'Status', 'Date'],
+      filteredOrders.map((o) => [o.order_number, o.customer_name, o.product_title, o.quantity,
+        o.total_amount, orderStatusLabel(o.status), o.created_at.slice(0, 10)]),
+    ));
   };
 
   return (
@@ -273,7 +248,7 @@ export default function ArtistOrders() {
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-destructive">
-                      Error loading orders: {error.message}
+                      We couldn't load your orders. Please refresh the page.
                     </TableCell>
                   </TableRow>
                 ) : paginatedOrders.length === 0 ? (
@@ -295,7 +270,6 @@ export default function ArtistOrders() {
                       <TableCell>
                         <div>
                           <p className="font-medium">{order.customer_name}</p>
-                          <p className="text-sm text-muted-foreground">{order.customer_email}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -304,9 +278,7 @@ export default function ArtistOrders() {
                       <TableCell>{order.quantity}</TableCell>
                       <TableCell>{formatPrice(order.total_amount)}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(order.status)}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </Badge>
+                        <Badge className={orderStatusTone(order.status)}>{orderStatusLabel(order.status)}</Badge>
                       </TableCell>
                       <TableCell>
                         {formatDate(order.created_at)}
@@ -316,6 +288,7 @@ export default function ArtistOrders() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleViewOrder(order)}
+                          aria-label={`View order ${order.order_number}`}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -333,7 +306,6 @@ export default function ArtistOrders() {
         order={selectedOrder}
         open={isDetailsDialogOpen}
         onOpenChange={setIsDetailsDialogOpen}
-        onStatusUpdate={handleStatusUpdate}
       />
     </div>
   );

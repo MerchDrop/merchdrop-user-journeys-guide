@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { countsAsSale, type ArtistOrder } from '@/hooks/useArtistOrders';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -112,143 +113,49 @@ export const ArtistDashboard: React.FC = () => {
         .select('id, title, status, price_cents, created_at')
         .eq('artist_id', profile.id);
 
-      // Load orders stats
-      const { data: orders } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          total_amount,
-          status,
-          created_at,
-          order_items!inner(
-            quantity,
-            unit_price,
-            product_id,
-            products!inner(artist_id)
-          )
-        `)
-        .eq('order_items.products.artist_id', profile.id);
-
-      // Calculate stats
-      const totalProducts = products?.length || 0;
-      const publishedProducts = products?.filter(p => p.status === 'published').length || 0;
-      const totalOrders = orders?.length || 0;
-      const pendingOrders = orders?.filter(o => o.status === 'payment_received').length || 0;
-      
-      // Calculate revenue
-      const totalRevenue = orders?.reduce((sum, order) => {
-        const artistItems = order.order_items.filter(item => 
-          item.products.artist_id === profile.id
-        );
-        return sum + artistItems.reduce((itemSum, item) => 
-          itemSum + (item.unit_price * item.quantity), 0
-        );
-      }, 0) || 0;
-
-      // Calculate monthly revenue (current month)
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      const monthlyRevenue = orders?.filter(order => {
-        const orderDate = new Date(order.created_at);
-        return orderDate.getMonth() === currentMonth && 
-               orderDate.getFullYear() === currentYear;
-      }).reduce((sum, order) => {
-        const artistItems = order.order_items.filter(item => 
-          item.products.artist_id === profile.id
-        );
-        return sum + artistItems.reduce((itemSum, item) => 
-          itemSum + (item.unit_price * item.quantity), 0
-        );
-      }, 0) || 0;
-
-      const totalSales = orders?.reduce((sum, order) => {
-        return sum + order.order_items.filter(item => 
-          item.products.artist_id === profile.id
-        ).reduce((itemSum, item) => itemSum + item.quantity, 0);
-      }, 0) || 0;
+      // Paid orders with only this artist's items (artist_orders() in the DB). Prices are in naira.
+      const [{ data: orderData, error: ordersError }, { data: rating }] = await Promise.all([
+        supabase.rpc('artist_orders'),
+        supabase.from('public_artist_profiles').select('average_rating').eq('id', profile.id).maybeSingle(),
+      ]);
+      if (ordersError) throw ordersError;
+      const allOrders = (orderData as unknown as ArtistOrder[]) ?? [];
+      const orders = allOrders.filter(countsAsSale);
+      const lines = orders.flatMap((o) => (o.items ?? []).map((i) => ({ ...i, created_at: o.created_at })));
+      const sumRevenue = (ls: typeof lines) => ls.reduce((sum, l) => sum + Number(l.total_price), 0);
+      const sumUnits = (ls: typeof lines) => ls.reduce((sum, l) => sum + l.quantity, 0);
+      const inMonth = (iso: string, d: Date) => {
+        const x = new Date(iso);
+        return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear();
+      };
+      const now = new Date();
 
       setStats({
-        totalProducts,
-        publishedProducts,
-        totalSales,
-        totalRevenue: totalRevenue / 100, // Convert from cents
-        monthlyRevenue: monthlyRevenue / 100,
-        averageRating: 0,
-        totalOrders,
-        pendingOrders,
+        totalProducts: products?.length || 0,
+        publishedProducts: products?.filter((p) => p.status === 'published').length || 0,
+        totalSales: sumUnits(lines),
+        totalRevenue: sumRevenue(lines),
+        monthlyRevenue: sumRevenue(lines.filter((l) => inMonth(l.created_at, now))),
+        averageRating: Number(rating?.average_rating) || 0,
+        totalOrders: orders.length,
+        pendingOrders: orders.filter((o) => ['payment_received', 'processing'].includes(o.status)).length,
       });
 
-      // Generate sales data for last 6 months
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const salesDataArray = [];
-      for (let i = 5; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const monthOrders = orders?.filter(order => {
-          const orderDate = new Date(order.created_at);
-          return orderDate.getMonth() === date.getMonth() && 
-                 orderDate.getFullYear() === date.getFullYear();
-        }) || [];
+      setSalesData([5, 4, 3, 2, 1, 0].map((back) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - back, 1);
+        const monthLines = lines.filter((l) => inMonth(l.created_at, d));
+        return { month: monthNames[d.getMonth()], sales: sumUnits(monthLines), revenue: sumRevenue(monthLines) };
+      }));
 
-        const monthSales = monthOrders.reduce((sum, order) => {
-          return sum + order.order_items.filter(item => 
-            item.products.artist_id === profile.id
-          ).reduce((itemSum, item) => itemSum + item.quantity, 0);
-        }, 0);
-
-        const monthRevenue = monthOrders.reduce((sum, order) => {
-          const artistItems = order.order_items.filter(item => 
-            item.products.artist_id === profile.id
-          );
-          return sum + artistItems.reduce((itemSum, item) => 
-            itemSum + (item.unit_price * item.quantity), 0
-          );
-        }, 0);
-
-        salesDataArray.push({
-          month: monthNames[date.getMonth()],
-          sales: monthSales,
-          revenue: monthRevenue / 100,
-        });
+      // Top 5 products by revenue.
+      const byProduct = new Map<string, ProductPerformance>();
+      for (const l of lines) {
+        const key = l.product_id ?? l.title ?? 'item';
+        const row = byProduct.get(key) ?? { name: l.title ?? 'Item', sales: 0, revenue: 0, views: 0 };
+        byProduct.set(key, { ...row, sales: row.sales + l.quantity, revenue: row.revenue + Number(l.total_price) });
       }
-      setSalesData(salesDataArray);
-
-      // Product performance data - get actual product names and calculate sales
-      const { data: productsWithDetails } = await supabase
-        .from('products')
-        .select('id, title, price_cents')
-        .eq('artist_id', profile.id)
-        .eq('status', 'published')
-        .limit(5);
-
-      const performanceData = await Promise.all(
-        (productsWithDetails || []).map(async (product) => {
-          // Calculate sales and revenue for this product
-          const productOrders = orders?.filter(order => 
-            order.order_items.some(item => item.product_id === product.id)
-          ) || [];
-
-          const sales = productOrders.reduce((sum, order) => {
-            return sum + order.order_items
-              .filter(item => item.product_id === product.id)
-              .reduce((itemSum, item) => itemSum + item.quantity, 0);
-          }, 0);
-
-          const revenue = productOrders.reduce((sum, order) => {
-            return sum + order.order_items
-              .filter(item => item.product_id === product.id)
-              .reduce((itemSum, item) => itemSum + (item.unit_price * item.quantity), 0);
-          }, 0);
-
-          return {
-            name: product.title,
-            sales,
-            revenue: revenue / 100,
-            views: 0, // Views tracking not yet implemented
-          };
-        })
-      );
-      
+      const performanceData = [...byProduct.values()].sort((x, y) => y.revenue - x.revenue).slice(0, 5);
       setProductPerformance(performanceData);
 
     } catch (error) {
@@ -417,9 +324,9 @@ export const ArtistDashboard: React.FC = () => {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+            <div className="text-2xl font-bold">{stats.averageRating ? stats.averageRating.toFixed(1) : '—'}</div>
             <p className="text-xs text-muted-foreground">
-              From {stats.totalOrders} reviews
+              {stats.averageRating ? 'From customer reviews' : 'No reviews yet'}
             </p>
           </CardContent>
         </Card>
@@ -487,7 +394,6 @@ export const ArtistDashboard: React.FC = () => {
                     name
                   ]} />
                   <Bar dataKey="sales" fill="#8884d8" name="Sales" />
-                  <Bar dataKey="views" fill="#82ca9d" name="Views" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

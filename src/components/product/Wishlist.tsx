@@ -278,7 +278,7 @@ export const useWishlist = () => {
 
       toast({
         title: "Added to wishlist!",
-        description: "Item has been saved to your wishlist.",
+        description: "We'll email you if it restocks, drops in price or goes live.",
       });
       return true;
     } catch (error: any) {

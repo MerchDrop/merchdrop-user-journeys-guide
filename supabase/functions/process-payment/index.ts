@@ -61,6 +61,8 @@ async function createOrder(req: Request, body: any) {
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "A valid email is required" }, 400);
   if (!addr.firstName || !addr.lastName || !addr.address) return json({ error: "Delivery details are incomplete" }, 400);
+  const phone = String(addr.phone ?? "").trim();
+  if (phone.replace(/\D/g, "").length < 10 || phone.length > 20) return json({ error: "Enter a phone number the delivery company can call" }, 400);
   if (items.length === 0 || items.length > 50) return json({ error: "Cart is empty" }, 400);
 
   // Prices come from the database, never from the browser.
@@ -112,7 +114,7 @@ async function createOrder(req: Request, body: any) {
 
   const shippingAddress = {
     firstName: addr.firstName, lastName: addr.lastName, email, address: addr.address,
-    city: addr.city ?? "", state: addr.state ?? "", zipCode: addr.zipCode ?? "", country: addr.country ?? "",
+    phone, city: addr.city ?? "", state: addr.state ?? "", zipCode: addr.zipCode ?? "", country: addr.country ?? "",
     shippingAxis: axis.name ?? axis.id, shippingAreas: axis.areas ?? "", shippingFeeNGN: shipping,
     isCustomQuote: Boolean(axis.isCustomQuote),
   };

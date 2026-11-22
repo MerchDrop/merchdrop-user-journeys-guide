@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -8,73 +8,81 @@ import { CartProvider } from '@/context/CartContext';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthErrorBoundary } from '@/components/auth/AuthErrorBoundary';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtimeSubscriptions';
-import AdminAuth from '@/pages/AdminAuth';
 import Home from '@/pages/Home';
-import Products from '@/pages/Products';
-import Shop from '@/pages/Shop';
-import Artists from '@/pages/Artists';
-import Cart from '@/pages/Cart';
-import ArtistProfile from '@/pages/ArtistProfile';
-import ProductDetail from '@/pages/ProductDetail';
-import Checkout from '@/pages/Checkout';
-import CleanDashboard from '@/pages/CleanDashboard';
-import ArtistProducts from '@/pages/artist/Products';
-import ArtistAnalytics from '@/pages/artist/Analytics';
-import ArtistSettings from '@/pages/artist/Settings';
-import ArtistProfilePage from '@/pages/artist/Profile';
-import ArtistOrders from '@/pages/artist/Orders';
-import ArtistPayouts from '@/pages/artist/Payouts';
-import ArtistDesigns from '@/pages/artist/Designs';
-import Admin from '@/pages/Admin';
-import AdminProducts from '@/pages/admin/Products';
-import AdminDesigns from '@/pages/admin/Designs';
-import AdminOrders from '@/pages/admin/Orders';
-import AdminShippingPage from '@/pages/admin/Shipping';
-import AdminPayoutsPage from '@/pages/admin/Payouts';
-import AdminPromotionsPage from '@/pages/admin/Promotions';
-import AdminInventoryPage from '@/pages/admin/Inventory';
-import AdminSupportPage from '@/pages/admin/Support';
-import AdminCMSPage from '@/pages/admin/CMS';
-import AdminAuditLogsPage from '@/pages/admin/AuditLogs';
-import AdminUsers from '@/pages/admin/Users';
-import AdminArtists from '@/pages/admin/Artists';
-import AdminDesigners from '@/pages/admin/Designers';
-import AdminSettingsPage from '@/pages/admin/Settings';
-import AdminAnalytics from '@/pages/admin/Analytics';
-import HealthCheck from '@/pages/HealthCheck';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import UserAuth from '@/pages/UserAuth';
-import ArtistAuth from '@/pages/ArtistAuth';
-import ArtistOnboarding from '@/pages/ArtistOnboarding';
-import DesignerAuth from '@/pages/DesignerAuth';
-import DesignerDashboardPage from '@/pages/designer/Dashboard';
-import DesignUploadPage from '@/pages/designer/Upload';
-import MyDesignsPage from '@/pages/designer/Designs';
-import AllArtistsPage from '@/pages/designer/Artists';
-import DesignerAnalyticsPage from '@/pages/designer/Analytics';
-import DesignerPayoutsPage from '@/pages/designer/Payouts';
-import DesignerProfilePage from '@/pages/designer/Profile';
-import DesignerSettings from '@/pages/designer/Settings';
-import EmailConfirmation from '@/pages/EmailConfirmation';
-import MerchCreator from '@/pages/MerchCreator';
-import OrderTracking from '@/pages/OrderTracking';
-import Orders from '@/pages/Orders';
-import NotFound from '@/pages/NotFound';
-import UserProfile from '@/pages/user/Profile';
-import HowItWorksPage from '@/pages/HowItWorks';
-import Pricing from '@/pages/Pricing';
-import SuccessStories from '@/pages/SuccessStories';
-import Support from '@/pages/Support';
-import Shipping from '@/pages/Shipping';
-import Privacy from '@/pages/Privacy';
-import Terms from '@/pages/Terms';
-import Contact from '@/pages/Contact';
-import About from '@/pages/About';
-import PendingApproval from '@/pages/PendingApproval';
-import DashboardLayout from '@/layouts/DashboardLayout';
-import AdminLayout from '@/layouts/AdminLayout';
-import DesignerLayout from '@/layouts/DesignerLayout';
+
+const AdminAuth = lazy(() => import('@/pages/AdminAuth'));
+const Products = lazy(() => import('@/pages/Products'));
+const Shop = lazy(() => import('@/pages/Shop'));
+const Artists = lazy(() => import('@/pages/Artists'));
+const Cart = lazy(() => import('@/pages/Cart'));
+const ArtistProfile = lazy(() => import('@/pages/ArtistProfile'));
+const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
+const Checkout = lazy(() => import('@/pages/Checkout'));
+const CleanDashboard = lazy(() => import('@/pages/CleanDashboard'));
+const ArtistProducts = lazy(() => import('@/pages/artist/Products'));
+const ArtistAnalytics = lazy(() => import('@/pages/artist/Analytics'));
+const ArtistSettings = lazy(() => import('@/pages/artist/Settings'));
+const ArtistProfilePage = lazy(() => import('@/pages/artist/Profile'));
+const ArtistOrders = lazy(() => import('@/pages/artist/Orders'));
+const ArtistPayouts = lazy(() => import('@/pages/artist/Payouts'));
+const ArtistDesigns = lazy(() => import('@/pages/artist/Designs'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const AdminProducts = lazy(() => import('@/pages/admin/Products'));
+const AdminDesigns = lazy(() => import('@/pages/admin/Designs'));
+const AdminOrders = lazy(() => import('@/pages/admin/Orders'));
+const AdminShippingPage = lazy(() => import('@/pages/admin/Shipping'));
+const AdminPayoutsPage = lazy(() => import('@/pages/admin/Payouts'));
+const AdminPromotionsPage = lazy(() => import('@/pages/admin/Promotions'));
+const AdminInventoryPage = lazy(() => import('@/pages/admin/Inventory'));
+const AdminSupportPage = lazy(() => import('@/pages/admin/Support'));
+const AdminCMSPage = lazy(() => import('@/pages/admin/CMS'));
+const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AuditLogs'));
+const AdminUsers = lazy(() => import('@/pages/admin/Users'));
+const AdminArtists = lazy(() => import('@/pages/admin/Artists'));
+const AdminDesigners = lazy(() => import('@/pages/admin/Designers'));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/Settings'));
+const AdminAnalytics = lazy(() => import('@/pages/admin/Analytics'));
+const HealthCheck = lazy(() => import('@/pages/HealthCheck'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const UserAuth = lazy(() => import('@/pages/UserAuth'));
+const ArtistAuth = lazy(() => import('@/pages/ArtistAuth'));
+const ArtistOnboarding = lazy(() => import('@/pages/ArtistOnboarding'));
+const DesignerAuth = lazy(() => import('@/pages/DesignerAuth'));
+const DesignerDashboardPage = lazy(() => import('@/pages/designer/Dashboard'));
+const DesignUploadPage = lazy(() => import('@/pages/designer/Upload'));
+const MyDesignsPage = lazy(() => import('@/pages/designer/Designs'));
+const AllArtistsPage = lazy(() => import('@/pages/designer/Artists'));
+const DesignerAnalyticsPage = lazy(() => import('@/pages/designer/Analytics'));
+const DesignerPayoutsPage = lazy(() => import('@/pages/designer/Payouts'));
+const DesignerProfilePage = lazy(() => import('@/pages/designer/Profile'));
+const DesignerSettings = lazy(() => import('@/pages/designer/Settings'));
+const EmailConfirmation = lazy(() => import('@/pages/EmailConfirmation'));
+const MerchCreator = lazy(() => import('@/pages/MerchCreator'));
+const OrderTracking = lazy(() => import('@/pages/OrderTracking'));
+const Orders = lazy(() => import('@/pages/Orders'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const UserProfile = lazy(() => import('@/pages/user/Profile'));
+const HowItWorksPage = lazy(() => import('@/pages/HowItWorks'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
+const SuccessStories = lazy(() => import('@/pages/SuccessStories'));
+const Support = lazy(() => import('@/pages/Support'));
+const Shipping = lazy(() => import('@/pages/Shipping'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const About = lazy(() => import('@/pages/About'));
+const PendingApproval = lazy(() => import('@/pages/PendingApproval'));
+const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout'));
+const AdminLayout = lazy(() => import('@/layouts/AdminLayout'));
+const DesignerLayout = lazy(() => import('@/layouts/DesignerLayout'));
+
+// Pages load on demand so shoppers don't download admin/artist/designer code.
+const PageLoading = () => (
+  <div className="min-h-screen flex items-center justify-center" aria-busy="true" aria-label="Loading">
+    <div className="h-8 w-8 rounded-full border-2 border-muted border-t-primary animate-spin" />
+  </div>
+);
 
 function App() {
   // Enable real-time subscriptions
@@ -88,6 +96,7 @@ function App() {
             <CartProvider>
               <ScrollToTop />
               <div className="min-h-screen bg-background">
+                <Suspense fallback={<PageLoading />}>
                 <Routes>
                   <Route path="/" element={<Shop />} />
                   <Route path="/creators" element={<Home />} />
@@ -175,6 +184,7 @@ function App() {
                   <Route path="/pending-approval" element={<PendingApproval />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
               </div>
               <Toaster />
             </CartProvider>

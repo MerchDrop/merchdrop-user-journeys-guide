@@ -14,6 +14,7 @@ import { ORDER_FLOW, orderStatusLabel, orderStatusTone } from '@/lib/orderStatus
 import { callPayments, hasPaystackKey, openPaystack } from '@/lib/payments';
 import { getProductUrl } from '@/lib/slug-utils';
 import { useToast } from '@/hooks/use-toast';
+import { ReturnRequest } from '@/components/orders/ReturnRequest';
 
 interface OrderDetails {
   order: {
@@ -26,6 +27,8 @@ interface OrderDetails {
     shipping_cost: number;
     tax_amount: number;
     discount_amount: number;
+    delivered_at: string | null;
+    return_requested_at: string | null;
     coupon_code: string | null;
     created_at: string;
     carrier_name: string | null;
@@ -216,6 +219,16 @@ export default function OrderTracking() {
                     ))}
                   </ol>
                 )}
+                <div className="mt-6">
+                  <ReturnRequest
+                    orderId={order.id}
+                    token={token}
+                    status={order.status}
+                    deliveredAt={order.delivered_at}
+                    returnRequestedAt={order.return_requested_at}
+                    onRequested={load}
+                  />
+                </div>
               </CardContent>
             </Card>
 

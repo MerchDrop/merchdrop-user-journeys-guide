@@ -264,3 +264,29 @@ export async function sendStatusEmail(sb: SupabaseClient, order: Order, extras: 
     return false;
   }
 }
+
+/** Send up to 100 emails per Resend batch call. Returns how many were accepted. Never throws. */
+export async function sendBatchEmails(emails: { to: string; subject: string; html: string }[]): Promise<number> {
+  const apiKey = Deno.env.get("RESEND_API_KEY");
+  if (!apiKey || emails.length === 0) return 0;
+  const from = Deno.env.get("ORDER_EMAIL_FROM") || "MerchDrop <onboarding@resend.dev>";
+  let sent = 0;
+  for (let i = 0; i < emails.length; i += 100) {
+    const chunk = emails.slice(i, i + 100).map((e) => ({ from, to: [e.to], subject: e.subject, html: e.html }));
+    try {
+      const res = await fetch("https://api.resend.com/emails/batch", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(chunk),
+      });
+      if (res.ok) sent += chunk.length;
+      else console.error("Resend batch error", res.status, await res.text());
+    } catch (e) {
+      console.error("Resend batch failed", e);
+    }
+  }
+  return sent;
+}
+
+export { esc as escapeHtml, money as formatMoney, SITE_URL };
+

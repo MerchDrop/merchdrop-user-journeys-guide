@@ -20,6 +20,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { sanitizeImageUrl } from '@/lib/image-utils';
 import { slugify, getProductUrl } from '@/lib/slug-utils';
 import { SEOHelmet } from '@/components/SEO/SEOHelmet';
+import { useWishlist } from '@/components/product/Wishlist';
+import { useAuth } from '@/context/AuthContext';
 import { track } from '@vercel/analytics';
 
 type UiProduct = {
@@ -54,6 +56,23 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const { open: dropOpen, msLeft } = useDropOpen(product?.dropAt);
+  const { addToWishlist, removeFromWishlist, checkIsInWishlist } = useWishlist();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!product?.id || !user) { setIsLiked(false); return; }
+    let active = true;
+    checkIsInWishlist(product.id).then((saved) => { if (active) setIsLiked(saved); });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- check once per product/user
+  }, [product?.id, user?.id]);
+
+  // Saved items get emailed when they're restocked, drop in price or go live.
+  const toggleWishlist = async () => {
+    if (!product) return;
+    const ok = isLiked ? await removeFromWishlist(product.id) : await addToWishlist(product.id);
+    if (ok) setIsLiked(!isLiked);
+  };
   const [hoveredRelated, setHoveredRelated] = useState<string | null>(null);
 
   // Load from Supabase
@@ -383,7 +402,9 @@ export default function ProductDetail() {
                   variant="outline"
                   size="icon"
                   className={`absolute top-4 right-4 bg-background/80 backdrop-blur-sm ${isLiked ? 'text-red-500' : ''}`}
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={toggleWishlist}
+                  aria-pressed={isLiked}
+                  aria-label={isLiked ? 'Remove from wishlist' : 'Save to wishlist'}
                 >
                   <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                 </Button>
@@ -426,7 +447,9 @@ export default function ProductDetail() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsLiked(!isLiked)}
+                      onClick={toggleWishlist}
+                  aria-pressed={isLiked}
+                  aria-label={isLiked ? 'Remove from wishlist' : 'Save to wishlist'}
                       className={isLiked ? 'text-red-500' : ''}
                     >
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
