@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import App from './App.tsx'
 import './index.css'
 import { initSentry } from './lib/sentry'
+import { Analytics } from '@vercel/analytics/react'
 
 // Create a client with optimized settings
 const queryClient = new QueryClient({
@@ -39,6 +40,7 @@ createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <App />
+      <Analytics />
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}

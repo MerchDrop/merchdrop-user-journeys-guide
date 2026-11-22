@@ -9,7 +9,7 @@ import { useShippingAxes } from '@/config/shipping';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export default function Shipping() {
-  const { formatPrice, convertBetweenCurrencies, currency } = useCurrency();
+  const { formatPrice } = useCurrency();
   const { axes: shippingAxes } = useShippingAxes();
 
   return (
@@ -60,7 +60,7 @@ export default function Shipping() {
                       {shippingAxes.filter((axis) => axis.active !== false).map((axis) => {
                         const feeFormatted = axis.isCustomQuote
                           ? 'Email Quote'
-                          : formatPrice(convertBetweenCurrencies(axis.feeNGN, 'NGN', currency));
+                          : formatPrice(axis.feeNGN);
 
                         return (
                           <tr key={axis.id} className="hover:bg-muted/10 transition-colors">

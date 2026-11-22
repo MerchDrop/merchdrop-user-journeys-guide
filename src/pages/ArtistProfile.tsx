@@ -14,6 +14,8 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useArtistProfileBySlug } from '@/hooks/useArtistProfileBySlug';
 import { useProductsQuery, Product } from '@/hooks/useProductsQuery';
 import { ArtistFollow } from '@/components/artist/ArtistFollow';
+import { ShareButton } from '@/components/ShareButton';
+import { SEOHelmet } from '@/components/SEO/SEOHelmet';
 
 export default function ArtistProfile() {
   const { slug } = useParams();
@@ -63,6 +65,13 @@ export default function ArtistProfile() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      {artist && (
+        <SEOHelmet
+          title={`${artist.artist_name} merch`}
+          description={(artist.bio || `Shop official merch from ${artist.artist_name} on MerchDrop.`).slice(0, 160)}
+          image={artist.avatar_url || undefined}
+        />
+      )}
 
       <main>
         {/* Artist Header */}
@@ -83,8 +92,14 @@ export default function ArtistProfile() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className="absolute bottom-8 right-8"
+                className="absolute bottom-8 right-8 flex items-center gap-2"
               >
+                <ShareButton
+                  variant="secondary"
+                  label="Share"
+                  title={artist.artist_name}
+                  text={`Shop ${artist.artist_name}'s merch on MerchDrop`}
+                />
                 <ArtistFollow artistId={artist.id} />
               </motion.div>
             )}

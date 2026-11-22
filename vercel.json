@@ -3,6 +3,17 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/:type(product|artist)/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|whatsapp|slackbot|linkedinbot|telegrambot|discordbot|pinterest|redditbot|skypeuripreview|embedly|vkshare|snapchat).*"
+        }
+      ],
+      "destination": "/api/preview?type=:type&id=:id"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

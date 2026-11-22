@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { callPayments, couponDiscount, hasPaystackKey, openPaystack, type Coupon } from '@/lib/payments';
+import { track } from '@vercel/analytics';
 import { useToast } from '@/hooks/use-toast';
 import { useShippingAxes, getShippingAxis } from '@/config/shipping';
 import { MapPin, Info } from 'lucide-react';
@@ -22,7 +23,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { items, getTotalPrice, clearCart } = useCart();
-  const { formatPrice, convertPrice, convertBetweenCurrencies, currency } = useCurrency();
+  const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const { axes: shippingAxes } = useShippingAxes();
   const [currentStep, setCurrentStep] = useState(1);
@@ -31,6 +32,10 @@ export default function Checkout() {
     orderId: string; orderNumber: string; viewToken: string; status: string; accountCreated: boolean;
   } | null>(null);
   const [selectedAxisId, setSelectedAxisId] = useState<string>('axis-1');
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState('');
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: '',
@@ -51,13 +56,32 @@ export default function Checkout() {
   const selectedAxis = getShippingAxis(selectedAxisId, shippingAxes);
   const rawSubtotalNGN = getTotalPrice();
   const rawShippingNGN = selectedAxis.isCustomQuote ? 0 : selectedAxis.feeNGN;
-  const rawTaxNGN = rawSubtotalNGN * 0.075;
-  const rawTotalNGN = rawSubtotalNGN + rawShippingNGN + rawTaxNGN;
+  // Mirrors the server (process-payment); the server's amount is what gets charged.
+  const couponApplies = coupon !== null && rawSubtotalNGN >= coupon.minSpend;
+  const rawDiscountNGN = couponApplies ? couponDiscount(coupon, rawSubtotalNGN) : 0;
+  const rawTaxNGN = (rawSubtotalNGN - rawDiscountNGN) * 0.075;
+  const rawTotalNGN = rawSubtotalNGN - rawDiscountNGN + rawShippingNGN + rawTaxNGN;
 
-  const subtotal = convertPrice(rawSubtotalNGN, 'NGN');
-  const shipping = convertPrice(rawShippingNGN, 'NGN');
-  const tax = convertPrice(rawTaxNGN, 'NGN');
-  const total = convertPrice(rawTotalNGN, 'NGN');
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCheckingCoupon(true);
+    setCouponError('');
+    try {
+      const found = await callPayments<Coupon>({ action: 'check_coupon', code });
+      if (rawSubtotalNGN < found.minSpend) {
+        setCouponError(`This code needs a subtotal of at least ${formatPrice(found.minSpend)}.`);
+        setCoupon(null);
+      } else {
+        setCoupon(found);
+      }
+    } catch (err) {
+      setCoupon(null);
+      setCouponError(err instanceof Error ? err.message : "That code isn't valid");
+    } finally {
+      setCheckingCoupon(false);
+    }
+  };
 
   const steps = [
     { number: 1, title: "Information", icon: Truck },
@@ -78,11 +102,9 @@ export default function Checkout() {
   const verifyPayment = async (reference: string) => {
     setIsProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('process-payment', {
-        body: { action: 'verify', reference },
-      });
-      if (error || !data?.orderId) throw error ?? new Error(data?.error || 'Verification failed');
-      setCompletedOrder(data as CompletedOrder);
+      const data = await callPayments<CompletedOrder>({ action: 'verify', reference });
+      setCompletedOrder(data);
+      track('Purchase', { orderNumber: data.orderNumber, coupon: coupon?.code ?? 'none' });
       clearCart();
       setCurrentStep(3);
     } catch (error) {
@@ -97,19 +119,6 @@ export default function Checkout() {
     }
   };
 
-  const loadPaystack = async (): Promise<boolean> => {
-    if (typeof (window as any).PaystackPop !== 'undefined') return true;
-    await new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://js.paystack.co/v1/inline.js';
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Paystack'));
-      document.body.appendChild(script);
-    });
-    return typeof (window as any).PaystackPop !== 'undefined';
-  };
-
   const handleStartPayment = async () => {
     const customerEmail = formData.email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
@@ -118,12 +127,13 @@ export default function Checkout() {
       return;
     }
 
+    track('Begin payment', { items: items.length });
     setIsProcessing(true);
     try {
       // 1. Server prices the cart and stores a Payment pending order.
-      const { data: created, error } = await supabase.functions.invoke('process-payment', {
-        body: {
+      const created = await callPayments<{ reference: string; amountKobo: number }>({
           action: 'create',
+          couponCode: couponApplies ? coupon.code : undefined,
           email: customerEmail,
           shippingAxisId: selectedAxisId,
           shippingAddress: { ...formData, email: customerEmail },
@@ -133,37 +143,26 @@ export default function Checkout() {
             size: item.size || null,
             color: item.color || null,
           })),
-        },
       });
-      if (error || !created?.reference) {
-        throw new Error(created?.error || 'Could not start checkout');
-      }
-
-      const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-      const hasRealKey = /^pk_(live|test)_/.test(publicKey || '');
 
       // 2. Dev only: no Paystack key configured. The server refuses this unless ALLOW_TEST_PAYMENTS=true.
-      if (!hasRealKey) {
+      if (!hasPaystackKey()) {
         toast({ title: 'Test checkout mode', description: 'No Paystack key set; simulating payment.' });
         await verifyPayment(created.reference);
         return;
       }
 
-      if (!(await loadPaystack())) throw new Error('Paystack failed to load');
-
       // 3. Charge exactly what the server calculated.
-      (window as any).PaystackPop.setup({
-        key: publicKey,
+      await openPaystack({
         email: customerEmail,
-        amount: created.amountKobo,
-        currency: 'NGN',
-        ref: created.reference,
-        callback: (response: { reference: string }) => { verifyPayment(response.reference); },
+        amountKobo: created.amountKobo,
+        reference: created.reference,
+        onSuccess: verifyPayment,
         onClose: () => {
           setIsProcessing(false);
           toast({ title: 'Payment cancelled', description: 'You can try again whenever you are ready.' });
         },
-      }).openIframe();
+      });
     } catch (err) {
       Sentry.captureException(err, { tags: { location: 'checkout.handleStartPayment' } });
       setIsProcessing(false);
@@ -310,7 +309,7 @@ export default function Checkout() {
                           const isSelected = selectedAxisId === axis.id;
                           const feeDisplay = axis.isCustomQuote
                             ? 'Email Quote'
-                            : formatPrice(convertBetweenCurrencies(axis.feeNGN, 'NGN', currency));
+                            : formatPrice(axis.feeNGN);
 
                           return (
                             <div
@@ -388,6 +387,39 @@ export default function Checkout() {
                   <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
                   
                   <div className="space-y-6">
+                    <div>
+                      <Label htmlFor="coupon">Discount code</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          id="coupon"
+                          value={couponInput}
+                          onChange={(e) => { setCouponInput(e.target.value); setCouponError(''); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } }}
+                          placeholder="Enter code"
+                          className="uppercase"
+                          aria-describedby="coupon-status"
+                          disabled={isProcessing || coupon !== null}
+                        />
+                        {coupon ? (
+                          <Button type="button" variant="outline" disabled={isProcessing}
+                            onClick={() => { setCoupon(null); setCouponInput(''); }}>Remove</Button>
+                        ) : (
+                          <Button type="button" variant="outline" onClick={applyCoupon}
+                            disabled={checkingCoupon || isProcessing || !couponInput.trim()}>
+                            {checkingCoupon ? 'Checking…' : 'Apply'}
+                          </Button>
+                        )}
+                      </div>
+                      <p id="coupon-status" role="status" className="text-sm mt-1 min-h-5">
+                        {couponError && <span className="text-destructive">{couponError}</span>}
+                        {couponApplies && (
+                          <span className="text-green-700 dark:text-green-400">
+                            {coupon.code} applied: you save {formatPrice(rawDiscountNGN)}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
                     <div className="bg-muted/50 rounded-lg p-4">
                       <h3 className="font-semibold mb-2">Order Summary</h3>
                       <div className="space-y-2 text-sm">
@@ -395,6 +427,12 @@ export default function Checkout() {
                           <span>Subtotal</span>
                           <span>{formatPrice(rawSubtotalNGN)}</span>
                         </div>
+                        {rawDiscountNGN > 0 && (
+                          <div className="flex justify-between text-green-700 dark:text-green-400">
+                            <span>Discount ({coupon?.code})</span>
+                            <span>−{formatPrice(rawDiscountNGN)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between items-start">
                           <div>
                             <span>Shipping</span>
@@ -437,7 +475,7 @@ export default function Checkout() {
                         size="lg"
                         disabled={isProcessing}
                       >
-                        {isProcessing ? 'Processing...' : `Pay ${formatPrice(total)}`}
+                        {isProcessing ? 'Processing...' : `Pay ${formatPrice(rawTotalNGN)}`}
                       </Button>
                     </div>
                   </div>
@@ -535,6 +573,12 @@ export default function Checkout() {
                     <span>Subtotal</span>
                     <span>{formatPrice(rawSubtotalNGN)}</span>
                   </div>
+                  {rawDiscountNGN > 0 && (
+                    <div className="flex justify-between text-green-700 dark:text-green-400">
+                      <span>Discount ({coupon?.code})</span>
+                      <span>−{formatPrice(rawDiscountNGN)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-start">
                     <div>
                       <span>Shipping</span>

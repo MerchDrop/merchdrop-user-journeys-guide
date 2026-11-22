@@ -148,6 +148,14 @@ export async function markOrderPaid(
     return { order: current, accountCreated: false };
   }
 
+  // ponytail: a coupon can be used past its limit if several unpaid orders race; logged for admin.
+  if (updated.coupon_code) {
+    const { data: ok } = await sb.rpc("redeem_coupon", { p_code: updated.coupon_code });
+    if (!ok) console.error("Coupon over its usage limit", updated.coupon_code, updated.id);
+  }
+  const { error: stockError } = await sb.rpc("decrement_stock_for_order", { p_order_id: updated.id });
+  if (stockError) console.error("Stock update failed", updated.id, stockError.message);
+
   const link = account.created ? await setPasswordLink(sb, updated.customer_email) : null;
   await sendStatusEmail(sb, updated, { setPasswordLink: link });
   return { order: updated, accountCreated: account.created };
@@ -185,7 +193,7 @@ function intro(order: Order, extras: { setPasswordLink?: string | null; refunded
       return `<p>Hi ${name}, your order has been delivered. We hope you love it!</p>`;
     case "payment_failed":
       return `<p>Hi ${name}, your payment didn't go through, so this order hasn't been placed.</p>
-        <p>You can try again from your cart at <a href="${SITE_URL}/cart">${SITE_URL.replace(/^https?:\/\//, "")}/cart</a>.</p>`;
+        <p>Use the button below to open your order and complete payment.</p>`;
     case "cancelled":
       return `<p>Hi ${name}, your order has been cancelled. If you have questions, reply to this email.</p>`;
     case "refunded":
@@ -197,16 +205,19 @@ function intro(order: Order, extras: { setPasswordLink?: string | null; refunded
 }
 
 /** Email the customer about the order's current status. Never throws: a failed email must not undo a status change. */
-export async function sendStatusEmail(
-  sb: SupabaseClient,
-  order: Order,
-  extras: { setPasswordLink?: string | null; refundedAmount?: number } = {},
-): Promise<void> {
+export type EmailExtras = {
+  setPasswordLink?: string | null;
+  refundedAmount?: number;
+  /** Replace the status heading, intro and subject (reminder emails). */
+  custom?: { subject: string; heading: string; body: string; button?: string };
+};
+
+export async function sendStatusEmail(sb: SupabaseClient, order: Order, extras: EmailExtras = {}): Promise<boolean> {
   try {
     const apiKey = Deno.env.get("RESEND_API_KEY");
     if (!apiKey || !order.customer_email) {
       console.error("Status email skipped (missing RESEND_API_KEY or email)", order.id);
-      return;
+      return false;
     }
 
     const { data: items } = await sb
@@ -221,16 +232,19 @@ export async function sendStatusEmail(
         <td style="padding:6px 0;text-align:right">${money(i.total_price, order.currency)}</td></tr>`;
     }).join("");
 
-    const label = STATUS_LABELS[order.status] ?? order.status;
+    const label = extras.custom?.heading ?? STATUS_LABELS[order.status] ?? order.status;
+    const discount = Number(order.discount_amount) > 0
+      ? `<tr><td style="padding:6px 0">Discount${order.coupon_code ? ` (${esc(order.coupon_code)})` : ""}</td>
+        <td style="padding:6px 0;text-align:right">−${money(order.discount_amount, order.currency)}</td></tr>` : "";
     const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#111">
       <h2 style="margin-bottom:4px">${esc(label)}</h2>
       <p style="color:#666;margin-top:0">Order ${esc(order.order_number)}</p>
-      ${intro(order, extras)}
-      <table style="width:100%;border-top:1px solid #eee;margin-top:16px">${rows}
+      ${extras.custom?.body ?? intro(order, extras)}
+      <table style="width:100%;border-top:1px solid #eee;margin-top:16px">${rows}${discount}
         <tr><td style="padding:8px 0;border-top:1px solid #eee"><strong>Total</strong></td>
         <td style="padding:8px 0;border-top:1px solid #eee;text-align:right"><strong>${money(order.total_amount, order.currency)}</strong></td></tr>
       </table>
-      <p style="margin-top:24px"><a href="${orderViewUrl(order)}" style="background:#111;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px">View your order</a></p>
+      <p style="margin-top:24px"><a href="${orderViewUrl(order)}" style="background:#111;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px">${esc(extras.custom?.button ?? "View your order")}</a></p>
     </div>`;
 
     const res = await fetch("https://api.resend.com/emails", {
@@ -239,12 +253,14 @@ export async function sendStatusEmail(
       body: JSON.stringify({
         from: Deno.env.get("ORDER_EMAIL_FROM") || "MerchDrop <onboarding@resend.dev>",
         to: [order.customer_email],
-        subject: `Order ${order.order_number}: ${label}`,
+        subject: extras.custom?.subject ?? `Order ${order.order_number}: ${label}`,
         html,
       }),
     });
     if (!res.ok) console.error("Resend error", order.id, res.status, await res.text());
+    return res.ok;
   } catch (e) {
     console.error("Status email failed", order.id, e);
+    return false;
   }
 }

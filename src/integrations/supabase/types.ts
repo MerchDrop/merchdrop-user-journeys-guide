@@ -134,6 +134,45 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          min_spend: number
+          type: string
+          usage_limit: number | null
+          used_count: number
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          min_spend?: number
+          type: string
+          usage_limit?: number | null
+          used_count?: number
+          value: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          min_spend?: number
+          type?: string
+          usage_limit?: number | null
+          used_count?: number
+          value?: number
+        }
+        Relationships: []
+      }
       designer_payouts: {
         Row: {
           amount: number
@@ -431,10 +470,12 @@ export type Database = {
           billing_address: Json | null
           carrier_name: string | null
           completed_at: string | null
+          coupon_code: string | null
           created_at: string
           currency: string | null
           customer_email: string | null
           delivered_at: string | null
+          discount_amount: number
           id: string
           needs_attention: boolean
           order_number: string
@@ -442,6 +483,8 @@ export type Database = {
           payment_provider: string | null
           payment_reference: string | null
           payment_status: string | null
+          reminder_sent_at: string | null
+          review_requested_at: string | null
           shipped_at: string | null
           shipping_address: Json
           shipping_cost: number | null
@@ -458,10 +501,12 @@ export type Database = {
           billing_address?: Json | null
           carrier_name?: string | null
           completed_at?: string | null
+          coupon_code?: string | null
           created_at?: string
           currency?: string | null
           customer_email?: string | null
           delivered_at?: string | null
+          discount_amount?: number
           id?: string
           needs_attention?: boolean
           order_number: string
@@ -469,6 +514,8 @@ export type Database = {
           payment_provider?: string | null
           payment_reference?: string | null
           payment_status?: string | null
+          reminder_sent_at?: string | null
+          review_requested_at?: string | null
           shipped_at?: string | null
           shipping_address: Json
           shipping_cost?: number | null
@@ -485,10 +532,12 @@ export type Database = {
           billing_address?: Json | null
           carrier_name?: string | null
           completed_at?: string | null
+          coupon_code?: string | null
           created_at?: string
           currency?: string | null
           customer_email?: string | null
           delivered_at?: string | null
+          discount_amount?: number
           id?: string
           needs_attention?: boolean
           order_number?: string
@@ -496,6 +545,8 @@ export type Database = {
           payment_provider?: string | null
           payment_reference?: string | null
           payment_status?: string | null
+          reminder_sent_at?: string | null
+          review_requested_at?: string | null
           shipped_at?: string | null
           shipping_address?: Json
           shipping_cost?: number | null
@@ -726,6 +777,7 @@ export type Database = {
           currency: string
           description: string | null
           design_id: string | null
+          drop_at: string | null
           featured: boolean | null
           id: string
           main_image_url: string | null
@@ -747,6 +799,7 @@ export type Database = {
           currency?: string
           description?: string | null
           design_id?: string | null
+          drop_at?: string | null
           featured?: boolean | null
           id?: string
           main_image_url?: string | null
@@ -768,6 +821,7 @@ export type Database = {
           currency?: string
           description?: string | null
           design_id?: string | null
+          drop_at?: string | null
           featured?: boolean | null
           id?: string
           main_image_url?: string | null
@@ -1062,6 +1116,10 @@ export type Database = {
         Args: { product_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      decrement_stock_for_order: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
       generate_product_slug: { Args: { title: string }; Returns: string }
       get_order_details: {
         Args: { p_order_id: string; p_token?: string }
@@ -1089,6 +1147,7 @@ export type Database = {
       is_artist: { Args: never; Returns: boolean }
       is_designer: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      redeem_coupon: { Args: { p_code: string }; Returns: boolean }
       reject_role_request: {
         Args: {
           _admin_id: string

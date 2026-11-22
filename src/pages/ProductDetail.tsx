@@ -13,10 +13,14 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductsQuery } from '@/hooks/useProductsQuery';
 import { ProductReviews } from '@/components/product/ProductReviews';
+import { DropCountdown, useDropOpen } from '@/components/product/DropCountdown';
+import { ShareButton } from '@/components/ShareButton';
 
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeImageUrl } from '@/lib/image-utils';
 import { slugify, getProductUrl } from '@/lib/slug-utils';
+import { SEOHelmet } from '@/components/SEO/SEOHelmet';
+import { track } from '@vercel/analytics';
 
 type UiProduct = {
   id: string;
@@ -31,6 +35,7 @@ type UiProduct = {
   sizes?: string[];
   colors?: { name: string; value: string }[];
   stock: number;
+  dropAt?: string | null;
   category?: string;
 };
 
@@ -48,6 +53,7 @@ export default function ProductDetail() {
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
+  const { open: dropOpen, msLeft } = useDropOpen(product?.dropAt);
   const [hoveredRelated, setHoveredRelated] = useState<string | null>(null);
 
   // Load from Supabase
@@ -67,6 +73,7 @@ export default function ProductDetail() {
         price_cents,
         currency,
         stock,
+        drop_at,
         main_image_url,
         tags,
         artist_id,
@@ -137,6 +144,7 @@ export default function ProductDetail() {
           ],
           images: finalImages,
           stock: (data as any).stock ?? 0,
+          dropAt: (data as any).drop_at ?? null,
           rating: averageRating,
           reviews: ratings.length,
           artist: (data as any).artist_profiles?.artist_name,
@@ -166,7 +174,7 @@ export default function ProductDetail() {
   }, [id]);
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || !dropOpen) return;
     
     const activeColorObj = product.colors && product.colors[selectedColor];
     const activeColorName = typeof activeColorObj === 'string' ? activeColorObj : activeColorObj?.name;
@@ -180,6 +188,7 @@ export default function ProductDetail() {
       return;
     }
 
+    track("Add to cart", { product: product.name });
     addItem({
       id: product.id,
       name: product.name,
@@ -198,7 +207,7 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = () => {
-    if (!product) return;
+    if (!product || !dropOpen) return;
     if (product.stock === 0) {
       toast({
         title: "Out of Stock",
@@ -211,6 +220,7 @@ export default function ProductDetail() {
     const activeColorObj = product.colors && product.colors[selectedColor];
     const activeColorName = typeof activeColorObj === 'string' ? activeColorObj : activeColorObj?.name;
 
+    track("Add to cart", { product: product.name });
     addItem({
       id: product.id,
       name: product.name,
@@ -315,6 +325,12 @@ export default function ProductDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <SEOHelmet
+        title={product.artist ? `${product.name} by ${product.artist}` : product.name}
+        description={(product.description || `${product.name} on MerchDrop`).slice(0, 160)}
+        image={product.images?.[0]}
+        type="product"
+      />
       
       <main className="py-8">
         <div className="container mx-auto px-4">
@@ -415,9 +431,12 @@ export default function ProductDetail() {
                     >
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                     </Button>
-                    <Button variant="ghost" size="sm">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
+                    <ShareButton
+                      variant="ghost"
+                      size="sm"
+                      title={product.name}
+                      text={product.artist ? `${product.name} by ${product.artist} on MerchDrop` : `${product.name} on MerchDrop`}
+                    />
                   </div>
                 </div>
                 
@@ -453,7 +472,7 @@ export default function ProductDetail() {
                     </Badge>
                   ) : product.stock > 0 ? (
                     <Badge variant="outline" className="text-red-500 border-red-500 text-xs">
-                      Almost sold out
+                      Only {product.stock} left
                     </Badge>
                   ) : (
                     <Badge variant="destructive" className="text-xs">Sold Out</Badge>
@@ -555,10 +574,12 @@ export default function ProductDetail() {
 
               {/* Add to Cart */}
               <div className="space-y-4">
+                {!dropOpen && <DropCountdown msLeft={msLeft} />}
                 <Button 
                   size="lg" 
                   className="w-full"
                   onClick={handleAddToCart}
+                  disabled={!dropOpen || product.stock === 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart - {formatPrice(product.price * quantity)}
@@ -568,6 +589,7 @@ export default function ProductDetail() {
                   size="lg" 
                   className="w-full"
                   onClick={handleBuyNow}
+                  disabled={!dropOpen || product.stock === 0}
                 >
                   Buy Now
                 </Button>
@@ -577,7 +599,7 @@ export default function ProductDetail() {
               <div className="border-t pt-6 space-y-3">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Truck className="h-4 w-4 mr-3" />
-                  Free shipping on orders over {formatPrice(50)}
+                  Delivery fee is shown at checkout
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Shield className="h-4 w-4 mr-3" />
@@ -585,7 +607,7 @@ export default function ProductDetail() {
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <RotateCcw className="h-4 w-4 mr-3" />
-                  30-day return policy
+                  Returns accepted within 7 days of delivery
                 </div>
               </div>
             </motion.div>
@@ -665,10 +687,11 @@ export default function ProductDetail() {
 
           {/* Reviews Section */}
           <motion.section
+            id="reviews"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="mt-20"
+            className="mt-20 scroll-mt-24"
           >
             <ProductReviews
               productId={product.id}

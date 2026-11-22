@@ -39,7 +39,15 @@ const productSchema = z.object({
   sku: z.string().optional(),
   tags: z.array(z.string()).optional(),
   variants: z.record(z.any()).optional(),
+  drop_at: z.string().optional(),
 });
+
+/** ISO timestamp -> value for <input type="datetime-local"> in the user's timezone. */
+const toLocalInput = (iso?: string | null) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
 
 type ProductFormData = z.infer<typeof productSchema>;
 
@@ -133,6 +141,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
       sku: editProduct?.sku || '',
       tags: editProduct?.tags || [],
       variants: editProduct?.variants || {},
+      drop_at: toLocalInput(editProduct?.drop_at),
     },
   });
 
@@ -263,6 +272,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
         description: data.description,
         price_cents: priceCentsNgn,
         stock: data.stock,
+        drop_at: data.drop_at ? new Date(data.drop_at).toISOString() : null,
         category_id: data.category_id,
         sku: data.sku,
         // Preserve the owner on edit; admins without an artist profile
@@ -432,6 +442,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSuccess, onCancel, e
               {errors.stock && (
                 <p className="text-sm text-destructive">{errors.stock.message}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="drop_at">Drop time (optional)</Label>
+              <Input id="drop_at" type="datetime-local" {...register('drop_at')} aria-describedby="drop_at_help" />
+              <p id="drop_at_help" className="text-xs text-muted-foreground">
+                Fans see a countdown and can buy only after this time. Leave empty to sell right away.
+              </p>
             </div>
 
             <div className="space-y-2">

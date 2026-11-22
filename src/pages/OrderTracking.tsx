@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Circle, ExternalLink, MapPin, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, ExternalLink, MapPin, Star, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useAuth } from '@/context/AuthContext';
 import { ORDER_FLOW, orderStatusLabel, orderStatusTone } from '@/lib/orderStatus';
+import { callPayments, hasPaystackKey, openPaystack } from '@/lib/payments';
+import { getProductUrl } from '@/lib/slug-utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderDetails {
   order: {
@@ -22,6 +25,8 @@ interface OrderDetails {
     subtotal: number;
     shipping_cost: number;
     tax_amount: number;
+    discount_amount: number;
+    coupon_code: string | null;
     created_at: string;
     carrier_name: string | null;
     tracking_number: string | null;
@@ -35,12 +40,17 @@ interface OrderDetails {
     unit_price: number;
     total_price: number;
     variant: { size?: string | null; color?: string | null } | null;
+    product_id: string | null;
+    slug: string | null;
   }[];
   history: { status: string; at: string }[];
 }
 
+const UNPAID = new Set(['payment_pending', 'payment_failed']);
+const REVIEWABLE = new Set(['delivered', 'completed']);
+
 const OFF_PATH: Record<string, string> = {
-  payment_pending: 'We are waiting for your payment to be confirmed.',
+  payment_pending: "This order hasn't been paid yet.",
   payment_failed: "Your payment didn't go through, so this order wasn't placed.",
   cancelled: 'This order was cancelled.',
   refunded: 'This order was refunded.',
@@ -66,18 +76,57 @@ export default function OrderTracking() {
   const { formatPrice } = useCurrency();
   const [details, setDetails] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+  const { toast } = useToast();
+
+  const load = useCallback(async () => {
+    if (!orderId) return;
+    const { data, error } = await supabase.rpc('get_order_details', { p_order_id: orderId, p_token: token });
+    if (error) console.error('Order lookup failed:', error.message);
+    setDetails((data as unknown as OrderDetails | null) ?? null);
+    setLoading(false);
+  }, [orderId, token]);
 
   useEffect(() => {
-    if (!orderId) return;
     setLoading(true);
-    supabase
-      .rpc('get_order_details' as never, { p_order_id: orderId, p_token: token } as never)
-      .then(({ data, error }) => {
-        if (error) console.error('Order lookup failed:', error.message);
-        setDetails((data as OrderDetails | null) ?? null);
-        setLoading(false);
+    load();
+  }, [load, user?.id]);
+
+  const completePayment = async () => {
+    if (!orderId) return;
+    setPaying(true);
+    try {
+      const resumed = await callPayments<{ reference: string; email: string; amountKobo: number }>(
+        { action: 'resume', orderId, token });
+      const confirm = async (reference: string) => {
+        try {
+          await callPayments({ action: 'verify', reference });
+        } catch {
+          toast({ title: "We're confirming your payment", description: "You'll get an email as soon as it's confirmed." });
+        }
+        await load();
+        setPaying(false);
+      };
+      if (!hasPaystackKey()) {
+        await confirm(resumed.reference);
+        return;
+      }
+      await openPaystack({
+        email: resumed.email,
+        amountKobo: resumed.amountKobo,
+        reference: resumed.reference,
+        onSuccess: confirm,
+        onClose: () => setPaying(false),
       });
-  }, [orderId, token, user?.id]);
+    } catch (err) {
+      setPaying(false);
+      toast({
+        title: "Couldn't start payment",
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (loading || !details) {
     return (
@@ -138,9 +187,16 @@ export default function OrderTracking() {
               <CardHeader><CardTitle>Status</CardTitle></CardHeader>
               <CardContent>
                 {offPath ? (
-                  <p className="flex items-start gap-3 text-muted-foreground">
-                    <XCircle className="w-5 h-5 mt-0.5 text-red-500 shrink-0" />{offPath}
-                  </p>
+                  <div className="space-y-4">
+                    <p className="flex items-start gap-3 text-muted-foreground">
+                      <XCircle className="w-5 h-5 mt-0.5 text-red-500 shrink-0" />{offPath}
+                    </p>
+                    {UNPAID.has(order.status) && (
+                      <Button onClick={completePayment} disabled={paying} size="lg">
+                        {paying ? 'Opening payment…' : `Complete payment · ${formatPrice(Number(order.total_amount))}`}
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   <ol className="space-y-4">
                     {timeline(details).map((step) => (
@@ -177,6 +233,14 @@ export default function OrderTracking() {
                         <p className="text-sm text-muted-foreground">
                           {variant && `${variant} · `}Qty {item.quantity}
                         </p>
+                        {REVIEWABLE.has(order.status) && item.product_id && (
+                          <Link
+                            to={`${getProductUrl({ id: item.product_id, slug: item.slug, title: item.title })}#reviews`}
+                            className="inline-flex items-center gap-1 text-sm underline mt-1"
+                          >
+                            <Star className="w-3.5 h-3.5" />Write a review
+                          </Link>
+                        )}
                       </div>
                       <p className="font-semibold">{formatPrice(Number(item.total_price))}</p>
                     </div>
@@ -213,6 +277,12 @@ export default function OrderTracking() {
               <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(Number(order.subtotal))}</span></div>
+                {Number(order.discount_amount) > 0 && (
+                  <div className="flex justify-between text-green-700 dark:text-green-400">
+                    <span>Discount{order.coupon_code ? ` (${order.coupon_code})` : ''}</span>
+                    <span>−{formatPrice(Number(order.discount_amount))}</span>
+                  </div>
+                )}
                 <div className="flex justify-between"><span>Shipping</span><span>{formatPrice(Number(order.shipping_cost))}</span></div>
                 <div className="flex justify-between"><span>VAT</span><span>{formatPrice(Number(order.tax_amount))}</span></div>
                 <div className="border-t pt-2 flex justify-between font-semibold">

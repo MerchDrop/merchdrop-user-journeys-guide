@@ -14,17 +14,19 @@ interface SEOHelmetProps {
 }
 
 const SEOHelmet: React.FC<SEOHelmetProps> = ({
-  title = 'Art Marketplace - Discover Unique Digital Art',
-  description = 'Discover and purchase unique digital art from independent artists. Support creators and find beautiful art for your home or collection.',
-  keywords = 'digital art, artists, marketplace, prints, posters, independent artists, art collection',
-  image = '/og-image.jpg',
+  title = 'MerchDrop - Creator Merchandise Platform',
+  description = 'Shop official merch from independent artists, or create and sell your own on MerchDrop.',
+  keywords = 'artist merch, creator merchandise, Nigerian artists, t-shirts, hoodies, MerchDrop',
+  image = '/Merchdrop.png',
   url = window.location.href,
   type = 'website',
   author,
   publishedTime,
   modifiedTime,
 }) => {
-  const siteTitle = 'Art Marketplace';
+  const siteTitle = 'MerchDrop';
+  // Social apps need absolute image URLs.
+  const imageUrl = image.startsWith('http') ? image : `${window.location.origin}${image}`;
   const fullTitle = title.includes(siteTitle) ? title : `${title} | ${siteTitle}`;
 
   return (
@@ -41,7 +43,7 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={imageUrl} />
       <meta property="og:site_name" content={siteTitle} />
       <meta property="og:locale" content="en_US" />
 
@@ -49,9 +51,8 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={image} />
-      <meta name="twitter:site" content="@artmarketplace" />
-      <meta name="twitter:creator" content={author ? `@${author}` : '@artmarketplace'} />
+      <meta name="twitter:image" content={imageUrl} />
+      <meta name="twitter:site" content="@merchdrop" />
 
       {/* Article specific tags */}
       {type === 'article' && publishedTime && (
@@ -66,7 +67,6 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
 
       {/* Additional SEO Tags */}
       <meta name="robots" content="index, follow" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta httpEquiv="Content-Language" content="en" />
       
       {/* Favicon and App Icons */}
@@ -84,7 +84,7 @@ const SEOHelmet: React.FC<SEOHelmetProps> = ({
             '@type': 'Product',
             name: title,
             description: description,
-            image: image,
+            image: imageUrl,
             url: url,
             brand: {
               '@type': 'Brand',

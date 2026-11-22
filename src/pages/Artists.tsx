@@ -11,6 +11,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { fetchPublicArtists, type PublicArtistCard } from '@/hooks/useArtistsQuery';
+import { SEOHelmet } from '@/components/SEO/SEOHelmet';
 
 const SORTS: Record<string, (a: PublicArtistCard, b: PublicArtistCard) => number> = {
   followers: (a, b) => b.followers - a.followers,
@@ -37,6 +38,7 @@ export default function Artists() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <SEOHelmet title="Artists" description="Browse independent artists on MerchDrop and shop their official merch." />
 
       <main className="pt-20">
         <section className="py-16 bg-muted/30">
