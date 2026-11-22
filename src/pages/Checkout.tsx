@@ -27,7 +27,9 @@ export default function Checkout() {
   const { axes: shippingAxes } = useShippingAxes();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [completedOrder, setCompletedOrder] = useState<{
+    orderId: string; orderNumber: string; viewToken: string; status: string; accountCreated: boolean;
+  } | null>(null);
   const [selectedAxisId, setSelectedAxisId] = useState<string>('axis-1');
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -41,7 +43,7 @@ export default function Checkout() {
   });
 
   // If cart is empty, redirect to cart page
-  if (items.length === 0) {
+  if (items.length === 0 && !completedOrder) {
     navigate('/cart');
     return null;
   }
@@ -63,231 +65,112 @@ export default function Checkout() {
     { number: 3, title: "Complete", icon: Check }
   ];
 
-  const handlePaystackSuccess = async (reference: any) => {
+  type CompletedOrder = {
+    orderId: string;
+    orderNumber: string;
+    viewToken: string;
+    status: string;
+    accountCreated: boolean;
+  };
+
+  // Confirms payment with the server. The Paystack webhook does the same, so this is only for
+  // showing the confirmation page right away; if it fails, the order is still saved by the webhook.
+  const verifyPayment = async (reference: string) => {
     setIsProcessing(true);
-    const refCode = reference?.reference || reference?.trxref || (typeof reference === 'string' ? reference : `REF-${Date.now()}`);
-    const shippingAddressObj = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      address: formData.address,
-      city: formData.city,
-      state: formData.state,
-      zipCode: formData.zipCode,
-      country: formData.country,
-      shippingAxis: selectedAxis.name,
-      shippingAreas: selectedAxis.areas,
-      shippingFeeNGN: selectedAxis.feeNGN,
-      isCustomQuote: selectedAxis.isCustomQuote || false,
-    };
-
     try {
-      let orderData: any = null;
-
-      // 1. Try Supabase Edge Function
-      try {
-        const { data, error } = await supabase.functions.invoke('process-payment', {
-          body: {
-            amount: Math.round(rawTotalNGN * 100),
-            currency: currency,
-            email: formData.email,
-            reference: refCode,
-            items: items.map(item => ({
-              productId: item.id,
-              artistId: item.artistId || null,
-              quantity: item.quantity,
-              price: item.price,
-              size: item.size || null,
-              color: item.color || null
-            })),
-            shippingAddress: shippingAddressObj,
-          }
-        });
-
-        if (!error && data?.success) {
-          orderData = data;
-        }
-      } catch (fnErr) {
-        console.warn('Edge function invoke warning, attempting direct order creation fallback:', fnErr);
-      }
-
-      // 2. Direct database fallback if edge function was unavailable
-      if (!orderData) {
-        const orderNumber = `MD-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-        
-        let orderUserId = user?.id;
-        if (!orderUserId) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', formData.email)
-            .maybeSingle();
-          orderUserId = profile?.id;
-        }
-
-        if (orderUserId) {
-          const { data: newOrder, error: orderError } = await supabase
-            .from('orders')
-            .insert({
-              user_id: orderUserId,
-              order_number: orderNumber,
-              subtotal: rawSubtotalNGN,
-              shipping_cost: rawShippingNGN,
-              tax_amount: rawTaxNGN,
-              total_amount: rawTotalNGN,
-              currency: currency || 'NGN',
-              status: 'confirmed',
-              payment_status: 'paid',
-              payment_provider: 'paystack',
-              payment_reference: refCode,
-              shipping_address: shippingAddressObj,
-              billing_address: shippingAddressObj,
-            })
-            .select()
-            .single();
-
-          if (!orderError && newOrder) {
-            const orderItems = items.map(item => ({
-              order_id: newOrder.id,
-              product_id: item.id,
-              artist_id: item.artistId || '00000000-0000-0000-0000-000000000000',
-              quantity: item.quantity,
-              unit_price: item.price,
-              total_price: item.price * item.quantity,
-              product_variant: { size: item.size, color: item.color },
-            }));
-
-            await supabase.from('order_items').insert(orderItems);
-            orderData = { orderId: newOrder.id, orderNumber: newOrder.order_number, success: true };
-          }
-        }
-
-        if (!orderData) {
-          orderData = { orderNumber, success: true };
-        }
-      }
-
-      setCompletedOrder(orderData);
+      const { data, error } = await supabase.functions.invoke('process-payment', {
+        body: { action: 'verify', reference },
+      });
+      if (error || !data?.orderId) throw error ?? new Error(data?.error || 'Verification failed');
+      setCompletedOrder(data as CompletedOrder);
       clearCart();
       setCurrentStep(3);
-      
-      toast({
-        title: "Payment Successful!",
-        description: `Order ${orderData.orderNumber || 'confirmed'} has been placed successfully.`,
-      });
     } catch (error) {
-      Sentry.captureException(error, { tags: { location: 'checkout.handlePaystackSuccess' } });
-      console.error('Payment processing error:', error);
+      Sentry.captureException(error, { tags: { location: 'checkout.verifyPayment' }, extra: { reference } });
       toast({
-        title: "Payment Processing Failed",
-        description: "There was an error processing your payment. Please try again.",
-        variant: "destructive",
+        title: "We're confirming your payment",
+        description: `If you were charged, your order is safe and you'll get an email shortly. Reference: ${reference}`,
+        variant: 'destructive',
       });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handlePaystackClose = () => {
-    toast({
-      title: "Payment Cancelled",
-      description: "Your payment was cancelled. You can try again.",
-      variant: "destructive",
+  const loadPaystack = async (): Promise<boolean> => {
+    if (typeof (window as any).PaystackPop !== 'undefined') return true;
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://js.paystack.co/v1/inline.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load Paystack'));
+      document.body.appendChild(script);
     });
+    return typeof (window as any).PaystackPop !== 'undefined';
   };
 
   const handleStartPayment = async () => {
-    const customerEmail = formData.email.trim() || user?.email || '';
-    if (!customerEmail || !customerEmail.includes('@')) {
-      toast({
-        title: "Email Required",
-        description: "Please enter a valid email address before proceeding with payment.",
-        variant: "destructive",
-      });
+    const customerEmail = formData.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+      toast({ title: 'Email required', description: 'Enter a valid email address.', variant: 'destructive' });
       setCurrentStep(1);
       return;
     }
 
-    const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-    const paymentAmountKobo = Math.max(100, Math.round(rawTotalNGN * 100));
-    const paymentReference = `MD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
     setIsProcessing(true);
-
     try {
-      let hasPaystackPop = typeof (window as any).PaystackPop !== 'undefined';
-      if (!hasPaystackPop) {
-        try {
-          await new Promise<void>((resolve, reject) => {
-            const existingScript = document.getElementById('paystack-inline-js');
-            if (existingScript) {
-              resolve();
-              return;
-            }
-            const script = document.createElement('script');
-            script.id = 'paystack-inline-js';
-            script.src = 'https://js.paystack.co/v1/inline.js';
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Paystack script'));
-            document.body.appendChild(script);
-          });
-          hasPaystackPop = typeof (window as any).PaystackPop !== 'undefined';
-        } catch (e) {
-          console.warn('Paystack script dynamic load warning:', e);
-        }
+      // 1. Server prices the cart and stores a Payment pending order.
+      const { data: created, error } = await supabase.functions.invoke('process-payment', {
+        body: {
+          action: 'create',
+          email: customerEmail,
+          shippingAxisId: selectedAxisId,
+          shippingAddress: { ...formData, email: customerEmail },
+          items: items.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+            size: item.size || null,
+            color: item.color || null,
+          })),
+        },
+      });
+      if (error || !created?.reference) {
+        throw new Error(created?.error || 'Could not start checkout');
       }
 
-      // Paystack public keys are exactly 48 chars (pk_test_... or pk_live_...)
-      const isValidPaystackKey = 
-        Boolean(paystackPublicKey && 
-        (paystackPublicKey.startsWith('pk_live_') || paystackPublicKey.startsWith('pk_test_')) && 
-        paystackPublicKey.length >= 45);
+      const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+      const hasRealKey = /^pk_(live|test)_/.test(publicKey || '');
 
-      if (hasPaystackPop && isValidPaystackKey) {
-        try {
-          const handler = (window as any).PaystackPop.setup({
-            key: paystackPublicKey,
-            email: customerEmail,
-            amount: paymentAmountKobo,
-            currency: 'NGN',
-            ref: paymentReference,
-            callback: (response: any) => {
-              handlePaystackSuccess(response);
-            },
-            onClose: () => {
-              setIsProcessing(false);
-              handlePaystackClose();
-            },
-          });
-          handler.openIframe();
-        } catch (popupErr) {
-          console.warn('Paystack popup setup error, falling back to test completion:', popupErr);
-          toast({
-            title: "Simulating Payment",
-            description: "Paystack gateway unavailable. Completing verified order...",
-          });
-          setTimeout(() => {
-            handlePaystackSuccess({ reference: paymentReference, status: 'success' });
-          }, 1000);
-        }
-      } else {
-        // Fallback for development / test mode when real Paystack public key is not yet configured
-        toast({
-          title: "Test Checkout Mode",
-          description: "Using simulated payment gateway for testing...",
-        });
-        setTimeout(() => {
-          handlePaystackSuccess({ reference: paymentReference, status: 'success' });
-        }, 1200);
+      // 2. Dev only: no Paystack key configured. The server refuses this unless ALLOW_TEST_PAYMENTS=true.
+      if (!hasRealKey) {
+        toast({ title: 'Test checkout mode', description: 'No Paystack key set; simulating payment.' });
+        await verifyPayment(created.reference);
+        return;
       }
+
+      if (!(await loadPaystack())) throw new Error('Paystack failed to load');
+
+      // 3. Charge exactly what the server calculated.
+      (window as any).PaystackPop.setup({
+        key: publicKey,
+        email: customerEmail,
+        amount: created.amountKobo,
+        currency: 'NGN',
+        ref: created.reference,
+        callback: (response: { reference: string }) => { verifyPayment(response.reference); },
+        onClose: () => {
+          setIsProcessing(false);
+          toast({ title: 'Payment cancelled', description: 'You can try again whenever you are ready.' });
+        },
+      }).openIframe();
     } catch (err) {
-      console.error('Payment launch error:', err);
+      Sentry.captureException(err, { tags: { location: 'checkout.handleStartPayment' } });
       setIsProcessing(false);
       toast({
-        title: "Payment Error",
-        description: "Could not initialize payment window. Please try again.",
-        variant: "destructive",
+        title: 'Payment error',
+        description: err instanceof Error ? err.message : 'Could not start payment. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -572,27 +455,43 @@ export default function Checkout() {
                       <Check className="h-10 w-10 text-white" />
                     </div>
                     
-                    <h2 className="text-3xl font-bold mb-4">Order Complete!</h2>
+                    <h2 className="text-3xl font-bold mb-2">Thank you for your order!</h2>
                     <p className="text-muted-foreground mb-6">
-                      Thank you for your purchase. Your order has been confirmed and will be shipped soon.
+                      Payment received. We'll email you at <strong>{formData.email}</strong> as your order moves along.
                     </p>
-                    
+
                     <div className="bg-muted/50 rounded-lg p-4 mb-6">
-                      <p className="font-semibold">Order #{completedOrder.orderNumber}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Confirmation email sent to {formData.email}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Order number</p>
+                      <p className="font-semibold text-lg">{completedOrder.orderNumber}</p>
                     </div>
+
+                    {!user && (
+                      <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 mb-6 text-left">
+                        {completedOrder.accountCreated ? (
+                          <>
+                            <p className="font-semibold">We've created an account for you</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Check your email for a link to set your password. You'll be able to track this and future orders under Orders.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-semibold">This order has been added to your account</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              <Link to="/user-auth" className="underline">Sign in</Link> to track it under Orders.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex gap-4">
                       <Button variant="outline" className="flex-1" asChild>
-                        <Link to="/order-tracking">Track Order</Link>
+                        <Link to={`/order/${completedOrder.orderId}?token=${completedOrder.viewToken}`}>Track order</Link>
                       </Button>
-                      <Link to="/" className="flex-1">
-                        <Button className="w-full">
-                          Continue Shopping
-                        </Button>
-                      </Link>
+                      <Button className="flex-1" asChild>
+                        <Link to="/">Continue shopping</Link>
+                      </Button>
                     </div>
                   </Card>
                 </motion.div>

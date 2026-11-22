@@ -59,6 +59,7 @@ import DesignerSettings from '@/pages/designer/Settings';
 import EmailConfirmation from '@/pages/EmailConfirmation';
 import MerchCreator from '@/pages/MerchCreator';
 import OrderTracking from '@/pages/OrderTracking';
+import Orders from '@/pages/Orders';
 import NotFound from '@/pages/NotFound';
 import UserProfile from '@/pages/user/Profile';
 import HowItWorksPage from '@/pages/HowItWorks';
@@ -160,6 +161,7 @@ function App() {
                   <Route path="/health" element={<HealthCheck />} />
                   <Route path="/onboarding" element={<ArtistOnboarding />} />
                   <Route path="/create-merch" element={<MerchCreator />} />
+                  <Route path="/orders" element={<Orders />} />
                   <Route path="/order/:orderId" element={<OrderTracking />} />
                   <Route path="/how-it-works" element={<HowItWorksPage />} />
                   <Route path="/pricing" element={<Pricing />} />

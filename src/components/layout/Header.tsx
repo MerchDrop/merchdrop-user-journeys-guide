@@ -99,6 +99,9 @@ const Header = ({
               </div>
             </div>
 
+            {user && <Link to="/orders" className={`hidden md:inline text-[14px] transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
+                Orders
+              </Link>}
             <Link to="/cart" className={`relative p-2 transition-colors ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}>
               <ShoppingCart className="h-5 w-5" />
               {getTotalItems() > 0 && <span className="absolute -top-1 -right-1 bg-black text-white text-[11px] rounded-full h-5 w-5 flex items-center justify-center">
@@ -196,6 +199,9 @@ const Header = ({
               <ShoppingCart className="h-5 w-5 mr-2" />
               Cart ({getTotalItems()})
             </Link>
+            {user && <Link to="/orders" className={`text-[14px] transition-colors py-2 ${shouldBeTransparent ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`} onClick={() => setIsMenuOpen(false)}>
+                Orders
+              </Link>}
               
               <div className="py-2">
                 <CurrencySelector className="w-full" />

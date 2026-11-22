@@ -10,7 +10,7 @@ export interface Order {
   shipping_cost: number;
   tax_amount: number;
   total_amount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: string;
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   payment_provider: string;
   payment_reference: string | null;

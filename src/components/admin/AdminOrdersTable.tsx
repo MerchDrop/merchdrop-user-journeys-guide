@@ -38,6 +38,7 @@ import { OrderStatusDialog } from './OrderStatusDialog';
 import { OrderTrackingBadge } from './OrderTrackingBadge';
 import { OrderDetailsDialog } from '@/components/artist/OrderDetailsDialog';
 import { useCurrency } from '@/context/CurrencyContext';
+import { ORDER_STATUS_LABELS, orderStatusLabel, orderStatusTone } from '@/lib/orderStatus';
 
 export function AdminOrdersTable() {
   const { orders, loading, updateOrderStatus } = useOrders();
@@ -47,22 +48,6 @@ export function AdminOrdersTable() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return 'default' as const;
-      case 'processing':
-      case 'shipped':
-        return 'secondary' as const;
-      case 'pending':
-        return 'outline' as const;
-      case 'cancelled':
-        return 'destructive' as const;
-      default:
-        return 'outline' as const;
-    }
-  };
 
   const getPaymentStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -77,13 +62,11 @@ export function AdminOrdersTable() {
     }
   };
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string, trackingNumber?: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: string, trackingNumber?: string, carrierName?: string) => {
     try {
-      await updateOrderStatus(orderId, newStatus as any, trackingNumber);
-      toast.success('Order status updated successfully');
+      await updateOrderStatus(orderId, newStatus, trackingNumber, carrierName);
     } catch (error) {
-      toast.error('Failed to update order status');
-      console.error('Error updating order status:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update order status');
     }
   };
 
@@ -107,9 +90,10 @@ export function AdminOrdersTable() {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesSearch = searchTerm === '' || 
       order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order as any).customer_email?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
-  });
+  }).sort((a: any, b: any) => Number(b.needs_attention ?? false) - Number(a.needs_attention ?? false));
 
   if (loading) {
     return (
@@ -152,11 +136,9 @@ export function AdminOrdersTable() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -195,7 +177,7 @@ export function AdminOrdersTable() {
                         {order.profiles?.display_name || 'Unknown Customer'}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {order.profiles?.email}
+                        {order.profiles?.email || (order as any).customer_email}
                       </div>
                     </div>
                   </TableCell>
@@ -214,9 +196,10 @@ export function AdminOrdersTable() {
                     {formatPrice(Number(order.total_amount || '0'))}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(order.status || 'pending')}>
-                      {order.status || 'pending'}
-                    </Badge>
+                    <div className="flex flex-col items-start gap-1">
+                      <Badge className={orderStatusTone(order.status)}>{orderStatusLabel(order.status)}</Badge>
+                      {(order as any).needs_attention && <Badge variant="destructive">Needs attention</Badge>}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <OrderTrackingBadge 

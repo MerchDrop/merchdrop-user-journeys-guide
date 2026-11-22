@@ -160,27 +160,22 @@ async function createOrder(orderData: {
   return order;
 }
 
-// Update order status
+// Update order status (admin). Goes through the update-order-status edge function, which
+// validates the move, logs it with the admin's name, and emails the customer when appropriate.
 async function updateOrderStatus(
   orderId: string,
   status: string,
-  trackingNumber?: string
+  trackingNumber?: string,
+  carrierName?: string
 ): Promise<void> {
-  const updateData: any = { status };
-
-  if (status === 'shipped' && trackingNumber) {
-    updateData.tracking_number = trackingNumber;
-    updateData.shipped_at = new Date().toISOString();
-  } else if (status === 'delivered') {
-    updateData.delivered_at = new Date().toISOString();
+  const { data, error } = await supabase.functions.invoke('update-order-status', {
+    body: { orderId, status, trackingNumber, carrierName },
+  });
+  if (error || data?.error) {
+    let message = data?.error;
+    try { message ??= (await (error as any)?.context?.json?.())?.error; } catch { /* non-JSON error body */ }
+    throw new Error(message || 'Could not update the order');
   }
-
-  const { error } = await supabase
-    .from('orders')
-    .update(updateData)
-    .eq('id', orderId);
-
-  if (error) throw error;
 }
 
 // Update payment status
@@ -232,30 +227,12 @@ export function useUpdateOrderStatusMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ orderId, status, trackingNumber }: {
+    mutationFn: ({ orderId, status, trackingNumber, carrierName }: {
       orderId: string;
       status: string;
       trackingNumber?: string;
-    }) => updateOrderStatus(orderId, status, trackingNumber),
-    onMutate: async ({ orderId, status, trackingNumber }) => {
-      // Optimistically update all order queries
-      queryClient.setQueriesData(
-        { queryKey: queryKeys.orders.all },
-        (oldData: Order[] | undefined) => {
-          if (!oldData) return oldData;
-          
-          const updateData: any = { id: orderId, status };
-          if (status === 'shipped' && trackingNumber) {
-            updateData.tracking_number = trackingNumber;
-            updateData.shipped_at = new Date().toISOString();
-          } else if (status === 'delivered') {
-            updateData.delivered_at = new Date().toISOString();
-          }
-
-          return createOptimisticUpdate(oldData, updateData, 'update');
-        }
-      );
-    },
+      carrierName?: string;
+    }) => updateOrderStatus(orderId, status, trackingNumber, carrierName),
     onError: (error) => {
       handleQueryError(error, 'Failed to update order status');
     },
@@ -317,8 +294,8 @@ export function useOrders() {
     error: error?.message || null,
     fetchOrders: () => {}, // No longer needed
     createOrder: (orderData: any) => createOrderMutation.mutateAsync(orderData),
-    updateOrderStatus: (orderId: string, status: string, trackingNumber?: string) =>
-      updateOrderStatusMutation.mutateAsync({ orderId, status, trackingNumber }),
+    updateOrderStatus: (orderId: string, status: string, trackingNumber?: string, carrierName?: string) =>
+      updateOrderStatusMutation.mutateAsync({ orderId, status, trackingNumber, carrierName }),
     updatePaymentStatus: (orderId: string, paymentStatus: string, paymentReference?: string) =>
       updatePaymentStatusMutation.mutateAsync({ orderId, paymentStatus, paymentReference }),
   };

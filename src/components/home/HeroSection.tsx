@@ -213,7 +213,7 @@ const HeroSection = () => {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="bg-white rounded border border-gray-200 px-4 py-1 text-[11px] text-gray-400 w-56 text-center">
-                  app.merchdrop.com/dashboard
+                  app.merchdrop.live/dashboard
                 </div>
               </div>
             </div>

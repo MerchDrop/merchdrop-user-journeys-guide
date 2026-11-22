@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Mail, MailX } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,122 +10,123 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Order } from '@/hooks/useOrders';
-import { Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ADMIN_STATUSES, EMAILED_STATUSES, ORDER_FLOW, orderStatusLabel } from '@/lib/orderStatus';
+
+interface StatusDialogOrder {
+  id: string;
+  order_number: string;
+  status: string | null;
+  tracking_number: string | null;
+  carrier_name?: string | null;
+}
 
 interface OrderStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  order: Order | null;
-  onUpdateStatus: (orderId: string, status: Order['status'], trackingNumber?: string) => void;
+  order: StatusDialogOrder | null;
+  onUpdateStatus: (orderId: string, status: string, trackingNumber?: string, carrierName?: string) => Promise<void> | void;
 }
 
+const CANCEL_BEFORE = ORDER_FLOW.indexOf('picked_up');
+
 export function OrderStatusDialog({ open, onOpenChange, order, onUpdateStatus }: OrderStatusDialogProps) {
-  const [selectedStatus, setSelectedStatus] = useState<Order['status']>('pending');
-  const [trackingNumber, setTrackingNumber] = useState('');
+  const [status, setStatus] = useState('');
+  const [carrier, setCarrier] = useState('');
+  const [tracking, setTracking] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!order) return;
+    setStatus('');
+    setCarrier(order.carrier_name ?? '');
+    setTracking(order.tracking_number ?? '');
+  }, [order]);
 
   if (!order) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const current = ORDER_FLOW.indexOf(order.status ?? '');
+  const editable = current >= 0;
+  const options = ADMIN_STATUSES.filter((s) =>
+    s === 'cancelled' ? current < CANCEL_BEFORE : s !== order.status);
+
+  const forward = status === 'cancelled' || ORDER_FLOW.indexOf(status) > current;
+  const willEmail = forward && EMAILED_STATUSES.has(status);
+  const needsCarrier = status === 'assigned_to_carrier';
+  const canSubmit = status && !saving && (!needsCarrier || (carrier.trim() && tracking.trim()));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (selectedStatus === 'shipped' && !trackingNumber.trim()) {
-      return; // Don't allow shipping without tracking number
+    if (!canSubmit) return;
+    setSaving(true);
+    try {
+      await onUpdateStatus(order.id, status, tracking.trim() || undefined, carrier.trim() || undefined);
+      onOpenChange(false);
+    } finally {
+      setSaving(false);
     }
-
-    onUpdateStatus(order.id, selectedStatus, trackingNumber.trim() || undefined);
-    onOpenChange(false);
-    setTrackingNumber('');
   };
-
-  const statusOptions = [
-    { value: 'pending', label: 'Pending', icon: Clock, color: 'text-yellow-600' },
-    { value: 'processing', label: 'Processing', icon: AlertCircle, color: 'text-blue-600' },
-    { value: 'shipped', label: 'Shipped', icon: Truck, color: 'text-orange-600' },
-    { value: 'delivered', label: 'Delivered', icon: CheckCircle, color: 'text-green-600' },
-    { value: 'cancelled', label: 'Cancelled', icon: AlertCircle, color: 'text-red-600' }
-  ] as const;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle>Update Order Status</DialogTitle>
+          <DialogTitle>Update order status</DialogTitle>
           <DialogDescription>
-            Update the status for order #{order.order_number}
+            Order {order.order_number} is currently <strong>{orderStatusLabel(order.status)}</strong>.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+
+        {!editable ? (
+          <p className="text-sm text-muted-foreground">
+            Orders that are unpaid, cancelled or refunded can't be changed here.
+          </p>
+        ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="status">Order Status</Label>
-            <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as Order['status'])}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex items-center gap-2">
-                        <Icon className={`h-4 w-4 ${option.color}`} />
-                        {option.label}
-                      </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">New status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger id="status"><SelectValue placeholder="Choose a status" /></SelectTrigger>
+                <SelectContent>
+                  {options.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {orderStatusLabel(s)}
+                      {s !== 'cancelled' && ORDER_FLOW.indexOf(s) < current ? ' (correction)' : ''}
                     </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {selectedStatus === 'shipped' && (
-            <div className="space-y-2">
-              <Label htmlFor="tracking">Tracking Number</Label>
-              <Input
-                id="tracking"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="Enter tracking number"
-                required
-              />
-              <p className="text-sm text-muted-foreground">
-                Tracking number is required when marking order as shipped
-              </p>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          {order.tracking_number && selectedStatus !== 'shipped' && (
-            <div className="space-y-2">
-              <Label>Current Tracking Number</Label>
-              <div className="p-2 bg-muted rounded text-sm font-mono">
-                {order.tracking_number}
+            {(needsCarrier || order.tracking_number) && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="carrier">Carrier</Label>
+                  <Input id="carrier" value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="e.g. GIG Logistics" required={needsCarrier} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tracking">Tracking number</Label>
+                  <Input id="tracking" value={tracking} onChange={(e) => setTracking(e.target.value)} required={needsCarrier} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">
-              Update Status
-            </Button>
-          </div>
-        </form>
-        </div>
+            {status && (
+              <p className="flex items-center gap-2 text-sm rounded-md bg-muted px-3 py-2">
+                {willEmail
+                  ? <><Mail className="h-4 w-4" />The customer will be emailed about this change.</>
+                  : <><MailX className="h-4 w-4" />No email will be sent.</>}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="submit" disabled={!canSubmit}>
+                {saving ? 'Saving…' : status ? `Confirm: ${orderStatusLabel(status)}` : 'Confirm'}
+              </Button>
+            </div>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

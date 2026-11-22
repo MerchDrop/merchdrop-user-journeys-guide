@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const statusColumns = [
   {
-    id: 'pending',
+    id: 'payment_received',
     title: 'Pending',
     icon: Clock,
     color: 'text-yellow-500',
@@ -24,7 +24,7 @@ const statusColumns = [
     bgColor: 'bg-blue-50 dark:bg-blue-900/20'
   },
   {
-    id: 'shipped',
+    id: 'on_the_way',
     title: 'Shipped',
     icon: Truck,
     color: 'text-purple-500',

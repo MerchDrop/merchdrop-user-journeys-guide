@@ -128,5 +128,5 @@ export function getRoleUpgradeMessage(targetRole: 'artist' | 'designer' | 'user'
     user: 'Customer'
   };
 
-  return `If you already have an account and want to become a ${roleLabels[targetRole]}, please sign in to your existing account and contact admin at support@merchdrop.com to request a role upgrade.`;
+  return `If you already have an account and want to become a ${roleLabels[targetRole]}, please sign in to your existing account and contact admin at support@merchdrop.live to request a role upgrade.`;
 }

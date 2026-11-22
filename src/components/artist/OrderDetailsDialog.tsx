@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ORDER_FLOW } from '@/lib/orderStatus';
 import {
   Dialog,
   DialogContent,
@@ -60,9 +61,6 @@ interface OrderDetailsDialogProps {
 }
 
 export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
-  const [isEditingStatus, setIsEditingStatus] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [trackingNumber, setTrackingNumber] = useState('');
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
@@ -83,7 +81,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
     switch (status) {
       case 'pending': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       case 'processing': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'shipped': return 'text-purple-600 bg-purple-50 border-purple-200';
+      case 'on_the_way': return 'text-purple-600 bg-purple-50 border-purple-200';
       case 'delivered': return 'text-green-600 bg-green-50 border-green-200';
       case 'cancelled': return 'text-red-600 bg-red-50 border-red-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
@@ -94,7 +92,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
     switch (status) {
       case 'pending': return <Clock className="h-4 w-4" />;
       case 'processing': return <Package className="h-4 w-4" />;
-      case 'shipped': return <Truck className="h-4 w-4" />;
+      case 'on_the_way': return <Truck className="h-4 w-4" />;
       case 'delivered': return <CheckCircle2 className="h-4 w-4" />;
       case 'cancelled': return <AlertCircle className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
@@ -110,20 +108,6 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
     }
   };
 
-  const handleStatusUpdate = () => {
-    if (!selectedStatus || !order) return;
-    
-    // Update the order status via callback
-    onStatusUpdate?.(order.id, selectedStatus, trackingNumber || undefined);
-    
-    toast({
-      title: "Status Updated",
-      description: `Order status changed to ${selectedStatus}`,
-    });
-    setIsEditingStatus(false);
-    setSelectedStatus('');
-    setTrackingNumber('');
-  };
 
   const handleCopyOrderNumber = () => {
     navigator.clipboard.writeText(order.order_number);
@@ -150,9 +134,8 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
   };
 
   const getOrderProgress = () => {
-    const statuses = ['pending', 'processing', 'shipped', 'delivered'];
-    const currentIndex = statuses.indexOf(order.status);
-    return ((currentIndex + 1) / statuses.length) * 100;
+    const currentIndex = ORDER_FLOW.indexOf(order.status);
+    return ((currentIndex + 1) / ORDER_FLOW.length) * 100;
   };
 
   return (
@@ -328,51 +311,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
             </div>
             
             <div className="bg-muted/30 rounded-xl p-4 space-y-4">
-              {isEditingStatus ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="status">Update Status</Label>
-                      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select new status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="processing">Processing</SelectItem>
-                          <SelectItem value="shipped">Shipped</SelectItem>
-                          <SelectItem value="delivered">Delivered</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {selectedStatus === 'shipped' && (
-                      <div>
-                        <Label htmlFor="tracking">Tracking Number</Label>
-                        <Input
-                          id="tracking"
-                          placeholder="Enter tracking number"
-                          value={trackingNumber}
-                          onChange={(e) => setTrackingNumber(e.target.value)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleStatusUpdate} size="sm">
-                      Update Status
-                    </Button>
-                    <Button variant="outline" onClick={() => setIsEditingStatus(false)} size="sm">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsEditingStatus(true)} size="sm">
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Update Status
-                  </Button>
+              <div className="flex gap-2">
                   <Button variant="outline" onClick={handlePrintOrder} size="sm">
                     <Printer className="h-4 w-4 mr-2" />
                     Print Order
@@ -381,8 +320,7 @@ export function OrderDetailsDialog({ order, open, onOpenChange, onStatusUpdate }
                     <Mail className="h-4 w-4 mr-2" />
                     Contact Customer
                   </Button>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

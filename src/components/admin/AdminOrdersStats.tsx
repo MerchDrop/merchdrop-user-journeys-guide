@@ -33,8 +33,8 @@ export function AdminOrdersStats() {
       color: 'text-blue-600'
     },
     {
-      title: 'Pending',
-      value: orders.filter(o => o.status === 'pending').length,
+      title: 'Awaiting fulfillment',
+      value: orders.filter(o => o.status === 'payment_received').length,
       icon: Clock,
       color: 'text-yellow-600'
     },

@@ -133,7 +133,7 @@ export const ArtistDashboard: React.FC = () => {
       const totalProducts = products?.length || 0;
       const publishedProducts = products?.filter(p => p.status === 'published').length || 0;
       const totalOrders = orders?.length || 0;
-      const pendingOrders = orders?.filter(o => o.status === 'pending').length || 0;
+      const pendingOrders = orders?.filter(o => o.status === 'payment_received').length || 0;
       
       // Calculate revenue
       const totalRevenue = orders?.reduce((sum, order) => {

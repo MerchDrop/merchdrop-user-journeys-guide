@@ -29,7 +29,7 @@ export function OrderTrackingBadge({ trackingNumber, status }: OrderTrackingBadg
     }
   };
 
-  if (!trackingNumber || (status !== 'shipped' && status !== 'delivered')) {
+  if (!trackingNumber || (!['assigned_to_carrier', 'picked_up', 'on_the_way', 'delivered', 'completed'].includes(status))) {
     return null;
   }
 

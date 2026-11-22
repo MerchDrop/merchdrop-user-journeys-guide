@@ -103,7 +103,7 @@ export default function ArtistOrders() {
     switch (status) {
       case 'pending': return 'secondary';
       case 'processing': return 'default';
-      case 'shipped': return 'outline';
+      case 'on_the_way': return 'outline';
       case 'delivered': return 'default';
       case 'cancelled': return 'destructive';
       default: return 'secondary';
@@ -122,7 +122,7 @@ export default function ArtistOrders() {
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(order => order.status === 'pending').length;
+  const pendingOrders = orders.filter(order => order.status === 'payment_received').length;
   const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
 
   const handleViewOrder = (order: ArtistOrderRow) => {
@@ -238,9 +238,9 @@ export default function ArtistOrders() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="payment_received">Payment received</SelectItem>
                   <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
+                  <SelectItem value="on_the_way">On its way</SelectItem>
                   <SelectItem value="delivered">Delivered</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>

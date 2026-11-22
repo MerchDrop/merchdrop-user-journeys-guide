@@ -35,7 +35,7 @@ describe('HeroSection', () => {
   it('displays the dashboard preview', () => {
     const { getByText } = renderWithRouter(<HeroSection />);
 
-    expect(getByText('app.merchdrop.com/dashboard')).toBeInTheDocument();
+    expect(getByText('app.merchdrop.live/dashboard')).toBeInTheDocument();
     expect(getByText('Sales This Week')).toBeInTheDocument();
     expect(getByText('Recent Activity')).toBeInTheDocument();
   });

@@ -31,7 +31,7 @@ export default function Support() {
               <div className="space-y-6 mb-8">
                 <div className="flex items-center">
                   <Mail className="h-5 w-5 mr-3 text-primary" />
-                  <span>support@merchdrop.com</span>
+                  <span>support@merchdrop.live</span>
                 </div>
                 <div className="flex items-center">
                   <Phone className="h-5 w-5 mr-3 text-primary" />

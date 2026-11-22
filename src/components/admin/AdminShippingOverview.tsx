@@ -106,7 +106,7 @@ export default function AdminShippingOverview() {
     }
   };
 
-  const totalShippedOrders = orders.filter((o) => o.status === 'shipped').length;
+  const totalShippedOrders = orders.filter((o) => o.status === 'on_the_way').length;
   const totalCustomQuotes = orders.filter((o) => o.shipping_address?.isCustomQuote || o.shipping_address?.shippingAxis === 'Other Locations').length;
   const totalShippingCollectedNGN = orders.reduce(
     (sum, o) => sum + (o.shipping_address?.shippingFeeNGN || 0),
@@ -302,7 +302,7 @@ export default function AdminShippingOverview() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Shipped Orders</p>
               <h3 className="text-2xl font-bold mt-2">
-                {orders.filter((o) => o.status === 'shipped' || o.status === 'completed').length || 14}
+                {orders.filter((o) => o.status === 'on_the_way' || o.status === 'completed').length || 14}
               </h3>
             </div>
             <div className="p-3 bg-green-500/10 rounded-xl text-green-600">
@@ -496,9 +496,9 @@ export default function AdminShippingOverview() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="payment_received">Payment received</SelectItem>
                       <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="shipped">Shipped</SelectItem>
+                      <SelectItem value="on_the_way">On its way</SelectItem>
                       <SelectItem value="delivered">Delivered</SelectItem>
                     </SelectContent>
                   </Select>
@@ -562,7 +562,7 @@ export default function AdminShippingOverview() {
                                 variant={
                                   ord.status === 'delivered'
                                     ? 'default'
-                                    : ord.status === 'shipped'
+                                    : ord.status === 'on_the_way'
                                     ? 'secondary'
                                     : 'outline'
                                 }
