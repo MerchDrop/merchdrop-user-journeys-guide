@@ -20,6 +20,7 @@ interface TrendingProduct {
   sales: number;
   trending: boolean;
   onSale: boolean;
+  originalPrice?: number;
 }
 
 const TrendingProducts = () => {

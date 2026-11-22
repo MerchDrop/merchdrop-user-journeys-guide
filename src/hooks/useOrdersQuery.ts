@@ -99,67 +99,6 @@ async function fetchOrders(filters: OrderFilters = {}): Promise<Order[]> {
 
   return orders;
 }
-
-// Create new order
-async function createOrder(orderData: {
-  subtotal: number;
-  shipping_cost?: number;
-  tax_amount?: number;
-  total_amount: number;
-  currency?: string;
-  shipping_address: any;
-  billing_address?: any;
-  items: Array<{
-    product_id: string;
-    artist_id: string;
-    quantity: number;
-    unit_price: number;
-    total_price: number;
-    product_variant?: any;
-  }>;
-}): Promise<Order> {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error('User not authenticated');
-
-  // Generate order number
-  const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-  // Create the order
-  const { data: order, error: orderError } = await supabase
-    .from('orders')
-    .insert({
-      user_id: user.id,
-      order_number: orderNumber,
-      subtotal: orderData.subtotal,
-      shipping_cost: orderData.shipping_cost || 0,
-      tax_amount: orderData.tax_amount || 0,
-      total_amount: orderData.total_amount,
-      currency: orderData.currency || 'USD',
-      shipping_address: orderData.shipping_address,
-      billing_address: orderData.billing_address,
-      status: 'pending',
-      payment_status: 'pending',
-    })
-    .select()
-    .single();
-
-  if (orderError) throw orderError;
-
-  // Create order items
-  const orderItems = orderData.items.map(item => ({
-    ...item,
-    order_id: order.id,
-  }));
-
-  const { error: itemsError } = await supabase
-    .from('order_items')
-    .insert(orderItems);
-
-  if (itemsError) throw itemsError;
-
-  return order;
-}
-
 // Update order status (admin). Goes through the update-order-status edge function, which
 // validates the move, logs it with the admin's name, and emails the customer when appropriate.
 async function updateOrderStatus(
@@ -204,22 +143,6 @@ export function useOrdersQuery(filters?: OrderFilters) {
     queryKey: queryKeys.orders.list(filters),
     queryFn: () => fetchOrders(filters),
     staleTime: 2 * 60 * 1000, // 2 minutes
-  });
-}
-
-export function useCreateOrderMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createOrder,
-    onError: (error) => {
-      handleQueryError(error, 'Failed to create order');
-    },
-    onSuccess: (newOrder) => {
-      handleQuerySuccess('Order created successfully');
-      // Invalidate orders queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
-    },
   });
 }
 
@@ -284,7 +207,6 @@ export function useUpdatePaymentStatusMutation() {
 // Legacy hook wrapper for backward compatibility
 export function useOrders() {
   const { data: orders = [], isLoading: loading, error } = useOrdersQuery();
-  const createOrderMutation = useCreateOrderMutation();
   const updateOrderStatusMutation = useUpdateOrderStatusMutation();
   const updatePaymentStatusMutation = useUpdatePaymentStatusMutation();
 
@@ -293,7 +215,6 @@ export function useOrders() {
     loading,
     error: error?.message || null,
     fetchOrders: () => {}, // No longer needed
-    createOrder: (orderData: any) => createOrderMutation.mutateAsync(orderData),
     updateOrderStatus: (orderId: string, status: string, trackingNumber?: string, carrierName?: string) =>
       updateOrderStatusMutation.mutateAsync({ orderId, status, trackingNumber, carrierName }),
     updatePaymentStatus: (orderId: string, paymentStatus: string, paymentReference?: string) =>

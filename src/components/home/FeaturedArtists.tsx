@@ -161,10 +161,12 @@ const FeaturedArtists = () => {
                       <h3 className="text-[18px] font-semibold text-foreground">
                         {artist.name}
                       </h3>
-                      <div className="ml-auto flex items-center text-foreground">
-                        <Star className="w-3.5 h-3.5 mr-1" strokeWidth={1.5} />
-                        <span className="text-[13px] font-medium">{artist.rating}</span>
-                      </div>
+                      {artist.rating != null && (
+                        <div className="ml-auto flex items-center text-foreground">
+                          <Star className="w-3.5 h-3.5 mr-1" strokeWidth={1.5} />
+                          <span className="text-[13px] font-medium">{artist.rating}</span>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Stats Grid */}
@@ -175,7 +177,7 @@ const FeaturedArtists = () => {
                       </div>
                       <div className="text-center">
                         <div className="text-[13px] font-medium text-foreground">{formatPrice(artist.revenue)}</div>
-                        <div className="text-[11px] text-muted-foreground">Revenue</div>
+                        <div className="text-[11px] text-muted-foreground">Sales</div>
                       </div>
                       <div className="text-center">
                         <div className="text-[13px] font-medium text-foreground">{artist.products}</div>

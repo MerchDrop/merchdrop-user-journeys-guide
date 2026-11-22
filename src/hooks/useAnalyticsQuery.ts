@@ -67,7 +67,7 @@ async function fetchAnalytics(): Promise<AnalyticsData> {
   if (productsError) throw productsError;
   if (itemsError) throw itemsError;
 
-  const completedOrders = (orders || []).filter(order => order.payment_status === 'completed');
+  const completedOrders = (orders || []).filter(order => order.payment_status === 'paid');
   const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
   const totalOrders = completedOrders.length;
 

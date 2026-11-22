@@ -388,14 +388,57 @@ export type Database = {
           },
         ]
       }
+      order_status_history: {
+        Row: {
+          changed_by: string | null
+          changed_by_name: string
+          created_at: string
+          from_status: string | null
+          id: string
+          order_id: string
+          to_status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_name?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          order_id: string
+          to_status: string
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_name?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          order_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           billing_address: Json | null
+          carrier_name: string | null
+          completed_at: string | null
           created_at: string
           currency: string | null
+          customer_email: string | null
           delivered_at: string | null
           id: string
+          needs_attention: boolean
           order_number: string
+          paid_at: string | null
           payment_provider: string | null
           payment_reference: string | null
           payment_status: string | null
@@ -408,15 +451,21 @@ export type Database = {
           total_amount: number
           tracking_number: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
+          view_token: string
         }
         Insert: {
           billing_address?: Json | null
+          carrier_name?: string | null
+          completed_at?: string | null
           created_at?: string
           currency?: string | null
+          customer_email?: string | null
           delivered_at?: string | null
           id?: string
+          needs_attention?: boolean
           order_number: string
+          paid_at?: string | null
           payment_provider?: string | null
           payment_reference?: string | null
           payment_status?: string | null
@@ -429,15 +478,21 @@ export type Database = {
           total_amount: number
           tracking_number?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
+          view_token?: string
         }
         Update: {
           billing_address?: Json | null
+          carrier_name?: string | null
+          completed_at?: string | null
           created_at?: string
           currency?: string | null
+          customer_email?: string | null
           delivered_at?: string | null
           id?: string
+          needs_attention?: boolean
           order_number?: string
+          paid_at?: string | null
           payment_provider?: string | null
           payment_reference?: string | null
           payment_status?: string | null
@@ -450,7 +505,8 @@ export type Database = {
           total_amount?: number
           tracking_number?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
+          view_token?: string
         }
         Relationships: [
           {
@@ -936,46 +992,21 @@ export type Database = {
         Row: {
           artist_name: string | null
           artist_slug: string | null
+          avatar_url: string | null
+          average_rating: number | null
+          bio: string | null
           brand_colors: Json | null
           created_at: string | null
+          display_name: string | null
+          follower_count: number | null
           id: string | null
-          status: string | null
-          user_id: string | null
+          product_count: number | null
+          review_count: number | null
+          social_links: Json | null
+          total_sales: number | null
+          website_url: string | null
         }
-        Insert: {
-          artist_name?: string | null
-          artist_slug?: string | null
-          brand_colors?: Json | null
-          created_at?: string | null
-          id?: string | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          artist_name?: string | null
-          artist_slug?: string | null
-          brand_colors?: Json | null
-          created_at?: string | null
-          id?: string | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "artist_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "artist_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       public_profiles: {
         Row: {
@@ -1006,6 +1037,7 @@ export type Database = {
       }
     }
     Functions: {
+      advance_orders: { Args: never; Returns: undefined }
       approve_role_request: {
         Args: {
           _admin_id: string
@@ -1031,6 +1063,10 @@ export type Database = {
         Returns: boolean
       }
       generate_product_slug: { Args: { title: string }; Returns: string }
+      get_order_details: {
+        Args: { p_order_id: string; p_token?: string }
+        Returns: Json
+      }
       get_primary_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1090,12 +1126,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1119,11 +1155,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1144,11 +1180,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1169,11 +1205,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1186,11 +1222,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

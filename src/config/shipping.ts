@@ -85,7 +85,7 @@ export async function fetchShippingAxes(): Promise<ShippingAxis[]> {
       .maybeSingle();
 
     if (!error && data && Array.isArray(data.value) && data.value.length > 0) {
-      const axes = data.value as ShippingAxis[];
+      const axes = data.value as unknown as ShippingAxis[];
       if (typeof window !== 'undefined') {
         localStorage.setItem('shipping_axes_config', JSON.stringify(axes));
       }

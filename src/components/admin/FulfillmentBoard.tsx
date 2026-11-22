@@ -98,12 +98,16 @@ const FulfillmentBoard = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data } = await supabase.from('orders').select('*');
+      const { data } = await supabase.from('orders').select('*, order_items(quantity, products(title))');
       if (data) {
         setLiveOrders(data.map((o) => ({
           id: o.order_number || o.id.slice(0, 8),
-          customer: o.shipping_address?.firstName ? `${o.shipping_address.firstName} ${o.shipping_address.lastName || ''}` : 'Customer',
-          items: ['Apparel Item'],
+          customer: (() => {
+            const addr = (o.shipping_address ?? {}) as Record<string, string>;
+            return addr.firstName ? `${addr.firstName} ${addr.lastName || ''}`.trim() : o.customer_email || 'Customer';
+          })(),
+          items: (o.order_items ?? []).map((i: { quantity: number; products: { title: string } | null }) =>
+            `${i.products?.title ?? 'Item'}${i.quantity > 1 ? ` ×${i.quantity}` : ''}`),
           total: o.total_amount || 0,
           status: o.status || 'pending',
           date: o.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),

@@ -11,7 +11,7 @@ export interface Order {
   tax_amount: number;
   total_amount: number;
   status: string;
-  payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   payment_provider: string;
   payment_reference: string | null;
   tracking_number: string | null;
@@ -127,87 +127,6 @@ export function useOrders() {
     }
   };
 
-  const createOrder = async (orderData: {
-    subtotal: number;
-    shipping_cost: number;
-    tax_amount: number;
-    total_amount: number;
-    shipping_address: any;
-    billing_address?: any;
-    currency: string;
-    items: {
-      product_id: string;
-      artist_id: string;
-      quantity: number;
-      unit_price: number;
-      total_price: number;
-      product_variant?: any;
-    }[];
-  }) => {
-    try {
-      setError(null);
-
-      if (!user?.id) {
-        throw new Error('User must be authenticated to create order');
-      }
-
-      // Generate order number
-      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      // Create the order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          order_number: orderNumber,
-          subtotal: orderData.subtotal,
-          shipping_cost: orderData.shipping_cost,
-          tax_amount: orderData.tax_amount,
-          total_amount: orderData.total_amount,
-          shipping_address: orderData.shipping_address,
-          billing_address: orderData.billing_address,
-          currency: orderData.currency,
-          status: 'pending',
-          payment_status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (orderError) {
-        throw orderError;
-      }
-
-      // Create order items
-      const orderItemsData = orderData.items.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        artist_id: item.artist_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price,
-        product_variant: item.product_variant || {},
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItemsData);
-
-      if (itemsError) {
-        throw itemsError;
-      }
-
-      // Refresh orders
-      await fetchOrders();
-
-      return { order, error: null };
-    } catch (err) {
-      console.error('Error creating order:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create order';
-      setError(errorMessage);
-      return { order: null, error: errorMessage };
-    }
-  };
-
   const updateOrderStatus = async (orderId: string, status: Order['status'], trackingNumber?: string) => {
     try {
       setError(null);
@@ -284,7 +203,6 @@ export function useOrders() {
     loading,
     error,
     fetchOrders,
-    createOrder,
     updateOrderStatus,
     updatePaymentStatus,
   };

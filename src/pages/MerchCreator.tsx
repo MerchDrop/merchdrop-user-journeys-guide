@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const MerchCreator = () => {
   const { toast } = useToast();
@@ -107,9 +108,9 @@ const MerchCreator = () => {
         setPreUploadedDesigns(data.map(d => ({
           id: d.id,
           name: d.title || 'Artwork Design',
-          image: d.image_url || '/placeholder.svg',
+          image: d.file_urls?.[0] || '/placeholder.svg',
           category: 'tshirt',
-          tags: d.tags || ['artwork'],
+          tags: ['artwork'],
         })));
       } else {
         setPreUploadedDesigns([]);

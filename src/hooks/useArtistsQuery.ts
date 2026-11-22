@@ -103,50 +103,45 @@ async function fetchPendingArtists(): Promise<Artist[]> {
 }
 
 // Fetch featured artists
-async function fetchFeaturedArtists(limit: number = 6) {
-  const { data: artists, error } = await supabase
-    .from('artist_profiles')
-    .select(`
-      *,
-      user_profiles:profiles(id, email, display_name, avatar_url)
-    `)
-    .eq('status', 'approved')
-    .order('total_sales', { ascending: false })
-    .limit(limit);
+export interface PublicArtistCard {
+  id: string;
+  name: string;
+  avatar: string;
+  bio: string | null;
+  followers: number;
+  revenue: number;
+  products: number;
+  rating: number | null;
+  slug: string;
+  createdAt: string;
+}
 
+/** Approved artists with real counts, readable by logged-out visitors. */
+export async function fetchPublicArtists(limit?: number): Promise<PublicArtistCard[]> {
+  let query = supabase
+    .from('public_artist_profiles' as never)
+    .select('*')
+    .order('total_sales', { ascending: false });
+  if (limit) query = query.limit(limit);
+
+  const { data, error } = await query;
   if (error) throw error;
 
-  // Enhance with additional data
-  const enhancedArtists = await Promise.all(
-    (artists || []).map(async (artist) => {
-      // Get product count
-      const { count: productCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('artist_id', artist.id)
-        .eq('status', 'published');
-
-      // Get follower count
-      const { count: followerCount } = await supabase
-        .from('artist_follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('artist_id', artist.id);
-
-      return {
-        id: artist.id,
-        name: artist.artist_name,
-        avatar: artist.user_profiles?.avatar_url || '/placeholder-avatar.png',
-        followers: followerCount || 0,
-        revenue: Number(artist.total_earnings) || 0,
-        products: productCount || 0,
-        rating: 4.8, // Mock rating for now
-        slug: artist.artist_slug,
-      };
-    })
-  );
-
-  return enhancedArtists;
+  return ((data ?? []) as Record<string, any>[]).map((a) => ({
+    id: a.id,
+    name: a.artist_name || a.display_name || 'Artist',
+    avatar: a.avatar_url || '/placeholder.svg',
+    bio: a.bio ?? null,
+    followers: a.follower_count ?? 0,
+    revenue: Number(a.total_sales) || 0,
+    products: a.product_count ?? 0,
+    rating: a.average_rating == null ? null : Number(a.average_rating),
+    slug: a.artist_slug,
+    createdAt: a.created_at,
+  }));
 }
+
+const fetchFeaturedArtists = (limit: number = 6) => fetchPublicArtists(limit);
 
 // Artist mutation functions
 async function approveArtist(artistId: string): Promise<void> {

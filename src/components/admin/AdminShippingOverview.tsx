@@ -48,6 +48,7 @@ import {
   useShippingAxes,
 } from '@/config/shipping';
 import { supabase } from '@/integrations/supabase/client';
+import { ORDER_FLOW } from '@/lib/orderStatus';
 
 export default function AdminShippingOverview() {
   const { toast } = useToast();
@@ -302,7 +303,7 @@ export default function AdminShippingOverview() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Shipped Orders</p>
               <h3 className="text-2xl font-bold mt-2">
-                {orders.filter((o) => o.status === 'on_the_way' || o.status === 'completed').length || 14}
+                {orders.filter((o) => ORDER_FLOW.indexOf(o.status) >= ORDER_FLOW.indexOf('assigned_to_carrier')).length}
               </h3>
             </div>
             <div className="p-3 bg-green-500/10 rounded-xl text-green-600">
